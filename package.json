@@ -62,6 +62,7 @@
     "publish:cd": "lerna run publish:cd --no-ci --stream --no-bail --scope=@tps/apps*",
     "publish:apps": "lerna run publish",
     "publish:http": "lerna run --scope='@tps/apps-*' publish:http --stream",
+    "recoverTemplate": "cd templates/open-enterprise && npm run recover:tx",
     "restart": "RESTART_KIT=true apps/shared/test-helpers/ganache-cli.sh",
     "start:kit": "cd apps/planning-suite-kit && npm run start:kit",
     "start:kit:no:client": "cd apps/planning-suite-kit && npm run start:kit:no:client",
