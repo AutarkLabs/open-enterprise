@@ -38,7 +38,7 @@
     "@aragon/apps-shared-minime": "1.0.1",
     "@aragon/apps-vault": "4.1.0",
     "@aragon/os": "4.2.0",
-    "@aragon/ui": "1.0.0-alpha.32",
+    "@aragon/ui": "1.0.0",
     "@babel/polyfill": "^7.2.5",
     "@babel/runtime": "^7.6.0",
     "apollo-boost": "^0.1.22",
