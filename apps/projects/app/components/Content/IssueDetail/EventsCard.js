@@ -120,7 +120,7 @@ const activities = (
           date: data.review.reviewDate,
           user: data.user,
           eventDescription: (
-            data.user.login + (data.review.accepted ?
+            data.user.login + (data.review.approved ?
               '\'s work was accepted'
               :
               '\'s work was rejected'

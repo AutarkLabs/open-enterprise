@@ -117,7 +117,7 @@ const isWorkDone = issue => {
 
   return issue.workSubmissions.some(work =>
     work.hasOwnProperty('review') &&
-      work.review.accepted
+      work.review.approved
   )
 }
 

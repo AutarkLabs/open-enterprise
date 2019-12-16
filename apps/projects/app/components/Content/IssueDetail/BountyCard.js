@@ -40,7 +40,7 @@ const fulfillerAddress = issue => {
   if (!issue.openSubmission) return address(issue.assignee)
 
   const approvedWork = issue.workSubmissions.find(submission =>
-    'review' in submission && submission.review.accepted
+    'review' in submission && submission.review.approved
   )
   return address(approvedWork.submitter)
 }
