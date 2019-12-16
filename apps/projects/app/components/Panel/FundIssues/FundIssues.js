@@ -347,7 +347,7 @@ const FundForm = ({
                     issue={issue}
                     bounty={bounties[issue.id]}
                     tokens={tokens}
-                    onBlur={() => setValidate(true)}
+                    onFocus={() => setValidate(true)}
                     updateBounty={updateBounty(issue.id)}
                   />
                 ))}
