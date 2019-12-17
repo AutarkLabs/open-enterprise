@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { ApolloProvider } from 'react-apollo'
 
-import { useAragonApi } from './api-react'
+import { useAragonApi, usePath } from './api-react'
 import {
   Bar,
   Button,
@@ -34,7 +34,7 @@ import usePathSegments from './hooks/usePathSegments'
 
 const App = () => {
   const { api, appState } = useAragonApi()
-  const [ tabData, setTabData ] = useState({})
+  const [ , requestPath ] = usePath()
   const [ githubLoading, setGithubLoading ] = useState(false)
   const [ panel, setPanel ] = useState(null)
   const [ panelProps, setPanelProps ] = useState(null)
@@ -50,12 +50,9 @@ const App = () => {
   } = appState
 
   const {
-    fromPath: {
-      selectedIssueId,
-      selectedTab
-    },
+    selectedIssueId,
+    selectedTab,
     selectIssue: setSelectedIssue,
-    selectTab
   } = usePathSegments()
 
   const client = github.token ? initApolloClient(github.token) : null
@@ -119,17 +116,6 @@ const App = () => {
     window.addEventListener('message', handlePopupMessage)
   }
 
-  const handleTabSelection = data => {
-    // When a project card is clicked, data is passed to the issues view
-    if (typeof data === 'object') {
-      selectTab(data.tabIndex)
-      setTabData(data.tabData)
-    } else {
-      // When a section is clicked on the TabBar no data is passed
-      selectTab(data)
-    }
-  }
-
   const handleResolveLocalIdentity = address => {
     return api.resolveAddressIdentity(address).toPromise()
   }
@@ -168,11 +154,12 @@ const App = () => {
   tabs.push({ name: 'Settings', body: Settings })
 
   // Determine current tab details
-  const TabComponent = tabs[selectedTab].body
+  const currentTab = tabs.find(t => t.name.toLowerCase() === selectedTab)
+  const TabComponent = currentTab.body
   const TabAction = () => {
     const { setupNewIssue, setupNewProject } = usePanelManagement()
 
-    switch (tabs[selectedTab].name) {
+    switch (currentTab.name) {
     case 'Overview': return (
       <Button mode="strong" icon={<IconPlus />} onClick={setupNewProject} label="New project" />
     )
@@ -182,6 +169,7 @@ const App = () => {
     default: return null
     }
   }
+  const tabNames = tabs.map(t => t.name)
 
   return (
     <Main>
@@ -212,9 +200,12 @@ const App = () => {
                   : (
                     <React.Fragment>
                       <Tabs
-                        items={tabs.map(t => t.name)}
-                        onChange={handleTabSelection}
-                        selected={selectedTab}
+                        items={tabNames}
+                        onChange={index => {
+                          if (index === 0) requestPath('/')
+                          else requestPath('/' + tabNames[index].toLowerCase())
+                        }}
+                        selected={tabs.indexOf(currentTab)}
                       />
                       <TabComponent
                         status={github.status}
@@ -222,10 +213,8 @@ const App = () => {
                         bountyIssues={issues}
                         bountySettings={bountySettings}
                         tokens={tokens}
-                        changeActiveIndex={handleTabSelection}
                         setSelectedIssue={setSelectedIssue}
                         onLogin={handleGithubSignIn}
-                        tabData={tabData}
                       />
                     </React.Fragment>
                   )

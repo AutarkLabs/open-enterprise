@@ -9,6 +9,7 @@ import { compareAsc, compareDesc } from 'date-fns'
 
 import { initApolloClient } from '../../utils/apollo-client'
 import useShapedIssue from '../../hooks/useShapedIssue'
+import usePathSegments from '../../hooks/usePathSegments'
 import { STATUS } from '../../utils/github'
 import { getIssuesGQL } from '../../utils/gql-queries.js'
 import { FilterBar } from '../Shared'
@@ -31,7 +32,6 @@ const ISSUES_PER_CALL = 100
 
 class Issues extends React.PureComponent {
   static propTypes = {
-    tabData: PropTypes.object.isRequired,
     bountyIssues: PropTypes.array.isRequired,
     bountySettings: PropTypes.shape({
       expLvls: PropTypes.array.isRequired,
@@ -374,16 +374,15 @@ IssuesQuery.propTypes = {
   query: PropTypes.object.isRequired,
 }
 
-const IssuesWrap = ({ tabData, ...props }) => {
+const IssuesWrap = props => {
   const { appState: { github, repos } } = useAragonApi()
   const shapeIssue = useShapedIssue()
+  const { query: { repoId } } = usePathSegments()
   const [ client, setClient ] = useState(null)
   const [ downloadedRepos, setDownloadedRepos ] = useState({})
   const [ query, setQuery ] = useState(null)
   const [ filters, setFilters ] = useState({
-    projects: tabData.filterIssuesByRepoId
-      ? { [tabData.filterIssuesByRepoId]: true }
-      : {},
+    projects: repoId ? { [repoId]: true } : {},
     labels: {},
     milestones: {},
     deadlines: {},
@@ -433,7 +432,6 @@ const IssuesWrap = ({ tabData, ...props }) => {
 
   return (
     <IssuesQuery
-      tabData={tabData}
       client={client}
       filters={filters}
       query={query}
@@ -443,17 +441,6 @@ const IssuesWrap = ({ tabData, ...props }) => {
       {...props}
     />
   )
-}
-
-// TODO: Better props definition for this, we just need filterIssuesByRepoId
-IssuesWrap.propTypes = {
-  tabData: PropTypes.shape({
-    filterIssuesByRepoId: PropTypes.string,
-  }).isRequired,
-}
-
-IssuesWrap.defaultProps = {
-  tabData: {}
 }
 
 const StyledIssues = styled.div`
