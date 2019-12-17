@@ -30,13 +30,11 @@ import { LoadingAnimation } from './components/Shared'
 import { EmptyWrapper } from './components/Shared'
 import { Error } from './components/Card'
 import { DecoratedReposProvider } from './context/DecoratedRepos'
+import usePathSegments from './hooks/usePathSegments'
 
 const App = () => {
   const { api, appState } = useAragonApi()
-  const [ activeIndex, setActiveIndex ] = useState(
-    { tabIndex: 0, tabData: {} }
-  )
-  const [ selectedIssueId, setSelectedIssue ] = useState(null)
+  const [ tabData, setTabData ] = useState({})
   const [ githubLoading, setGithubLoading ] = useState(false)
   const [ panel, setPanel ] = useState(null)
   const [ panelProps, setPanelProps ] = useState(null)
@@ -51,7 +49,20 @@ const App = () => {
     isSyncing = true,
   } = appState
 
+  const {
+    fromPath: {
+      selectedIssueId,
+      selectedTab
+    },
+    selectIssue: setSelectedIssue,
+    selectTab
+  } = usePathSegments()
+
   const client = github.token ? initApolloClient(github.token) : null
+
+  useEffect(() => {
+    setSelectedIssue(selectedIssueId)
+  }, [selectedIssueId])
 
   useEffect(() => {
     const code = getURLParam('code')
@@ -88,10 +99,6 @@ const App = () => {
     }
   }
 
-  const changeActiveIndex = data => {
-    setActiveIndex(data)
-  }
-
   const closePanel = () => {
     setPanel(null)
     setPanelProps(null)
@@ -112,8 +119,15 @@ const App = () => {
     window.addEventListener('message', handlePopupMessage)
   }
 
-  const handleSelect = index => {
-    changeActiveIndex({ tabIndex: index, tabData: {} })
+  const handleTabSelection = data => {
+    // When a project card is clicked, data is passed to the issues view
+    if (typeof data === 'object') {
+      selectTab(data.tabIndex)
+      setTabData(data.tabData)
+    } else {
+      // When a section is clicked on the TabBar no data is passed
+      selectTab(data)
+    }
   }
 
   const handleResolveLocalIdentity = address => {
@@ -154,11 +168,11 @@ const App = () => {
   tabs.push({ name: 'Settings', body: Settings })
 
   // Determine current tab details
-  const TabComponent = tabs[activeIndex.tabIndex].body
+  const TabComponent = tabs[selectedTab].body
   const TabAction = () => {
     const { setupNewIssue, setupNewProject } = usePanelManagement()
 
-    switch (tabs[activeIndex.tabIndex].name) {
+    switch (tabs[selectedTab].name) {
     case 'Overview': return (
       <Button mode="strong" icon={<IconPlus />} onClick={setupNewProject} label="New project" />
     )
@@ -199,8 +213,8 @@ const App = () => {
                     <React.Fragment>
                       <Tabs
                         items={tabs.map(t => t.name)}
-                        onChange={handleSelect}
-                        selected={activeIndex.tabIndex}
+                        onChange={handleTabSelection}
+                        selected={selectedTab}
                       />
                       <TabComponent
                         status={github.status}
@@ -208,10 +222,10 @@ const App = () => {
                         bountyIssues={issues}
                         bountySettings={bountySettings}
                         tokens={tokens}
-                        activeIndex={activeIndex}
-                        changeActiveIndex={changeActiveIndex}
+                        changeActiveIndex={handleTabSelection}
                         setSelectedIssue={setSelectedIssue}
                         onLogin={handleGithubSignIn}
+                        tabData={tabData}
                       />
                     </React.Fragment>
                   )

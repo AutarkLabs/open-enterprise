@@ -31,9 +31,7 @@ const ISSUES_PER_CALL = 100
 
 class Issues extends React.PureComponent {
   static propTypes = {
-    activeIndex: PropTypes.shape({
-      tabData: PropTypes.object.isRequired,
-    }).isRequired,
+    tabData: PropTypes.object.isRequired,
     bountyIssues: PropTypes.array.isRequired,
     bountySettings: PropTypes.shape({
       expLvls: PropTypes.array.isRequired,
@@ -225,7 +223,6 @@ class Issues extends React.PureComponent {
         issuesFiltered={issuesFiltered}
         handleFiltering={this.handleFiltering}
         handleSorting={this.handleSorting}
-        activeIndex={this.props.activeIndex}
         bountyIssues={this.props.bountyIssues}
         disableFilter={this.disableFilter}
         disableAllFilters={this.disableAllFilters}
@@ -340,7 +337,7 @@ class Issues extends React.PureComponent {
               .map(issue => (
                 <Issue
                   isSelected={issue.id in this.state.selectedIssues}
-                  key={issue.number}
+                  key={issue.id}
                   {...issue}
                   onClick={this.props.setSelectedIssue}
                   onSelect={this.handleIssueSelection}
@@ -377,15 +374,15 @@ IssuesQuery.propTypes = {
   query: PropTypes.object.isRequired,
 }
 
-const IssuesWrap = ({ activeIndex, ...props }) => {
+const IssuesWrap = ({ tabData, ...props }) => {
   const { appState: { github, repos } } = useAragonApi()
   const shapeIssue = useShapedIssue()
   const [ client, setClient ] = useState(null)
   const [ downloadedRepos, setDownloadedRepos ] = useState({})
   const [ query, setQuery ] = useState(null)
   const [ filters, setFilters ] = useState({
-    projects: activeIndex.tabData.filterIssuesByRepoId
-      ? { [activeIndex.tabData.filterIssuesByRepoId]: true }
+    projects: tabData.filterIssuesByRepoId
+      ? { [tabData.filterIssuesByRepoId]: true }
       : {},
     labels: {},
     milestones: {},
@@ -436,7 +433,7 @@ const IssuesWrap = ({ activeIndex, ...props }) => {
 
   return (
     <IssuesQuery
-      activeIndex={activeIndex}
+      tabData={tabData}
       client={client}
       filters={filters}
       query={query}
@@ -448,12 +445,15 @@ const IssuesWrap = ({ activeIndex, ...props }) => {
   )
 }
 
+// TODO: Better props definition for this, we just need filterIssuesByRepoId
 IssuesWrap.propTypes = {
-  activeIndex: PropTypes.shape({
-    tabData: PropTypes.shape({
-      filterIssuesByRepoId: PropTypes.string,
-    }).isRequired,
+  tabData: PropTypes.shape({
+    filterIssuesByRepoId: PropTypes.string,
   }).isRequired,
+}
+
+IssuesWrap.defaultProps = {
+  tabData: {}
 }
 
 const StyledIssues = styled.div`
