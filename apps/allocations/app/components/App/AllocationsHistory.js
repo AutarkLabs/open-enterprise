@@ -15,7 +15,7 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
 import { STATUSES } from '../../utils/constants'
-import { displayCurrency } from '../../utils/helpers'
+import { displayCurrency } from '../../../../../shared/ui/helpers'
 import { addressesEqual } from '../../../../../shared/lib/web3-utils'
 
 const AllocationsHistory = ({ allocations, skipBudgetColumn }) => {
@@ -66,7 +66,7 @@ const AllocationsHistory = ({ allocations, skipBudgetColumn }) => {
           description,
           <Status key={index} code={status} />,
           <Amount key={index} theme={theme} >
-            { displayCurrency(BigNumber(-amount)) } { getTokenSymbol(token) }
+            { displayCurrency(-amount) } { getTokenSymbol(token) }
           </Amount>
         ]
         if (!skipBudgetColumn) {
