@@ -3,8 +3,6 @@ import { app } from '../app'
 import { ipfsGet } from '../../utils/ipfs-helpers'
 import standardBounties from '../../abi/StandardBounties.json'
 
-const assignmentRequestStatus = [ 'Unreviewed', 'Accepted', 'Rejected' ]
-
 export const loadIssueData = async ({ repoId, issueNumber }) => {
   const {
     hasBounty,
@@ -59,6 +57,7 @@ export const loadIssueData = async ({ repoId, issueNumber }) => {
     deadline: new Date(Number(deadline)).toISOString(),
     token,
     workStatus,
+    openSubmission: /^0xf{40}$/i.test(assignee),
   }
 }
 
@@ -145,7 +144,6 @@ const getRequest = (repoId, issueNumber, applicantId) => {
       const bountyData = await ipfsGet(response.application)
       resolve({
         contributorAddr: response.applicant,
-        status: assignmentRequestStatus[parseInt(response.status)],
         requestIPFSHash: response.application,
         ...bountyData
       })
@@ -184,7 +182,6 @@ export const buildSubmission = async ({ fulfillmentId, fulfillers, ipfsHash, sub
     fulfillers,
     hours,
     proof,
-    status: '0',
     submissionDate,
     submissionIPFSHash: ipfsHash,
     submitter,

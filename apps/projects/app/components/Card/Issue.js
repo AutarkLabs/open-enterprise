@@ -2,12 +2,23 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 
-import { Text, Tag, Checkbox, ContextMenu, useLayout, useTheme, IconClock, IconConnect, IconCalendar } from '@aragon/ui'
+import {
+  Checkbox,
+  ContextMenu,
+  IconAddUser,
+  IconClock,
+  IconGraph2,
+  IconInfo,
+  Tag,
+  Text,
+  useLayout,
+  useTheme,
+} from '@aragon/ui'
 
 import { formatDistance } from 'date-fns'
 import { BountyContextMenu } from '../Shared'
 import { BOUNTY_STATUS, BOUNTY_BADGE_COLOR } from '../../utils/bounty-status'
-import { IconBarbell } from '../../assets'
+import { issueShape } from '../../utils/shapes'
 
 const DeadlineDistance = date =>
   formatDistance(new Date(date), new Date(), { addSuffix: true })
@@ -45,6 +56,48 @@ FlexibleDiv.propTypes = {
   children: PropTypes.node.isRequired,
 }
 
+const Bounty = ({ issue }) => {
+  const theme = useTheme()
+  const { layoutName } = useLayout()
+  const { workStatus, deadline, expLevel, openSubmission } = issue
+
+  let status = BOUNTY_STATUS[workStatus]
+  if (openSubmission && workStatus === 'funded')
+    status = BOUNTY_STATUS['open-submission-funded']
+
+  return (
+    <React.Fragment>
+      <FlexibleDiv compact={layoutName !== 'large'}>
+        <span css="white-space: nowrap">
+          <IconAddUser
+            color={`${theme.surfaceIcon}`}
+            css="margin-bottom: -8px; margin-right: 4px"
+          />
+          {status}
+        </span>
+        {dot}
+        <span css="white-space: nowrap">
+          <IconClock color={`${theme.surfaceIcon}`}
+            css="margin-bottom: -8px; margin-right: 4px"
+          />
+          Due {DeadlineDistance(deadline)}
+        </span>
+      </FlexibleDiv>
+      <FlexibleDiv compact={layoutName !== 'large'}>
+        <span css="white-space: nowrap">
+          <IconGraph2
+            css="margin-bottom: -8px; margin-right: 4px"
+            color={`${theme.surfaceIcon}`}
+          />
+          {expLevel}
+        </span>
+      </FlexibleDiv>
+    </React.Fragment>
+  )
+}
+
+Bounty.propTypes = issueShape
+
 const Issue = ({ isSelected, onClick, onSelect, ...issue }) => {
   const theme = useTheme()
   const { layoutName } = useLayout()
@@ -56,8 +109,6 @@ const Issue = ({ isSelected, onClick, onSelect, ...issue }) => {
     labels,
     balance,
     symbol,
-    deadline,
-    expLevel,
     createdAt,
   } = issue
 
@@ -110,46 +161,14 @@ const Issue = ({ isSelected, onClick, onSelect, ...issue }) => {
         <IssueDetails>
           <Text.Block color={`${theme.surfaceContentSecondary}`} size="small">
             <span css="font-weight: 600; white-space: nowrap">{repo} #{number}</span>
-            <FlexibleDiv
-              compact={layoutName === 'small'}
-            >
+            <FlexibleDiv compact={layoutName === 'small'}>
               <span css="white-space: nowrap">
-                <IconClock color={`${theme.surfaceIcon}`} css="margin-bottom: -8px; margin-right: 4px" />
-              opened {DeadlineDistance(createdAt)}
+                <IconInfo color={`${theme.positiveSurfaceContent}`} css="margin-bottom: -8px; margin-right: 4px" />
+                opened {DeadlineDistance(createdAt)}
               </span>
             </FlexibleDiv>
-            {BOUNTY_STATUS[workStatus] && (
-              <React.Fragment>
-                <FlexibleDiv
-                  compact={layoutName !== 'large'}
-                >
-                  <span css="white-space: nowrap">
-                    <IconConnect color={`${theme.surfaceIcon}`} css="margin-bottom: -8px" /> {balance > 0
-                      ? BOUNTY_STATUS[workStatus]
-                      : BOUNTY_STATUS['fulfilled']}
-                  </span>
-                  {dot}
-                  <span css="white-space: nowrap">
-                    <div css={`
-                    display: inline-block;
-                    vertical-align: bottom;
-                    margin-right: 6px;
-                    margin-bottom: -8px;
-                  `}>
-                      <IconBarbell color={`${theme.surfaceIcon}`} />
-                    </div>
-                    {expLevel}
-                  </span>
-                </FlexibleDiv>
-                <FlexibleDiv
-                  compact={layoutName !== 'large'}
-                >
-                  <span css="white-space: nowrap">
-                    <IconCalendar color={`${theme.surfaceIcon}`} css="margin-bottom: -8px; margin-right: 4px" />
-                    Due {DeadlineDistance(deadline)}
-                  </span>
-                </FlexibleDiv>
-              </React.Fragment>
+            {issue.hasBounty && (
+              <Bounty issue={issue} />
             )}
           </Text.Block>
         </IssueDetails>

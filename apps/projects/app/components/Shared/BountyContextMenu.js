@@ -1,14 +1,40 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import styled, { css } from 'styled-components'
 import { ContextMenuItem, GU, theme } from '@aragon/ui'
 import { usePanelManagement } from '../Panel'
 import { issueShape } from '../../utils/shapes.js'
-import { IconCoin, IconConnect, IconFile, IconView, useTheme } from '@aragon/ui'
+import { IconCoin, IconFile, IconView, useTheme } from '@aragon/ui'
 import { useAragonApi } from '../../api-react'
+
+
+const MenuItem = ({ panel, panelParams, caption, Icon }) => {
+  const theme = useTheme()
+
+  return (
+    <Item onClick={() => panel(panelParams)}>
+      <Icon color={`${theme.surfaceContent}`} />
+      <ActionLabel>
+        {caption}
+      </ActionLabel>
+    </Item>
+  )
+}
+MenuItem.propTypes = {
+  panel: PropTypes.func.isRequired,
+  caption: PropTypes.string.isRequired,
+  panelParams: PropTypes.oneOfType([
+    PropTypes.object,
+    PropTypes.arrayOf(PropTypes.object)
+  ]).isRequired,
+  Icon: PropTypes.func.isRequired,
+}
+
+const pluralize = (word, number) => `${word}${number > 1 ? 's (' + number + ')' : ''}`
 
 const BountyContextMenu = ({ issue }) => {
   const pastDeadline = (new Date()) > (new Date(issue.deadline))
-  const { workStatus, assignee } = issue
+  const { openSubmission, workStatus, assignee } = issue
   const { connectedAccount } = useAragonApi()
   const {
     allocateBounty,
@@ -17,110 +43,82 @@ const BountyContextMenu = ({ issue }) => {
     reviewWork,
     submitWork,
   } = usePanelManagement()
-  const theme = useTheme()
 
-  return (
-    <React.Fragment>
-      {workStatus === undefined && (
-        <Item onClick={() => allocateBounty([issue])}>
-          <IconCoin color={`${theme.surfaceContent}`} />
-          <ActionLabel>
-            Fund issue
-          </ActionLabel>
-        </Item>
-      )}
-      {workStatus === 'in-progress' && (
-        <React.Fragment>
-          {(connectedAccount === assignee) && (
-            <Item onClick={() => submitWork(issue)}>
-              <IconConnect color={`${theme.surfaceContent}`} />
-              <ActionLabel>
-                Submit work
-              </ActionLabel>
-            </Item>
-          )}
-          <Item onClick={() => reviewApplication(issue)}>
-            <IconView color={`${theme.surfaceContent}`} />
-            <ActionLabel>
-              View applications ({issue.requestsData.length})
-            </ActionLabel>
-          </Item>
-
-        </React.Fragment>
-      )}
-      {workStatus === 'review-work' && (
-        <React.Fragment>
-          <Item onClick={() => reviewWork(issue)}>
-            <IconView color={`${theme.surfaceContent}`} />
-            <ActionLabel>
-              View work
-            </ActionLabel>
-          </Item>
-          <Item onClick={() => reviewApplication(issue)}>
-            <IconView color={`${theme.surfaceIcon}`} />
-            <ActionLabel>
-              View applications ({issue.requestsData.length})
-            </ActionLabel>
-          </Item>
-        </React.Fragment>
-      )}
-      {workStatus === 'funded' && (
-        <React.Fragment>
-          <Item onClick={() => requestAssignment(issue)}>
-            <IconFile color={`${theme.surfaceContent}`} />
-            <ActionLabel>
-              Submit application
-            </ActionLabel>
-          </Item>
-          {/* Disabled since the contract doesn't allow updating the amount */}
-          {/* <Item bordered onClick={() => editBounty([issue])}> */}
-          {/*   Update Funding */}
-          {/* </Item> */}
-        </React.Fragment>
-      )}
-      {workStatus === 'review-applicants' && (
-        <React.Fragment>
-          {!pastDeadline && (
-            <Item onClick={() => requestAssignment(issue)}>
-              <IconFile color={`${theme.surfaceContent}`} />
-              <ActionLabel>
-                Submit application
-              </ActionLabel>
-            </Item>
-          )}
-          <Item onClick={() => reviewApplication(issue)}>
-            <IconView color={`${theme.surfaceContent}`} />
-            <ActionLabel>
-              View applications ({issue.requestsData.length})
-            </ActionLabel>
-          </Item>
-          {/* Disabled since the contract doesn't allow updating the amount */}
-          {/*<Item bordered onClick={() => editBounty([issue])}>*/}
-          {/*  <IconCoin color={`${theme.surfaceContent}`} />*/}
-          {/*  <ActionLabel>*/}
-          {/*    Update Funding*/}
-          {/*  </ActionLabel>*/}
-          {/*</Item>*/}
-        </React.Fragment>
-      )}
-      {workStatus === 'fulfilled' && (
-        <React.Fragment>
-          <Item onClick={() => reviewWork(issue)}>
-            <IconView color={`${theme.surfaceIcon}`} />
-            <ActionLabel>
-              View work
-            </ActionLabel>
-          </Item>
-          <Item onClick={() => reviewApplication(issue)}>
-            <IconView color={`${theme.surfaceIcon}`} />
-            <ActionLabel>
-              View applications ({issue.requestsData.length})
-            </ActionLabel>
-          </Item>
-        </React.Fragment>
-      )}
-    </React.Fragment>
+  switch(workStatus) {
+  case undefined: return (
+    <MenuItem panel={allocateBounty} panelParams={[issue]} caption="Fund issue" Icon={IconCoin} />
   )
+  case 'funded': return openSubmission ? (
+    <MenuItem panel={submitWork} panelParams={issue} caption="Submit work" Icon={IconFile} />
+  ) : (
+    <MenuItem panel={requestAssignment} panelParams={issue} caption="Submit application" Icon={IconFile} />
+  )
+  case 'review-applicants': return (
+    <>
+      {!pastDeadline && (
+        <MenuItem panel={requestAssignment} panelParams={issue} caption="Submit application" Icon={IconFile} />
+      )}
+      <MenuItem
+        panel={reviewApplication}
+        panelParams={{ issue }}
+        caption={pluralize('View application', issue.requestsData.length)}
+        Icon={IconView}
+      />
+    </>
+  )
+  case 'in-progress': return (
+    <>
+      {(connectedAccount === assignee) && (
+        <MenuItem panel={submitWork} panelParams={issue} caption="Submit work" Icon={IconFile} />
+      )}
+      <MenuItem
+        panel={reviewApplication}
+        panelParams={{ issue }}
+        caption={pluralize('View application', issue.requestsData.length)}
+        Icon={IconView}
+      />
+    </>
+  )
+  case 'review-work': return (
+    <>
+      {openSubmission && (
+        <MenuItem panel={submitWork} panelParams={issue} caption="Submit work" Icon={IconFile} />
+      )}
+      <MenuItem
+        panel={reviewWork}
+        panelParams={{ issue }}
+        caption={pluralize('View work submission', issue.workSubmissions.length)}
+        Icon={IconView}
+      />
+      {!openSubmission && (
+        <MenuItem
+          panel={reviewApplication}
+          panelParams={{ issue }}
+          caption={pluralize('View application', issue.requestsData.length)}
+          Icon={IconView}
+        />
+      )}
+    </>
+  )
+  case 'fulfilled': return (
+    <>
+      <MenuItem
+        panel={reviewWork}
+        panelParams={{ issue }}
+        caption={pluralize('View work submission', issue.workSubmissions.length)}
+        Icon={IconView}
+      />
+      {!openSubmission && (
+        <MenuItem
+          panel={reviewApplication}
+          panelParams={{ issue }}
+          caption={pluralize('View application', issue.requestsData.length)}
+          Icon={IconView}
+        />
+      )}
+    </>
+  )
+  }
 }
 
 const Item = styled(ContextMenuItem)`

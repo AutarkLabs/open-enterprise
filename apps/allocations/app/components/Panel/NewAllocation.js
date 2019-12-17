@@ -1,6 +1,17 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import { DropDown, GU, IconClose, Text, TextInput, font, theme } from '@aragon/ui'
+import { useAragonApi } from '../../api-react'
+import {
+  DropDown,
+  Field,
+  GU,
+  Help,
+  IconClose,
+  Text,
+  TextInput,
+  font,
+  theme
+} from '@aragon/ui'
 import web3Utils from 'web3-utils'
 import styled from 'styled-components'
 import { BigNumber } from 'bignumber.js'
@@ -8,8 +19,9 @@ import { BigNumber } from 'bignumber.js'
 import { addressesEqual } from '../../../../../shared/lib/web3-utils'
 import { RecipientsInput } from '../../../../../shared/ui'
 import { MIN_AMOUNT } from '../../utils/constants'
-import { displayCurrency, isStringEmpty } from '../../utils/helpers'
-import { DescriptionInput, Form, FormField } from '../Form'
+import { usePanel } from '../../context/Panel'
+import { displayCurrency, formatDate, isStringEmpty } from '../../utils/helpers'
+import { DescriptionInput, Form } from '../Form'
 import CurrencyBox from '../Form/Field/CurrencyBox'
 
 const INITIAL_STATE = {
@@ -45,10 +57,11 @@ const recipientsDuplicate = (recipients) => {
 
 class NewAllocation extends React.Component {
   static propTypes = {
-    budgetId: PropTypes.string.isRequired,
+    budgetId: PropTypes.string,
     onSubmitAllocation: PropTypes.func.isRequired,
     budgets: PropTypes.arrayOf(PropTypes.object).isRequired,
     balances: PropTypes.arrayOf(PropTypes.object).isRequired,
+    periodEndDate: PropTypes.string.isRequired,
   }
 
   constructor(props) {
@@ -60,7 +73,7 @@ class NewAllocation extends React.Component {
     const recipientId = Date.now()
     this.state.recipients[recipientId] = ''
     this.state.recipientsValid[recipientId] = false
-    if (budgetId !== undefined) {
+    if (budgetId) {
       const budgetValue = budgets.find(b => b.id === budgetId)
       this.state.budgetValue = budgetValue
       this.state.budgetEmpty = false
@@ -146,11 +159,10 @@ class NewAllocation extends React.Component {
       addresses: Object.values(recipients),
     }
     this.props.onSubmitAllocation(allocation)
-    this.setState(INITIAL_STATE)
   }
 
   render() {
-    const { balances, budgets } = this.props
+    const { balances, budgets, periodEndDate } = this.props
     const {
       budgetValue,
       descriptionValue,
@@ -166,90 +178,101 @@ class NewAllocation extends React.Component {
       tokenValue,
     } = this.state
 
-    const remainingBudget = displayCurrency(BigNumber(budgetValue.remaining))
-    const inVault = displayCurrency(balances.find(b => addressesEqual(b.address, tokenValue.address)).amount)
+    const remainingBudget = tokenValue.address &&
+      BigNumber(budgetValue.remaining)
+    const inVault = tokenValue.address &&
+      balances.find(b => addressesEqual(b.address, tokenValue.address)).amount
+    const vaultLow = inVault.lt(remainingBudget)
 
     const budgetDropDown = (
-      <FormField
+      <Field
         required
         label="Budget"
-        input={
-          <DropDown
-            name="budget"
-            items={budgets.map(b => b.name)}
-            selected={budgets.indexOf(budgetValue)}
-            onChange={i => this.changeField({ target: {
-              name: 'budget',
-              value: budgets[i],
-            } })}
-            wide={true}
-          />
-        }
-      />
+      >
+        <DropDown
+          name="budget"
+          items={budgets.map(b => b.name)}
+          selected={budgets.indexOf(budgetValue)}
+          onChange={i => this.changeField({ target: {
+            name: 'budget',
+            value: budgets[i],
+          } })}
+          wide={true}
+        />
+      </Field>
     )
 
     const descriptionField = (
-      <FormField
+      <Field
         required
         label="Description"
-        input={
-          <DescriptionInput
-            name="description"
-            onChange={this.changeField}
-            value={descriptionValue}
-          />
-        }
-      />
+      >
+        <DescriptionInput
+          name="description"
+          onChange={this.changeField}
+          value={descriptionValue}
+        />
+      </Field>
     )
 
     const amountField = (
-      <FormField
+      <Field
         required
         label="Amount"
-        input={
+      >
+        <div css={`
+          display: flex;
+          flex-direction: column-reverse;
+          align-items: flex-end;
+          color: ${theme.textSecondary};
+          ${font({ size: 'small' })}
+        `}>
           <div css={`
             display: flex;
-            flex-direction: column-reverse;
-            align-items: flex-end;
-            color: ${theme.textSecondary};
-            ${font({ size: 'small' })}
+            line-height: 18px;
+            vertical-align: middle;
           `}>
-            <Text>
-              Available in Vault: {inVault} {tokenValue.symbol}
+            <Text css='margin-right: 6px'>
+              Available funds:{' '}
+              {displayCurrency(vaultLow ? inVault : remainingBudget)}{' '}
+              {tokenValue.symbol}
             </Text>
-            <Text>
-              Available Budget: {remainingBudget} {tokenValue.symbol}
-            </Text>
-            <InputGroup css={`margin-bottom: ${GU}px; width: 100%`}>
-              <TextInput
-                name="amount"
-                type="number"
-                min={MIN_AMOUNT}
-                step="any"
-                value={amountValue}
-                onChange={this.changeField}
-                wide={true}
-                css={{ borderRadius: '4px 0px 0px 4px' }}
-              />
-              <CurrencyBox>{tokenValue.symbol}</CurrencyBox>
-            </InputGroup>
+            <Help hint="Available funds">
+              There’s {displayCurrency(remainingBudget)} {tokenValue.symbol}
+              {' '}left in this budget until {periodEndDate}{vaultLow ? `, but
+              only ${displayCurrency(inVault)} ${tokenValue.symbol} left in the
+              organization’s vault` : '' }.
+            </Help>
           </div>
-        }
-      />
+
+          <InputGroup css={`margin-bottom: ${GU}px; width: 100%`}>
+            <TextInput
+              name="amount"
+              type="number"
+              min={MIN_AMOUNT}
+              step="any"
+              value={amountValue}
+              onChange={this.changeField}
+              wide={true}
+              css={{ borderRadius: '4px 0px 0px 4px' }}
+            />
+            <CurrencyBox>{tokenValue.symbol}</CurrencyBox>
+          </InputGroup>
+        </div>
+      </Field>
     )
 
     const userRecipientsField = (
-      <FormField
+      <Field
         label="Recipients"
         required
-        input={
-          <RecipientsInput
-            recipients={recipients}
-            recipientsValid={recipientsValid}
-            onChange={this.changeField}
-          />
-        }
-      />
+      >
+        <RecipientsInput
+          recipients={recipients}
+          recipientsValid={recipientsValid}
+          onChange={this.changeField}
+        />
+      </Field>
     )
 
     const errorBlocks = Object.keys(errorMessages).map((e, i) => (
@@ -273,13 +296,59 @@ class NewAllocation extends React.Component {
           errors={errorBlocks}
         >
           {budgetDropDown}
-          {descriptionField}
-          {amountField}
-          {userRecipientsField}
+          {tokenValue.symbol && (
+            <>
+              {descriptionField}
+              {amountField}
+              {userRecipientsField}
+            </>
+          )}
         </Form>
       </div>
     )
   }
+}
+
+const NewAllocationWrap = props => {
+  const { api, appState } = useAragonApi()
+  const { balances, period } = appState
+  const budgets = appState.budgets.filter(b => b.active)
+  const { setPanel } = usePanel()
+
+  const onSubmitAllocation = ({
+    addresses,
+    description,
+    budgetId,
+    period = 0,
+    balance,
+  }) => {
+    const emptyIntArray = new Array(addresses.length).fill(0)
+    api.setDistribution(
+      addresses,
+      emptyIntArray, // unused
+      emptyIntArray, // unused
+      '', // unused
+      description,
+      emptyIntArray, // unused
+      emptyIntArray, // unused
+      budgetId, // account or allocation id...budgetId
+      '1', // recurrences, 1 for now
+      Math.floor(new Date().getTime()/1000), // startTime, now for now
+      period,
+      balance, // amount
+    ).toPromise()
+    setPanel(null)
+  }
+
+  return (
+    <NewAllocation
+      balances={balances}
+      budgets={budgets}
+      onSubmitAllocation={onSubmitAllocation}
+      periodEndDate={formatDate({ date: period.endDate, short: true })}
+      {...props}
+    />
+  )
 }
 
 const ErrorMessage = ({ hasError, type }) => {
@@ -313,4 +382,4 @@ const ErrorText = styled.div`
 `
 
 // eslint-disable-next-line import/no-unused-modules
-export default NewAllocation
+export default NewAllocationWrap
