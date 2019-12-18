@@ -17,7 +17,7 @@ import {
   BASE_CARD_WIDTH,
   CARD_STRETCH_BREAKPOINT,
 } from '../../utils/responsive'
-import { useAragonApi } from '../../api-react'
+import { useAragonApi, usePath } from '../../api-react'
 import { toHex } from 'web3-utils'
 
 const Project = ({
@@ -26,11 +26,11 @@ const Project = ({
   description,
   commits,
   url,
-  changeActiveIndex,
 }) => {
   const {
     api: { removeRepo },
   } = useAragonApi()
+  const [ , requestPath ] = usePath()
 
   const theme = useTheme()
   const { width } = useLayout()
@@ -44,10 +44,7 @@ const Project = ({
 
   const clickContext = e => {
     e.stopPropagation()
-    changeActiveIndex({
-      tabIndex: 1,
-      tabData: { filterIssuesByRepoId: repoId },
-    })
+    requestPath(`/issues?repoId=${repoId}`)
   }
 
   return (
@@ -118,7 +115,6 @@ Project.propTypes = {
   commits: PropTypes.number.isRequired,
   url: PropTypes.string.isRequired,
   contributors: PropTypes.array,
-  changeActiveIndex: PropTypes.func.isRequired,
 }
 
 const StyledCard = styled(Card)`
@@ -157,8 +153,11 @@ const CardTitle = styled(Text.Block).attrs({
   margin-bottom: 5px;
   text-align: center;
   display: block;
+  /* stylelint-disable-next-line */
   display: -webkit-box;
+  /* stylelint-disable-next-line */
   -webkit-line-clamp: 2;
+  /* stylelint-disable-next-line */
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -168,8 +167,11 @@ const CardDescriptionText = styled(Text.Block).attrs({
   size: 'large',
 })`
   display: block;
+  /* stylelint-disable-next-line */
   display: -webkit-box;
+  /* stylelint-disable-next-line */
   -webkit-line-clamp: 4;
+  /* stylelint-disable-next-line */
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
