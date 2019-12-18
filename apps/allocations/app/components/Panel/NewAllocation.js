@@ -269,7 +269,7 @@ class NewAllocation extends React.Component {
       tokenValue
     } = this.state
     const allocation = {
-      budgetId: this.props.budgetId,
+      budgetId: budgetValue.id,
       budgetName: budgetValue,
       balance: BigNumber(amountValue).times(BigNumber(10).pow(tokenValue.decimals)).toString(10),
       description: descriptionValue,
