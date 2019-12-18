@@ -14,6 +14,7 @@ git diff --quiet HEAD~ HEAD -- $PWD/app $PWD/../../shared/identity $PWD/../../sh
 
 if [ $? == "1" ]
 then
+  npm run compile # remove after CLI is bumped to v6 or higher
   aragon apm publish minor --files dist/ --environment continuous-deployment --apm.ipfs.rpc https://ipfs.autark.xyz:5001 --ipfs-check false --propagate-content false --skip-confirmation
   exit $?
 else
