@@ -5,13 +5,14 @@ import BigNumber from 'bignumber.js'
 import { useAragonApi } from '../../../api-react'
 import { issueShape } from '../../../utils/shapes.js'
 import { IconOpen, IconCollapse } from '../../../assets'
-import { Box, DropDown, GU, useTheme } from '@aragon/ui'
+import { Box, DropDown, GU, Help, useTheme } from '@aragon/ui'
 import { FormField, FieldTitle, DateInput } from '../../Form'
 import {
   AmountInput,
   HorizontalInputGroup,
   HoursInput,
   IssueTitleCompact,
+  NumericInput,
   TokenInput,
 } from './styled'
 
@@ -20,11 +21,12 @@ const DetailsArrow = styled.div`
   margin-right: 12px;
 `
 
-const Deadline = styled.div`
+const Details = styled.div`
   grid-area: deadline;
   background: ${p => p.theme.background};
   border-top: 1px solid ${p => p.theme.border};
-  padding: 0 ${2 * GU}px;
+  padding: ${2 * GU}px;
+  padding-bottom: 0;
   display: ${p => p.detailsOpen ? 'block' : 'none'};
 `
 
@@ -62,7 +64,7 @@ const EditBounty = ({
               grid-template-rows: auto;
               grid-template-areas:
                 "hours exp"
-                "deadline deadline";
+                ${detailsOpen ? '"deadline deadline"' : ''};
               grid-gap: 12px;
               align-items: stretch;
             `}>
@@ -113,19 +115,44 @@ const EditBounty = ({
           />
         </div>
 
-        <Deadline theme={theme} detailsOpen={detailsOpen}>
+        <Details theme={theme} detailsOpen={detailsOpen}>
+          <FormField
+            label="Number of Bounties"
+            required
+            help={
+              <>
+              &nbsp;<Help hint="The work terms">
+              By default, the issues in this funding proposal will not require
+              applications to work on a bounty before work is submitted.
+              To require applications, click on the switch to enable this term.
+              </Help>
+              </>
+            }
+            input={
+              <NumericInput
+                step="1"
+                min="1"
+                type="number"
+                name="bounties"
+                value={bounty.bounties}
+                onChange={e => updateBounty({ bounties: e.target.value })}
+                wide
+              />
+            }
+          />
           <FormField
             label="Deadline"
             input={
               <DateInput
-                name='deadline'
+                name="deadline"
                 value={bounty.deadline}
                 onChange={deadline => updateBounty({ deadline })}
-                width="100%"
+                wide
               />
             }
+            css="margin-bottom: 0"
           />
-        </Deadline>
+        </Details>
       </div>
     </Box>
   )

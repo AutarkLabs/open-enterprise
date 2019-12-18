@@ -4,7 +4,7 @@ import { GU, Text, useTheme, SidePanelSeparator } from '@aragon/ui'
 
 import { FieldTitle } from '.'
 
-const FormField = ({ input, label, required, separator }) => {
+const FormField = ({ input, label, required, separator, help }) => {
   const theme = useTheme()
   // TODO: Currently it will only work with 1 required child
   // const isRequired = React.Children.toArray(children).some(
@@ -20,11 +20,12 @@ const FormField = ({ input, label, required, separator }) => {
             size="xsmall"
             color={`${theme.accent}`}
             title="Required"
-            css={`margin-left: ${GU}px}`}
+            css={`margin-left: ${.5 * GU}px}`}
           >
             *
           </Text>
         )}
+        {help && help}
       </FieldTitle>
       {input}
       {separator && <SidePanelSeparator css="margin-top: 1rem" />}
@@ -34,9 +35,10 @@ const FormField = ({ input, label, required, separator }) => {
 
 FormField.propTypes = {
   children: PropTypes.node,
+  help: PropTypes.node,
+  input: PropTypes.element,
   label: PropTypes.string,
   required: PropTypes.bool,
-  input: PropTypes.element,
   separator: PropTypes.bool,
 }
 

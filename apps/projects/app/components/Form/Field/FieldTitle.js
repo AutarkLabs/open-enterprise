@@ -20,6 +20,8 @@ const Title = styled(Text.Block)`
   font-weight: bold;
   color: ${props => props.color};
   margin-bottom: ${GU}px;
+  display: flex;
+  align-items: center;
 `
 
 export default FieldTitle
