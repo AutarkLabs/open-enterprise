@@ -20,8 +20,7 @@ import { addressesEqual } from '../../../../../shared/lib/web3-utils'
 import { RecipientsInput } from '../../../../../shared/ui'
 import { MIN_AMOUNT } from '../../utils/constants'
 import { usePanel } from '../../context/Panel'
-import { formatDate, isStringEmpty } from '../../utils/helpers'
-import { displayCurrency } from '../../../../../shared/ui/helpers'
+import { displayCurrency, formatDate, isStringEmpty } from '../../utils/helpers'
 import { DescriptionInput, Form } from '../Form'
 import CurrencyBox from '../Form/Field/CurrencyBox'
 
@@ -293,103 +292,6 @@ class NewAllocation extends React.Component {
       recipientsDuplicate,
       tokenValue,
     } = this.state
-
-    const remainingBudget = tokenValue.address &&
-      BigNumber(budgetValue.remaining)
-    const inVault = tokenValue.address &&
-      balances.find(b => addressesEqual(b.address, tokenValue.address)).amount
-    const vaultLow = inVault ? inVault.lt(remainingBudget) : true
-
-    const budgetDropDown = (
-      <Field
-        required
-        label="Budget"
-      >
-        <DropDown
-          name="budget"
-          items={budgets.map(b => b.name)}
-          selected={budgets.indexOf(budgetValue)}
-          onChange={i => this.changeField({ target: {
-            name: 'budget',
-            value: budgets[i],
-          } })}
-          wide={true}
-        />
-      </Field>
-    )
-
-    const descriptionField = (
-      <Field
-        required
-        label="Description"
-      >
-        <DescriptionInput
-          name="description"
-          onChange={this.changeField}
-          value={descriptionValue}
-        />
-      </Field>
-    )
-
-    const amountField = (
-      <Field
-        required
-        label="Amount"
-      >
-        <div css={`
-          display: flex;
-          flex-direction: column-reverse;
-          align-items: flex-end;
-          color: ${theme.textSecondary};
-          ${font({ size: 'small' })}
-        `}>
-          <div css={`
-            display: flex;
-            line-height: 18px;
-            vertical-align: middle;
-          `}>
-            <Text css='margin-right: 6px'>
-              Available funds:{' '}
-              {displayCurrency(vaultLow ? inVault : remainingBudget)}{' '}
-              {tokenValue.symbol}
-            </Text>
-            <Help hint="Available funds">
-              There’s {displayCurrency(remainingBudget)} {tokenValue.symbol}
-              {' '}left in this budget until {periodEndDate}{vaultLow ? `, but
-              only ${displayCurrency(inVault)} ${tokenValue.symbol} left in the
-              organization’s vault` : '' }.
-            </Help>
-          </div>
-
-          <InputGroup css={`margin-bottom: ${GU}px; width: 100%`}>
-            <TextInput
-              name="amount"
-              type="number"
-              min={MIN_AMOUNT}
-              step="any"
-              value={amountValue}
-              onChange={this.changeField}
-              wide={true}
-              css={{ borderRadius: '4px 0px 0px 4px' }}
-            />
-            <CurrencyBox>{tokenValue.symbol}</CurrencyBox>
-          </InputGroup>
-        </div>
-      </Field>
-    )
-
-    const userRecipientsField = (
-      <Field
-        label="Recipients"
-        required
-      >
-        <RecipientsInput
-          recipients={recipients}
-          recipientsValid={recipientsValid}
-          onChange={this.changeField}
-        />
-      </Field>
-    )
 
     const errorBlocks = Object.keys(errorMessages).map((e, i) => (
       <div key={i}>

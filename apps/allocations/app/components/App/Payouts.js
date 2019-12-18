@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
+import { BigNumber } from 'bignumber.js'
 
 import {
   ContextMenu,
@@ -15,8 +16,7 @@ import {
 } from '@aragon/ui'
 
 import { addressesEqual } from '../../../../../shared/lib/web3-utils'
-import { sortByDateKey } from '../../utils/helpers'
-import { displayCurrency } from '../../../../../shared/ui/helpers'
+import { displayCurrency, sortByDateKey } from '../../utils/helpers'
 import {
   AmountBadge,
   NarrowList,
@@ -99,7 +99,7 @@ const PayoutsNarrow = ({ executePayout, data, tokens }) => (
         <div css="display: flex; flex-wrap: nowrap; align-items: center">
           <div css="margin-right: 10px">
             <AmountBadge>
-              {displayCurrency(payout.amount)}{' '}{translateToken(payout.token, tokens)}
+              {displayCurrency(BigNumber(payout.amount))}{' '}{translateToken(payout.token, tokens)}
             </AmountBadge>
           </div>
           <div>

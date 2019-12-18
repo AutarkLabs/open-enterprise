@@ -15,7 +15,7 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
 import { STATUSES } from '../../utils/constants'
-import { displayCurrency } from '../../../../../shared/ui/helpers'
+import { displayCurrency } from '../../utils/helpers'
 import { addressesEqual } from '../../../../../shared/lib/web3-utils'
 
 const AllocationsHistory = ({ allocations, skipBudgetColumn }) => {
@@ -57,8 +57,7 @@ const AllocationsHistory = ({ allocations, skipBudgetColumn }) => {
         description,
         status,
         amount,
-        token,
-        tokenDecimal
+        token
       }, index) => {
         const entry = [
           new Date(Number(date)).toLocaleDateString(),
@@ -67,7 +66,7 @@ const AllocationsHistory = ({ allocations, skipBudgetColumn }) => {
           description,
           <Status key={index} code={status} />,
           <Amount key={index} theme={theme} >
-            { displayCurrency(-amount, tokenDecimal) } { getTokenSymbol(token) }
+            { displayCurrency(BigNumber(-amount)) } { getTokenSymbol(token) }
           </Amount>
         ]
         if (!skipBudgetColumn) {
@@ -79,7 +78,7 @@ const AllocationsHistory = ({ allocations, skipBudgetColumn }) => {
         }
         return entry
       }}
-      renderEntryExpansion={({ recipients, amount, token, tokenDecimal }) => {
+      renderEntryExpansion={({ recipients, amount, token }) => {
         const totalSupports = recipients.reduce((total, recipient) => {
           return total + Number(recipient.supports)
         }, 0)
@@ -101,7 +100,7 @@ const AllocationsHistory = ({ allocations, skipBudgetColumn }) => {
                 />
               </RecipientProgress>
               <RecipientAmount theme={theme}>
-                { displayCurrency(BigNumber(amount).times(allocated), tokenDecimal) } {' '}
+                { displayCurrency(BigNumber(amount).times(allocated)) } {' '}
                 {getTokenSymbol(token)} {' • '}
                 { allocated.times(100).dp(0).toNumber() }{'%'}
               </RecipientAmount>

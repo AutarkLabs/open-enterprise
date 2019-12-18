@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import BigNumber from 'bignumber.js'
-import { displayCurrency } from '../../../../../shared/ui/helpers'
+import { displayCurrency } from '../../utils/helpers'
 import * as types from '../../utils/prop-types'
 
 import usePathHelpers from '../../hooks/usePathHelpers'
@@ -34,7 +34,7 @@ const Budget = ({ budget }) => {
             color: theme.content,
             paddingTop: '8px',
           }}>
-            {displayCurrency(tokensSpent, token.decimals)}
+            {displayCurrency(tokensSpent)}
             <Text>{' ' + token.symbol + ' utilized'}</Text>
           </StatsValueSmall>
         </React.Fragment>
@@ -60,7 +60,7 @@ const Wrapper = ({ budget, children, theme }) => {
           </StatsContainer>
         </CardTop>
         <CardBottom theme={theme}>
-          <Text>{displayCurrency(amount, token.decimals) + ' ' + token.symbol + ' / PERIOD'}</Text>
+          <Text>{displayCurrency(BigNumber(amount)) + ' ' + token.symbol + ' / PERIOD'}</Text>
           {active ? (
             <Status
               color={theme.positive}
