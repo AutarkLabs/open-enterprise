@@ -69,14 +69,17 @@ jobs:
         -in shared/deployments/rinkeby_key.json.enc -out $HOME/.aragon/rinkeby_key.json -d
       - ls $HOME/.aragon
       install:
-        - travis_wait npm i -g @aragon/cli@6.3.3
+        - travis_wait npm i -g @aragon/cli@5.6.2
         - npm run bootstrap
       script: npm run publish:cd
 
 
 notifications:
   webhooks: https://coveralls.io/webhook
-  email: false
+  email:
+    recipients:
+      - jobs@autark.xyz
+    if: branch = dev
 
 # Only build pushes to dev. All pull requests still build
 branches:
