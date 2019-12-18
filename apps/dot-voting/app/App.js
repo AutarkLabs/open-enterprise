@@ -2,10 +2,8 @@ import React, { useCallback, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { EmptyStateCard, GU, Header, LoadingRing, Main, SyncIndicator } from '@aragon/ui'
 import { useAragonApi } from './api-react'
-import { isBefore } from 'date-fns'
-import { getTotalSupport } from './utils/vote-utils'
-import { safeDiv } from './utils/math-utils'
 import { IdentityProvider } from './components/LocalIdentityBadge/IdentityManager'
+import { AppLogicProvider, useAppLogic } from './app-logic'
 import Decisions from './Decisions'
 import emptyStatePng from './assets/voting-empty-state.png'
 
@@ -14,7 +12,7 @@ const ASSETS_URL = './aragon-ui'
 const illustration = <img src={emptyStatePng} alt="" height="160" />
 
 const useVoteCloseWatcher = () => {
-  const { votes = [], voteTime = 0 } = useAragonApi().appState
+  const { votes, voteTime } = useAppLogic()
   const [ now, setNow ] = useState(new Date().getTime())
 
   useEffect(() => {
@@ -39,49 +37,37 @@ const useVoteCloseWatcher = () => {
   }, [ votes, voteTime ])
 }
 
-const Wrap = ({ children }) => (
-  <Main assetsUrl={ASSETS_URL}>
-    {children}
-  </Main>
-)
-
-Wrap.propTypes = {
-  children: PropTypes.node.isRequired,
-}
-
 const Empty = ({ isSyncing }) => (
-  <Wrap>
-    <div
-      css={`
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: -1;
-      `}
-    >
-      <EmptyStateCard
-        text={
-          isSyncing ? (
-            <div
-              css={`
-                display: grid;
-                align-items: center;
-                justify-content: center;
-                grid-template-columns: auto auto;
-                grid-gap: ${1 * GU}px;
-              `}
-            >
-              <LoadingRing />
-              <span>Syncing…</span>
-            </div>
-          ) : (
-            'After you create an allocation or issue curation, you can vote here.'
-          )}
-        illustration={illustration}
-      />
-    </div>
-  </Wrap>
+  <div
+    css={`
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: -1;
+    `}
+  >
+    <EmptyStateCard
+      text={
+        isSyncing ? (
+          <div
+            css={`
+              display: grid;
+              align-items: center;
+              justify-content: center;
+              grid-template-columns: auto auto;
+              grid-gap: ${1 * GU}px;
+            `}
+          >
+            <LoadingRing />
+            <span>Syncing…</span>
+          </div>
+        ) : (
+          'After you create an allocation or issue curation, you can vote here.'
+        )}
+      illustration={illustration}
+    />
+  </div>
 )
 
 Empty.propTypes = {
@@ -91,7 +77,7 @@ Empty.propTypes = {
 const App = () => {
   useVoteCloseWatcher()
 
-  const { api, appState = {} } = useAragonApi()
+  const { api } = useAragonApi()
 
   const handleResolveLocalIdentity = useCallback(address => {
     return api.resolveAddressIdentity(address).toPromise()
@@ -103,36 +89,27 @@ const App = () => {
       .toPromise()
   }, [api])
 
-  const { isSyncing = true, votes = [], voteTime = 0, pctBase = 0 } = appState
-
-  // TODO: move this logic to script.js so it's available app-wide by default
-  const decorateVote = useCallback(vote => {
-    const endDate = new Date(vote.data.startDate + voteTime)
-    return {
-      ...vote,
-      endDate,
-      open: isBefore(new Date(), endDate),
-      quorum: safeDiv(vote.data.minAcceptQuorum, pctBase),
-      description: vote.data.metadata,
-      totalSupport: getTotalSupport(vote.data),
-      type: vote.data.type,
-    }
-  }, [ voteTime, pctBase ])
+  const { isSyncing, votes, voteTime, pctBase } = useAppLogic()
 
   if (!votes.length) return <Empty isSyncing={isSyncing}/>
 
   return (
-    <Wrap>
-      <IdentityProvider
-        onResolve={handleResolveLocalIdentity}
-        onShowLocalIdentityModal={handleShowLocalIdentityModal}>
-        <Header primary="Dot Voting" />
-        <Decisions decorateVote={decorateVote} />
-        <SyncIndicator visible={isSyncing} />
-      </IdentityProvider>
-    </Wrap>
+    <IdentityProvider
+      onResolve={handleResolveLocalIdentity}
+      onShowLocalIdentityModal={handleShowLocalIdentityModal}>
+      <Header primary="Dot Voting" />
+      <Decisions />
+      <SyncIndicator visible={isSyncing} />
+    </IdentityProvider>
   )
 }
 
+const DotVoting = () =>
+  <Main  assetsUrl={ASSETS_URL}>
+    <AppLogicProvider>
+      <App />
+    </AppLogicProvider>
+  </Main>
+
 // eslint-disable-next-line react/display-name
-export default App
+export default DotVoting

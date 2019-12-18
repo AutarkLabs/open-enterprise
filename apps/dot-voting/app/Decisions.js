@@ -1,8 +1,9 @@
-import React, { useCallback, useEffect, useState }  from 'react'
+import React, { useCallback, useEffect, useMemo, useState }  from 'react'
 import PropTypes from 'prop-types'
 import Votes from './components/Votes'
 import { isBefore } from 'date-fns'
 import { useAragonApi } from './api-react'
+import { useAppLogic } from './app-logic'
 import {
   BackButton,
   Bar,
@@ -126,26 +127,23 @@ const useFilterVotes = (votes, voteTime) => {
   }
 }
 
-const Decisions = ({ decorateVote }) => {
+const Decisions = () => {
   const { api: app, appState, connectedAccount } = useAragonApi()
-  const { votes, voteTime } = appState
-
+  const { decorateVote, selectVote, selectedVote, votes, voteTime } = useAppLogic()
   const { layoutName } = useLayout()
   const theme = useTheme()
 
-  // TODO: accomplish this with routing (put routes in App.js, not here)
-  const [ currentVoteId, setCurrentVoteId ] = useState(-1)
   const handleVote = useCallback(async (voteId, supports) => {
     await app.vote(voteId, supports).toPromise()
-    setCurrentVoteId(-1) // is this correct?
+    selectVote(-1) // is this correct?
   }, [app])
   const handleBackClick = useCallback(() => {
-    setCurrentVoteId(-1)
+    selectVote(-1)
   }, [])
   const handleVoteOpen = useCallback(voteId => {
     const exists = votes.some(vote => voteId === vote.voteId)
     if (!exists) return
-    setCurrentVoteId(voteId)
+    selectVote(voteId)
   }, [votes])
 
   const {
@@ -160,10 +158,10 @@ const Decisions = ({ decorateVote }) => {
   } = useFilterVotes(votes, voteTime)
 
   const currentVote =
-      currentVoteId === -1
+      selectedVote === '-1'
         ? null
         : decorateVote(
-          filteredVotes.find(vote => vote.voteId === currentVoteId)
+          filteredVotes.find(vote => vote.voteId === selectedVote)
         )
 
   if (currentVote) {
@@ -256,10 +254,6 @@ const Decisions = ({ decorateVote }) => {
       }
     </React.Fragment>
   )
-}
-
-Decisions.propTypes = {
-  decorateVote: PropTypes.func.isRequired,
 }
 
 export default Decisions
