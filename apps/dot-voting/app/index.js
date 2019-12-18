@@ -10,13 +10,6 @@ if (process.env.NODE_ENV !== 'production') {
   axe(React, ReactDOM, 1000)
 }
 
-import { AragonApi } from './api-react'
-import appStateReducer from './app-state-reducer'
 import App from './App'
 
-ReactDOM.render(
-  <AragonApi reducer={appStateReducer}>
-    <App />
-  </AragonApi>,
-  document.querySelector('#dot-voting')
-)
+ReactDOM.render(<App />, document.querySelector('#dot-voting'))

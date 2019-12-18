@@ -3,7 +3,6 @@ import { usePath } from '../api-react'
 
 export default function usePathHelpers() {
   const [ path, requestPath ] = usePath()
-  const [ firstTry, setFirstTry ] = React.useState(true)
 
   // accepts a pattern like '/budgets/:id', where ':id' is a named parameter
   // redirects to '/' if the current path doesn't match at all
@@ -18,10 +17,7 @@ export default function usePathHelpers() {
     })
 
     const matchData = path.match(pattern)
-    if (!matchData) {
-      requestPath('/')
-      return {}
-    }
+    if (!matchData) return {}
 
     const groups = namedParameters.reduce(
       (acc, namedParameter, index) => {
@@ -34,22 +30,6 @@ export default function usePathHelpers() {
     return groups
   }, [ path, requestPath ])
 
-  // if this page is the first page loaded for the user,
-  // we may still have incomplete state from aragonAPI;
-  // let's give it a second before redirecting
-  const patientlyRequestPath = React.useCallback(path => {
-    if (firstTry) {
-      setTimeout(() => setFirstTry(false), 1000)
-    } else {
-      requestPath(path)
-    }
-  }, [ firstTry, path, requestPath ])
-
-  return {
-    path,
-    parsePath,
-    patientlyRequestPath,
-    requestPath,
-  }
+  return { parsePath, requestPath }
 }
 

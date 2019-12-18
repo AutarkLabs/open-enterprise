@@ -5,7 +5,7 @@ import BigNumber from 'bignumber.js'
 import { displayCurrency } from '../../../../../shared/ui/helpers'
 import * as types from '../../utils/prop-types'
 
-import { usePath } from '../../api-react'
+import usePathHelpers from '../../hooks/usePathHelpers'
 import {
   Card,
   IconCheck,
@@ -48,7 +48,7 @@ Budget.propTypes = {
 }
 
 const Wrapper = ({ budget, children, theme }) => {
-  const [ , requestPath ] = usePath()
+  const { requestPath } = usePathHelpers()
   const { active, amount, id, name, token } = budget
   return (
     <Link onClick={() => requestPath(`/budgets/${id}`)}>
@@ -135,11 +135,6 @@ const CardBottom = styled.div`
   vertical-align: middle;
   color: ${({ theme }) => theme.contentSecondary};
   border-top: 1px solid ${({ theme }) => theme.border};
-`
-
-const MenuContainer = styled.div`
-  align-self: flex-end;
-  align-items: center;
 `
 
 const CardTitle = styled(Text.Block).attrs({

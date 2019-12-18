@@ -122,7 +122,7 @@ const Issue = ({ isSelected, onClick, onSelect, ...issue }) => {
         <IssueMain>
           <div>
             <a
-              href={`#${number}`}
+              href={`#${issue.id}`}
               css="text-decoration: none"
               onClick={e => {
                 e.preventDefault()
