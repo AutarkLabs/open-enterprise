@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { Button, IconRemove, theme, unselectable } from '@aragon/ui'
+import { Button, IconPlus, IconRemove, theme, unselectable } from '@aragon/ui'
 
 import LocalIdentitiesAutoComplete from './LocalIdentitiesAutoComplete'
 
@@ -61,22 +61,21 @@ const RecipientsInput = ({
             </StyledRecipient>
           ))}
       </div>
-      <StyledButton
-        compact
-        mode="secondary"
+      <Button
+        icon={
+          <IconPlus
+            css={`
+              color: ${theme.accent};
+            `}
+          />
+        }
+        label='Add more'
+        title='Click to add'
         onClick={addRecipient}
-        title={'Click to add'}
-      >
-        + Add another
-      </StyledButton>
+      />
     </div>
   )
 }
-
-const StyledButton = styled(Button)`
-  font-size: 15px;
-  cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
-`
 
 RecipientsInput.propTypes = {
   recipients: PropTypes.object.isRequired,

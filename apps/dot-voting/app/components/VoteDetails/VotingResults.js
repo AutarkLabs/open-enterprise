@@ -39,7 +39,7 @@ const VotingResults = ({ vote, voteWeights, decimals }) => {
           displayYouBadge={true}
         />
       </div>
-      {!vote.open &&
+      {!vote.open && vote.data.executable &&
         getVoteStatus(vote, globalMinQuorum) === VOTE_STATUS_SUCCESSFUL && (
         <VoteEnact voteId={vote.voteId} />
       )}

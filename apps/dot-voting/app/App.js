@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
-import { EmptyStateCard, GU, Header, LoadingRing, Main, SyncIndicator } from '@aragon/ui'
+import { Button, EmptyStateCard, GU, Header, IconPlus, LoadingRing, Main, SidePanel, SyncIndicator } from '@aragon/ui'
 import { useAragonApi } from './api-react'
 import { IdentityProvider } from './components/LocalIdentityBadge/IdentityManager'
 import { AppLogicProvider, useAppLogic } from './app-logic'
+import { NewVote } from './components/Panels'
 import Decisions from './Decisions'
 import emptyStatePng from './assets/voting-empty-state.png'
 
@@ -37,7 +38,7 @@ const useVoteCloseWatcher = () => {
   }, [ votes, voteTime ])
 }
 
-const Empty = ({ isSyncing }) => (
+const Empty = ({ isSyncing, onClick }) => (
   <div
     css={`
       position: fixed;
@@ -63,8 +64,9 @@ const Empty = ({ isSyncing }) => (
             <span>Syncing…</span>
           </div>
         ) : (
-          'After you create an allocation or issue curation, you can vote here.'
+          'No dot votes here'
         )}
+      action={<Button label="New dot vote" onClick={onClick} />}
       illustration={illustration}
     />
   </div>
@@ -72,12 +74,16 @@ const Empty = ({ isSyncing }) => (
 
 Empty.propTypes = {
   isSyncing: PropTypes.bool.isRequired,
+  onClick: PropTypes.func.isRequired,
 }
 
 const App = () => {
   useVoteCloseWatcher()
 
   const { api } = useAragonApi()
+  const [ panelOpen, setPanelOpen ] = useState(false)
+  const newVote = () => setPanelOpen(true)
+  const closePanel = () => setPanelOpen(false)
 
   const handleResolveLocalIdentity = useCallback(address => {
     return api.resolveAddressIdentity(address).toPromise()
@@ -89,18 +95,33 @@ const App = () => {
       .toPromise()
   }, [api])
 
-  const { isSyncing, votes, voteTime, pctBase } = useAppLogic()
-
-  if (!votes.length) return <Empty isSyncing={isSyncing}/>
+  const { isSyncing, votes } = useAppLogic()
 
   return (
     <IdentityProvider
       onResolve={handleResolveLocalIdentity}
-      onShowLocalIdentityModal={handleShowLocalIdentityModal}
-    >
-      <Header primary="Dot Voting" />
-      <Decisions />
-      <SyncIndicator visible={isSyncing} />
+      onShowLocalIdentityModal={handleShowLocalIdentityModal}>
+      {!votes.length ? (
+        <Empty isSyncing={isSyncing} onClick={newVote} />
+      ) : (
+        <>
+          <Header
+            primary="Dot Voting"
+            secondary={
+              <Button
+                mode="strong"
+                icon={<IconPlus />}
+                onClick={newVote}
+                label="New dot vote"
+              />
+            } />
+          <Decisions/>
+          <SyncIndicator visible={isSyncing} />
+        </>
+      )}
+      <SidePanel title='New dot vote' opened={panelOpen} onClose={closePanel}>
+        <NewVote onClose={closePanel} />
+      </SidePanel>
     </IdentityProvider>
   )
 }
