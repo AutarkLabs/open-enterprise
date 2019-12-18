@@ -41,12 +41,12 @@ const ReviewWork = ({ issue, readOnly }) => {
   const [ feedback, setFeedback ] = useState('')
   const [ rating, setRating ] = useState(-1)
 
-  const buildReturnData = (approved) => {
+  const buildReturnData = accepted => {
     const today = new Date()
     return {
       feedback,
       rating,
-      approved,
+      accepted,
       user: githubCurrentUser,
       reviewDate: today.toISOString(),
     }
@@ -59,8 +59,8 @@ const ReviewWork = ({ issue, readOnly }) => {
 
   const canSubmit = () => !(rating > 0)
 
-  const onReviewSubmission = async (approved) => {
-    const data = buildReturnData(approved)
+  const onReviewSubmission = async accepted => {
+    const data = buildReturnData(accepted)
 
     // new IPFS data is old data plus state returned from the panel
     const ipfsData = issue.workSubmissions[issue.workSubmissions.length - 1]
@@ -78,7 +78,7 @@ const ReviewWork = ({ issue, readOnly }) => {
       toHex(issue.repoId),
       issue.number,
       issue.workSubmissions.length - 1,
-      approved,
+      accepted,
       requestIPFSHash,
       fulfillmentAmounts
     ).toPromise()
@@ -117,7 +117,7 @@ const ReviewWork = ({ issue, readOnly }) => {
         <React.Fragment>
           <FieldTitle>Submission Status</FieldTitle>
           <FieldText>
-            <Status review={work.review} />
+            <Status reviewDate={work.review.reviewDate} approved={work.review.accepted} />
           </FieldText>
 
           <FieldTitle>Feedback</FieldTitle>

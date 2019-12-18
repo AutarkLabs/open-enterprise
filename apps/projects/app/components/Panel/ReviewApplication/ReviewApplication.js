@@ -83,7 +83,7 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
     eta: (request.eta === '-') ? request.eta : (new Date(request.eta)).toLocaleDateString(),
     applicationDate: request.applicationDate
   }
-  
+
   const applicant = application.user
   const applicantName = applicant.name ? applicant.name : applicant.login
   const applicationDateDistance = formatDistance(new Date(application.applicationDate), new Date())
@@ -128,7 +128,7 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
           <FieldTitle>Application Status</FieldTitle>
 
           <FieldText>
-            <Status review={request.review} />
+            <Status reviewDate={request.review.reviewDate} approved={request.review.approved} />
           </FieldText>
 
           <FieldTitle>Feedback</FieldTitle>

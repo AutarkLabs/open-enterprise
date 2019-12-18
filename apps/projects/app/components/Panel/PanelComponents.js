@@ -71,9 +71,9 @@ const statuses = [
   { color: 'positive', text: 'Accepted' },
 ]
 
-export const Status = ({ review }) => {
+export const Status = ({ reviewDate, approved }) => {
   const theme = useTheme()
-  const status = statuses[Number(review.approved)]
+  const status = statuses[Number(approved)]
   const text = status.text
   const color = theme[status.color]
   return (
@@ -81,16 +81,14 @@ export const Status = ({ review }) => {
       <IconCheck color={color} css={`margin-top: -${0.5 * GU}px; margin-right: ${GU}px`} />
       <Text color={`${color}`}>{text}</Text>
       <Text color={`${theme.contentSecondary}`} css={`margin-left: ${GU}px`}>
-        {formatDate(new Date(review.reviewDate), 'd MMM yy, h:MM a (z)')}
+        {formatDate(new Date(reviewDate), 'd MMM yy, h:MM a (z)')}
       </Text>
     </div>
   )
 }
 Status.propTypes = {
-  review: PropTypes.shape({
-    approved: PropTypes.bool.isRequired,
-    reviewDate: PropTypes.string.isRequired,
-  }).isRequired,
+  approved: PropTypes.bool.isRequired,
+  reviewDate: PropTypes.string.isRequired,
 }
 
 export const ReviewButtons = ({ onAccept, onReject, disabled }) => (
