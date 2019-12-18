@@ -34,7 +34,7 @@ const Budget = ({ budget }) => {
             color: theme.content,
             paddingTop: '8px',
           }}>
-            {displayCurrency(tokensSpent)}
+            {displayCurrency(tokensSpent, token.decimals)}
             <Text>{' ' + token.symbol + ' utilized'}</Text>
           </StatsValueSmall>
         </React.Fragment>

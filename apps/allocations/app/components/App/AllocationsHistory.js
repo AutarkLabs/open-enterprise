@@ -57,7 +57,8 @@ const AllocationsHistory = ({ allocations, skipBudgetColumn }) => {
         description,
         status,
         amount,
-        token
+        token,
+        tokenDecimal
       }, index) => {
         const entry = [
           new Date(Number(date)).toLocaleDateString(),
@@ -66,7 +67,7 @@ const AllocationsHistory = ({ allocations, skipBudgetColumn }) => {
           description,
           <Status key={index} code={status} />,
           <Amount key={index} theme={theme} >
-            { displayCurrency(-amount) } { getTokenSymbol(token) }
+            { displayCurrency(-amount, tokenDecimal) } { getTokenSymbol(token) }
           </Amount>
         ]
         if (!skipBudgetColumn) {
@@ -78,7 +79,7 @@ const AllocationsHistory = ({ allocations, skipBudgetColumn }) => {
         }
         return entry
       }}
-      renderEntryExpansion={({ recipients, amount, token }) => {
+      renderEntryExpansion={({ recipients, amount, token, tokenDecimal }) => {
         const totalSupports = recipients.reduce((total, recipient) => {
           return total + Number(recipient.supports)
         }, 0)
@@ -100,7 +101,7 @@ const AllocationsHistory = ({ allocations, skipBudgetColumn }) => {
                 />
               </RecipientProgress>
               <RecipientAmount theme={theme}>
-                { displayCurrency(BigNumber(amount).times(allocated)) } {' '}
+                { displayCurrency(BigNumber(amount).times(allocated), tokenDecimal) } {' '}
                 {getTokenSymbol(token)} {' • '}
                 { allocated.times(100).dp(0).toNumber() }{'%'}
               </RecipientAmount>
