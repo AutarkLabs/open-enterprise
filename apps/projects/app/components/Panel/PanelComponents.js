@@ -87,8 +87,8 @@ export const Status = ({ reviewDate, approved }) => {
   )
 }
 Status.propTypes = {
-  reviewDate: PropTypes.string.isRequired,
   approved: PropTypes.bool.isRequired,
+  reviewDate: PropTypes.string.isRequired,
 }
 
 export const ReviewButtons = ({ onAccept, onReject, disabled }) => (
