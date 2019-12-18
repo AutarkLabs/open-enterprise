@@ -23,6 +23,7 @@ import usePathHelpers from '../../hooks/usePathHelpers'
 import { AllocationsHistory } from '.'
 import BudgetContextMenu from '../BudgetContextMenu'
 import { formatDate } from '../../utils/helpers'
+import * as types from '../../utils/prop-types'
 
 const percentOf = (smaller, bigger) =>
   `${BigNumber(100 * smaller / bigger).dp(1).toString()}%`
@@ -120,22 +121,15 @@ const Grid = styled.div`
   }
 `
 
-export default function BudgetDetail() {
+export default function BudgetDetail({ budget }) {
   const { appState } = useAragonApi()
-  const { parsePath, patientlyRequestPath, requestPath } = usePathHelpers()
+  const { requestPath } = usePathHelpers()
   const { newAllocation } = usePanel()
   const period = usePeriod()
   const theme = useTheme()
 
-  const { id } = parsePath('/budgets/:id')
-
-  const budget = appState.budgets.find(b => b.id === id)
-  if (!budget) {
-    patientlyRequestPath('/')
-    return null
-  }
-
-  const allocations = (appState.allocations || []).filter(a => a.accountId === id)
+  const allocations = (appState.allocations || [])
+    .filter(a => a.accountId === budget.id)
   const utilized = budget.amount - budget.remaining
 
   return (
@@ -146,7 +140,7 @@ export default function BudgetDetail() {
           <Button
             mode="strong"
             icon={<IconPlus />}
-            onClick={() => newAllocation(id)}
+            onClick={() => newAllocation(budget.id)}
             label="New allocation"
           />
         )}
@@ -234,4 +228,8 @@ export default function BudgetDetail() {
       </Grid>
     </>
   )
+}
+
+BudgetDetail.propTypes = {
+  budget: types.budget,
 }

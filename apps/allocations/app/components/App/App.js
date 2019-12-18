@@ -1,20 +1,23 @@
 import React from 'react'
-import { useAragonApi, usePath } from '../../api-react'
+import { useAragonApi } from '../../api-react'
 import { Main, SidePanel, SyncIndicator } from '@aragon/ui'
 
 import { IdentityProvider } from '../LocalIdentityBadge/IdentityManager'
 import { BudgetDetail, Overview } from '.'
 import { usePanel } from '../../context/Panel'
+import usePathHelpers from '../../hooks/usePathHelpers'
 import { Empty } from '../Card'
-
-const BUDGETS_REGEX = new RegExp('^/budgets/')
 
 function Routes() {
   const { appState: { budgets } } = useAragonApi()
-  const [path] = usePath()
+  const { parsePath } = usePathHelpers()
 
   if (budgets.length === 0) return <Empty />
-  if (path.match(BUDGETS_REGEX)) return <BudgetDetail />
+
+  const { budgetId } = parsePath('^/budgets/:budgetId')
+  const budget = budgets.find(b => b.id === budgetId)
+  if (budget) return <BudgetDetail budget={budget} />
+
   return <Overview />
 }
 
