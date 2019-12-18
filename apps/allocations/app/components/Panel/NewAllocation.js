@@ -204,7 +204,6 @@ class NewAllocation extends React.Component {
     const { name, value } = e.target
     const { balances } = this.props
     const { recipients, recipientsValid, budgetValue, tokenValue } = this.state
-
     if (name === 'budget') {
       this.setState({
         budgetValue: value,
@@ -225,7 +224,7 @@ class NewAllocation extends React.Component {
         amountValue: value,
         amountInvalid: isStringEmpty(value)
           || BigNumber(value).lt(MIN_AMOUNT),
-        amountOverBudget: BigNumber(value + 'e18').gt(budgetValue.amount),
+        amountOverBudget: BigNumber(value + 'e18').gt(budgetValue.remaining),
         amountOverFunds: BigNumber(value + 'e18').gt(tokenValue.amount),
       })
     }
