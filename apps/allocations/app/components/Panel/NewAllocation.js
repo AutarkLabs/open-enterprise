@@ -183,7 +183,7 @@ class NewAllocation extends React.Component {
       BigNumber(budgetValue.remaining)
     const inVault = tokenValue.address &&
       balances.find(b => addressesEqual(b.address, tokenValue.address)).amount
-    const vaultLow = inVault.lt(remainingBudget)
+    const vaultLow = inVault ? inVault.lt(remainingBudget) : true
 
     const budgetDropDown = (
       <Field
