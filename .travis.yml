@@ -33,31 +33,31 @@ jobs:
       script: npm run lint
 
     - stage: test
-      script: travis_wait 60 npm run coverage -- --scope=@tps/apps-address-book
+      script: travis_wait 60 npm run coverage -- --scope=@autarklabs/apps-address-book
       name: Address Book app tests and coverage report
       install: npm run bootstrap
       after_success: npm run coveralls
 
     - stage: test
-      script: travis_wait 60 npm run coverage -- --scope=@tps/apps-allocations
+      script: travis_wait 60 npm run coverage -- --scope=@autarklabs/apps-allocations
       name: Allocations app tests and coverage report
       install: npm run bootstrap
       after_success: npm run coveralls
 
     - stage: test
-      script: travis_wait 60 npm run coverage -- --scope=@tps/apps-projects
+      script: travis_wait 60 npm run coverage -- --scope=@autarklabs/apps-projects
       name: Projects app tests and coverage report
       install: npm run bootstrap
       after_success: npm run coveralls
 
     - stage: test
-      script: travis_wait 60 npm run coverage -- --scope=@tps/apps-dot-voting
+      script: travis_wait 60 npm run coverage -- --scope=@autarklabs/apps-dot-voting
       name: Dot Voting app tests and coverage report
       install: npm run bootstrap
       after_success: npm run coveralls
 
     - stage: test
-      script: travis_wait 60 npm run coverage -- --scope=@tps/apps-rewards
+      script: travis_wait 60 npm run coverage -- --scope=@autarklabs/apps-rewards
       name: Rewards app tests and coverage report
       install: npm run bootstrap
       after_success: npm run coveralls

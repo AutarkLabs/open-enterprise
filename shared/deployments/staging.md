@@ -11,7 +11,7 @@
 ℹ Transaction hash: 0x4231262285244a475668e8dda953917a64cb9367885c822ca02eea3cae69bac4
 ```
 
-- command: `./node_modules/.bin/lerna exec --scope="@tps/apps-address-book" --stream aragon apm publish patch -- --files dist/ --environment staging`
+- command: `./node_modules/.bin/lerna exec --scope="@autarklabs/apps-address-book" --stream aragon apm publish patch -- --files dist/ --environment staging`
 
 ### 8.0.0
 
@@ -22,7 +22,7 @@
 ℹ Transaction hash: 0x0b4bef766abb49543810a242902fe9cea3d534184f8001ade47f341559982c2b
 ```
 
-- command: `./node_modules/.bin/lerna exec --scope="@tps/apps-address-book" --stream aragon apm publish major -- --files dist/ --environment staging`
+- command: `./node_modules/.bin/lerna exec --scope="@autarklabs/apps-address-book" --stream aragon apm publish major -- --files dist/ --environment staging`
 
 ### 6.0.2
 
@@ -144,7 +144,7 @@
 ℹ Transaction hash: 0xc361863e7ccdde3d6d04d26494ba276d863b1025cebfea15b345c95a1fab7cbe
 ```
 
-- command: `./node_modules/.bin/lerna exec --scope="@tps/apps-address-book" --stream aragon apm publish major -- --files dist/ --environment staging`
+- command: `./node_modules/.bin/lerna exec --scope="@autarklabs/apps-address-book" --stream aragon apm publish major -- --files dist/ --environment staging`
 
 ---
 
@@ -170,7 +170,7 @@
 ℹ Transaction hash: 0x3ef749fd7e2442e6b79704ed1e964a620bf6c5f89e3e6c9285b8bc9735a94e7a
 ```
 
-`./node_modules/.bin/lerna exec --scope="@tps/apps-rewards" --stream aragon apm publish patch -- --files dist/ --environment staging`
+`./node_modules/.bin/lerna exec --scope="@autarklabs/apps-rewards" --stream aragon apm publish patch -- --files dist/ --environment staging`
 
 
 ### 3.0.1
