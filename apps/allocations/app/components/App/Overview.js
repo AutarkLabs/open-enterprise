@@ -1,9 +1,8 @@
 import React from 'react'
-
 import { useAragonApi } from '../../api-react'
 import { Button, Header, IconPlus } from '@aragon/ui'
 
-import { AllocationsHistory, Budgets } from '.'
+import { AllocationsHistory, Budgets, PeriodDetails } from '.'
 import { usePanel } from '../../context/Panel'
 
 const Overview = () => {
@@ -24,6 +23,7 @@ const Overview = () => {
           />
         }
       />
+      <PeriodDetails />
       <Budgets />
       { !!allocations.length && <AllocationsHistory allocations={allocations} /> }
     </>

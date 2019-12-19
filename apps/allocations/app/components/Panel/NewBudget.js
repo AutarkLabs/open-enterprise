@@ -18,9 +18,9 @@ import { BigNumber } from 'bignumber.js'
 import { ETH_DECIMALS, MIN_AMOUNT } from '../../utils/constants'
 import CurrencyBox from '../Form/Field/CurrencyBox'
 import useSaveBudget from '../../hooks/useSaveBudget'
+import usePeriod from '../../hooks/usePeriod'
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
-const DEFAULT_DURATION = 30 * MS_PER_DAY
 
 // TODO:: This should be votingTokens from account?
 const INITIAL_STATE = {
@@ -169,14 +169,8 @@ const NewBudgetWrap = props => {
 }
 
 const Duration = () => {
-  const { appState: { period } } = useAragonApi()
+  const { duration } = usePeriod()
   const theme = useTheme()
-  //Set duration to default, then calculate if 'period' is set
-  let duration = DEFAULT_DURATION
-  if(period) {
-    const { startDate, endDate } = period
-    duration = endDate - startDate + 1000
-  }
 
   const days = Math.round(duration/MS_PER_DAY)
   let string
