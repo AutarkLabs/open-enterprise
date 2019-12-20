@@ -154,12 +154,13 @@ const App = () => {
   tabs.push({ name: 'Settings', body: Settings })
 
   // Determine current tab details
-  const currentTab = tabs.find(t => t.name.toLowerCase() === selectedTab)
-  const TabComponent = currentTab.body
+  const currentTab = tabs.find(t => t.name.toLowerCase() === selectedTab) || {}
+  const { body: tabBody = null, name: tabName = null } = currentTab
+  const TabComponent = tabBody
   const TabAction = () => {
     const { setupNewIssue, setupNewProject } = usePanelManagement()
 
-    switch (currentTab.name) {
+    switch (tabName) {
     case 'Overview': return (
       <Button mode="strong" icon={<IconPlus />} onClick={setupNewProject} label="New project" />
     )
