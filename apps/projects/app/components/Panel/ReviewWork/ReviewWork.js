@@ -30,7 +30,7 @@ import {
 import workRatings from '../../../utils/work-ratings.js'
 import { DetailHyperText } from '../../../../../../shared/ui'
 
-const ReviewWork = ({ issue, readOnly }) => {
+const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
   const githubCurrentUser = useGithubAuth()
   const {
     api: { reviewSubmission },
@@ -40,6 +40,7 @@ const ReviewWork = ({ issue, readOnly }) => {
 
   const [ feedback, setFeedback ] = useState('')
   const [ rating, setRating ] = useState(-1)
+  const [ index, setIndex ] = useState(submissionIndex)
 
   const buildReturnData = accepted => {
     const today = new Date()
@@ -56,6 +57,7 @@ const ReviewWork = ({ issue, readOnly }) => {
   const onReject = () => onReviewSubmission(false)
   const updateRating = (index) => setRating(index)
   const updateFeedback = e => setFeedback(e.target.value)
+  const changeSubmission = (index) => setIndex(index)
 
   const canSubmit = () => !(rating > 0)
 
@@ -84,7 +86,7 @@ const ReviewWork = ({ issue, readOnly }) => {
     ).toPromise()
   }
 
-  const work = issue.work
+  const work = issue.workSubmissions[index]
   const submitter = issue.work.user
   const submissionDateDistance = formatDistance(new Date(work.submissionDate), new Date())
   const submitterName = submitter.name ? submitter.name : submitter.login
@@ -92,6 +94,16 @@ const ReviewWork = ({ issue, readOnly }) => {
   return(
     <div css={`margin: ${2 * GU}px 0`}>
       <IssueTitle issue={issue} />
+
+      <FieldTitle>Work Submissions</FieldTitle>
+      <DropDown
+        name="Submission"
+        items={issue.workSubmissions.map(submission => submission.user.login)}
+        onChange={changeSubmission}
+        selected={index}
+        wide
+        css={`margin-bottom: ${3 * GU}px`}
+      />
 
       <SubmissionDetails background={`${theme.background}`} border={`${theme.border}`}>
         <UserLink>
@@ -177,6 +189,7 @@ const ReviewWork = ({ issue, readOnly }) => {
 ReviewWork.propTypes = {
   issue: issueShape,
   readOnly: PropTypes.bool.isRequired,
+  submissionIndex: PropTypes.number.isRequired,
 }
 
 export default ReviewWork
