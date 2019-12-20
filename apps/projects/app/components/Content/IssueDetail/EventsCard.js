@@ -50,10 +50,10 @@ IssueEvent.propTypes = {
   date: PropTypes.string.isRequired,
 }
 
-const applicationLink = (user, onReviewApplication, issue, index) => (
+const applicationLink = (user, onReviewApplication, issue, requestIndex) => (
   <React.Fragment>
     {user} submitted <Link onClick={() =>
-      onReviewApplication({ issue, index, readOnly: true })
+      onReviewApplication({ issue, requestIndex, readOnly: true })
     }>an application for review</Link>
   </React.Fragment>
 )
