@@ -7,6 +7,7 @@ import {
   ContextMenu,
   IconAddUser,
   IconClock,
+  IconCoin,
   IconGraph2,
   IconInfo,
   Tag,
@@ -19,11 +20,12 @@ import { formatDistance } from 'date-fns'
 import { BountyContextMenu } from '../Shared'
 import { BOUNTY_STATUS, BOUNTY_BADGE_COLOR } from '../../utils/bounty-status'
 import { issueShape } from '../../utils/shapes'
+import { IconUserError, IconDoubleCheck } from '../../assets'
 
 const DeadlineDistance = date =>
   formatDistance(new Date(date), new Date(), { addSuffix: true })
 
-const dot = <span css="margin: 0px 10px">&middot;</span>
+const Dot = () => <span css="margin: 0px 10px">&middot;</span>
 
 const labelsTags = (labels, theme) =>
   labels.edges.map(label => (
@@ -45,7 +47,7 @@ const FlexibleDiv = ({ compact, children }) => {
     </div>
   ) : (
     <React.Fragment>
-      {dot}
+      <Dot />
       {children}
     </React.Fragment>
   )
@@ -56,42 +58,63 @@ FlexibleDiv.propTypes = {
   children: PropTypes.node.isRequired,
 }
 
-const Bounty = ({ issue }) => {
+const BountyDetail = ({ Icon, text }) => {
   const theme = useTheme()
-  const { layoutName } = useLayout()
+  return (
+    <span css="white-space: nowrap">
+      <Icon
+        style={{ marginBottom: '-8px', marginRight: '4px' }}
+        color={`${theme.surfaceIcon}`}
+      />
+      {text}
+    </span>
+  )
+}
+BountyDetail.propTypes = {
+  Icon: PropTypes.node.isRequired,
+  text: PropTypes.string.isRequired,
+}
+
+const CompletionStatus = issue => {
+  const hasAcceptedWork = issue.hasOwnProperty('workSumissions') &&
+    issue.workSumissions.includes(w => w.review.accepted)
+
+  return hasAcceptedWork ? (
+    <BountyDetail Icon={IconDoubleCheck} text="Completed" />
+  ) : (
+    <BountyDetail Icon={IconUserError} text="Not Completed" />
+  )
+}
+
+const Bounty = ({ issue }) => {
   const { workStatus, deadline, expLevel, openSubmission } = issue
 
   let status = BOUNTY_STATUS[workStatus]
   if (openSubmission && workStatus === 'funded')
     status = BOUNTY_STATUS['open-submission-funded']
 
+  const pastDueDate = new Date() < new Date(issue.deadline)
+
   return (
     <React.Fragment>
-      <FlexibleDiv compact={layoutName !== 'large'}>
-        <span css="white-space: nowrap">
-          <IconAddUser
-            color={`${theme.surfaceIcon}`}
-            css="margin-bottom: -8px; margin-right: 4px"
-          />
-          {status}
-        </span>
-        {dot}
-        <span css="white-space: nowrap">
-          <IconClock color={`${theme.surfaceIcon}`}
-            css="margin-bottom: -8px; margin-right: 4px"
-          />
-          Due {DeadlineDistance(deadline)}
-        </span>
-      </FlexibleDiv>
-      <FlexibleDiv compact={layoutName !== 'large'}>
-        <span css="white-space: nowrap">
-          <IconGraph2
-            css="margin-bottom: -8px; margin-right: 4px"
-            color={`${theme.surfaceIcon}`}
-          />
-          {expLevel}
-        </span>
-      </FlexibleDiv>
+      <Dot />
+
+      <BountyDetail Icon={IconCoin} text={issue.bounties + ' ' + (issue.bounties > 1 ? 'bounties' : 'bounty')} />
+
+      <Dot />
+
+      {pastDueDate ? (
+        <>
+        <BountyDetail Icon={IconAddUser} text={status} />
+        <Dot />
+        <BountyDetail Icon={IconClock} text={<>Due {DeadlineDistance(deadline)}</>} />
+        <Dot />
+        <BountyDetail Icon={IconGraph2} text={expLevel} />
+        </>
+      ) : (
+        <CompletionStatus issue={issue} />
+      )}
+
     </React.Fragment>
   )
 }
@@ -100,7 +123,6 @@ Bounty.propTypes = issueShape
 
 const Issue = ({ isSelected, onClick, onSelect, ...issue }) => {
   const theme = useTheme()
-  const { layoutName } = useLayout()
   const {
     workStatus,
     title,
@@ -161,12 +183,11 @@ const Issue = ({ isSelected, onClick, onSelect, ...issue }) => {
         <IssueDetails>
           <Text.Block color={`${theme.surfaceContentSecondary}`} size="small">
             <span css="font-weight: 600; white-space: nowrap">{repo} #{number}</span>
-            <FlexibleDiv compact={layoutName === 'small'}>
-              <span css="white-space: nowrap">
-                <IconInfo color={`${theme.positiveSurfaceContent}`} css="margin-bottom: -8px; margin-right: 4px" />
-                opened {DeadlineDistance(createdAt)}
-              </span>
-            </FlexibleDiv>
+            <Dot />
+            <span css="white-space: nowrap">
+              <IconInfo color={`${theme.positiveSurfaceContent}`} css="margin-bottom: -8px; margin-right: 4px" />
+              opened {DeadlineDistance(createdAt)}
+            </span>
             {issue.hasBounty && (
               <Bounty issue={issue} />
             )}
