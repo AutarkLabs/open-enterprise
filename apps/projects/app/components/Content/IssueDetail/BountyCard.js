@@ -7,6 +7,7 @@ import {
   GU,
   IconAddUser,
   IconClock,
+  IconCoin,
   IconFile,
   IconGraph2,
   IdentityBadge,
@@ -18,7 +19,7 @@ import { issueShape } from '../../../utils/shapes.js'
 import { usePanelManagement } from '../../Panel'
 import { useAragonApi } from '../../../api-react'
 import { formatDistance } from 'date-fns'
-import { IconDoubleCheck, IconUserCheck } from '../../../assets'
+import { IconDoubleCheck, IconUserCheck, IconUserError } from '../../../assets'
 
 const ActionButton = ({ panel, caption, issue }) => (
   <EventButton
@@ -56,12 +57,23 @@ const DeadlineDistance = ({ date }) =>
 
 const pluralize = (word, number) => `${number} ${word}${number > 1 ? 's' : ''}`
 
+const pastDueDate = deadline => new Date() > new Date(deadline)
+
 const Status = ({ issue }) => {
   const theme = useTheme()
   const workStatus = (issue.openSubmission && issue.workStatus !== 'fulfilled') ?
     'openSubmission'
     :
     issue.workStatus
+
+  if (pastDueDate(issue.deadline) && workStatus !== 'fulfilled') return (
+    <>
+      <IconUserError color={`${theme.surfaceIcon}`} />
+      <BountyText>
+        Not completed
+      </BountyText>
+    </>
+  )
 
   switch(workStatus) {
   case 'openSubmission': return (
@@ -113,7 +125,7 @@ const Submissions = ({ issue }) => {
     'No applications'
   )
   case 'review-applicants': return (
-    <Link onClick={() => reviewApplication({ issue, requestIndex: 0 })}>
+    <Link onClick={() => reviewApplication({ issue, requestIndex: 0, readOnly: pastDueDate(issue.deadline) })}>
       {pluralize('application', issue.requestsData.length)}
 
     </Link>
@@ -121,7 +133,7 @@ const Submissions = ({ issue }) => {
   case 'openSubmission':
   case 'in-progress':
     if ('workSubmissions' in issue) return (
-      <Link onClick={() => reviewWork({ issue, index: 0 })}>
+      <Link onClick={() => reviewWork({ issue, index: 0, readOnly: pastDueDate(issue.deadline) })}>
         {pluralize('work submission', issue.workSubmissions.length)}
       </Link>
     )
@@ -130,7 +142,7 @@ const Submissions = ({ issue }) => {
     )
   case 'review-work':
   case 'fulfilled': return (
-    <Link onClick={() => reviewWork({ issue, index: 0 })}>
+    <Link onClick={() => reviewWork({ issue, index: 0, readOnly: pastDueDate(issue.deadline) })}>
       {pluralize('work submission', issue.workSubmissions.length)}
     </Link>)
   default: return null
@@ -150,10 +162,12 @@ const Dot = ({ color }) => (
 )
 Dot.propTypes = PropTypes.string.isRequired
 
-const BountyDot = ({ workStatus }) => {
+const BountyDot = ({ issue }) => {
   const theme = useTheme()
 
-  switch(workStatus) {
+  if (pastDueDate(issue.deadline)) return null
+
+  switch(issueShape.workStatus) {
   case 'funded':
   case 'review-applicants':
     return (
@@ -167,7 +181,7 @@ const BountyDot = ({ workStatus }) => {
   default: return null
   }
 }
-BountyDot.propTypes = PropTypes.string.isRequired
+BountyDot.propTypes = issueShape
 
 const Action = ({ issue }) => {
   const { requestAssignment, submitWork } = usePanelManagement()
@@ -176,6 +190,8 @@ const Action = ({ issue }) => {
     'openSubmission'
     :
     issue.workStatus
+
+  if (pastDueDate(issue.deadline)) return null
 
   switch(workStatus) {
   case 'funded':
@@ -196,12 +212,12 @@ Action.propTypes = issueShape
 
 const BountyCard = ({ issue }) => {
   const theme = useTheme()
-  const { appState: { bountySettings } } = useAragonApi()
+  const { appState: { bountySettings }, connectedAccount } = useAragonApi()
   const expLevels = bountySettings.expLvls
 
   return (
     <Box
-      heading="Bounty"
+      heading="Bounty info"
       padding={3 * GU}
       css={`
         flex: 0 1 auto;
@@ -212,38 +228,56 @@ const BountyCard = ({ issue }) => {
         padding: 0;
       `}
     >
-      <div css={`display: flex; margin-bottom: ${2 * GU}px`}>
-        <BountyDot workStatus={issue.workStatus} />
-        <div css="display: flex; align-items: baseline">
-          <Text size="xxlarge">{issue.balance}</Text>
-          <Text color={`${theme.surfaceContentSecondary}`} css="margin-left: 2px">{issue.symbol}</Text>
-        </div>
-      </div>
+      <div css={`
+         > :not(:last-child) {
+          margin-bottom: ${GU}px;
+        }
+      `}>
 
-      <Row>
-        <Status issue={issue} />
-      </Row>
+        {!(pastDueDate(issue.deadline) && issue.workStatus !== 'fulfilled') && (
+          <div css={`display: flex; margin-bottom: ${2 * GU}px`}>
+            <BountyDot issue={issue} />
+            <div css="display: flex; align-items: baseline">
+              <Text size="xxlarge">{issue.balance}</Text>
+              <Text color={`${theme.surfaceContentSecondary}`} css="margin-left: 2px">{issue.symbol}</Text>
+            </div>
+          </div>
+        )}
 
-      {issue.workStatus !== 'fulfilled' && (
+        {connectedAccount !== issue.assignee && (
+          <Row>
+            <IconCoin color={`${theme.surfaceIcon}`} />
+            <BountyText>1 bounty</BountyText>
+          </Row>
+        )}
+
         <Row>
-          <IconClock color={`${theme.surfaceIcon}`} />
-          <BountyText>Due <DeadlineDistance date={issue.deadline} /></BountyText>
+          <Status issue={issue} />
         </Row>
-      )}
 
-      <Row>
-        <IconGraph2 color={`${theme.surfaceIcon}`} />
-        <BountyText>{expLevels[issue.exp].name}</BountyText>
-      </Row>
+        {issue.workStatus !== 'fulfilled' && (
+          <Row>
+            <IconClock color={`${theme.surfaceIcon}`} />
+            <BountyText>Due <DeadlineDistance date={issue.deadline} /></BountyText>
+          </Row>
+        )}
 
-      <Row>
-        <IconFile color={`${theme.surfaceIcon}`} />
-        <BountyText>
-          <Submissions issue={issue} />
-        </BountyText>
-      </Row>
+        {!(pastDueDate(issue.deadline) && issue.workStatus !== 'fulfilled') && (
+          <Row>
+            <IconGraph2 color={`${theme.surfaceIcon}`} />
+            <BountyText>{expLevels[issue.exp].name}</BountyText>
+          </Row>
+        )}
 
-      <Action issue={issue} />
+        <Row>
+          <IconFile color={`${theme.surfaceIcon}`} />
+          <BountyText>
+            <Submissions issue={issue} />
+          </BountyText>
+        </Row>
+
+        <Action issue={issue} />
+      </div>
     </Box>
   )
 }
@@ -258,7 +292,6 @@ const EventButton = styled(Button)`
 `
 const Row = styled.div`
   display: flex;
-  margin-bottom: ${GU}px;
 `
 const BountyText = styled.div`
   margin-left: ${GU}px;

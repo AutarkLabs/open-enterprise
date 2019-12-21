@@ -32,9 +32,10 @@ MenuItem.propTypes = {
 
 const pluralize = (word, number) => `${word}${number > 1 ? 's (' + number + ')' : ''}`
 
+const pastDueDate = deadline => new Date() > new Date(deadline)
+
 const BountyContextMenu = ({ issue }) => {
-  const pastDeadline = (new Date()) > (new Date(issue.deadline))
-  const { openSubmission, workStatus, assignee } = issue
+  const { openSubmission, assignee } = issue
   const { connectedAccount } = useAragonApi()
   const {
     allocateBounty,
@@ -44,8 +45,11 @@ const BountyContextMenu = ({ issue }) => {
     submitWork,
   } = usePanelManagement()
 
+  const workStatus = (pastDueDate(issue.deadline)) ? 'not-funded' : issue.workStatus
+
   switch(workStatus) {
-  case undefined: return (
+  case undefined:
+  case 'not-funded': return (
     <MenuItem panel={allocateBounty} panelParams={[issue]} caption="Fund issue" Icon={IconCoin} />
   )
   case 'funded': return openSubmission ? (
@@ -55,9 +59,7 @@ const BountyContextMenu = ({ issue }) => {
   )
   case 'review-applicants': return (
     <>
-      {!pastDeadline && (
-        <MenuItem panel={requestAssignment} panelParams={issue} caption="Submit application" Icon={IconFile} />
-      )}
+      <MenuItem panel={requestAssignment} panelParams={issue} caption="Submit application" Icon={IconFile} />
       <MenuItem
         panel={reviewApplication}
         panelParams={{ issue }}
