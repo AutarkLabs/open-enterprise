@@ -103,7 +103,10 @@ const MarkdownWrapper = styled.div`
 
   a {
     color: ${theme.gradientStart};
+    display: inline;
     text-decoration: none;
+    white-space: normal;
+    word-break: break-word;
   }
   a:hover {
     text-decoration: underline;
