@@ -66,25 +66,27 @@ const App = () => {
         onResolve={handleResolveLocalIdentity}
         onShowLocalIdentityModal={handleShowLocalIdentityModal}
       >
-        { entries.length === 0
-          ? <Empty action={newEntity} isSyncing={isSyncing} />
-          : (
-            <React.Fragment>
-              <Header
-                primary="Address Book"
-                secondary={
-                  <Button mode="strong" icon={<IconPlus />} onClick={newEntity} label="New Entity" />
-                }
-              />
-              <Entities
-                entities={entries}
-                onNewEntity={newEntity}
-                onRemoveEntity={removeEntity}
-              />
-              <SyncIndicator visible={isSyncing} />
-            </React.Fragment>
-          )
-        }
+        <main>
+          { entries.length === 0
+            ? <Empty action={newEntity} isSyncing={isSyncing} />
+            : (
+              <React.Fragment>
+                <Header
+                  primary="Address Book"
+                  secondary={
+                    <Button mode="strong" icon={<IconPlus />} onClick={newEntity} label="New entity" />
+                  }
+                />
+                <Entities
+                  entities={entries}
+                  onNewEntity={newEntity}
+                  onRemoveEntity={removeEntity}
+                />
+                <SyncIndicator visible={isSyncing} />
+              </React.Fragment>
+            )
+          }
+        </main>
         <SidePanel onClose={closePanel} opened={panelVisible} title="New entity">
           <NewEntity onCreateEntity={createEntity} addressList={addressList} />
         </SidePanel>

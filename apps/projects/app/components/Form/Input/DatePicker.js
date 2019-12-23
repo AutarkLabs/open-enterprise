@@ -24,14 +24,14 @@ const Container = styled.div`
   min-width: 15em;
   margin: 0 auto;
   padding-top: 0.5em;
-  background: ${theme.contentBackground};
+  background: white;
   border: 1px solid ${theme.contentBorder};
   border-radius: 3px;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
-  
   ${props => props.overlay && css`
     &&& {
       position: absolute;
+      background: white;
       right: 0;
       z-index: 10;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
@@ -76,7 +76,6 @@ const DayView = styled.li`
   cursor: pointer;
   font-size: 90%;
   user-select: none;
-
   ${props => props.today && css`
     border: 1px solid ${theme.disabled};
   `}
@@ -85,7 +84,6 @@ const DayView = styled.li`
     pointer-events: none;
     color: ${theme.disabled};
   `}
-  
   ${props => props.selected && css`
     &&& {
       background: ${mainColor};
@@ -93,8 +91,7 @@ const DayView = styled.li`
       color: ${theme.negativeText};
     }
   `}
-
-  &:after {
+  &::after {
     display: block;
     content: '';
     margin-top: 100%;

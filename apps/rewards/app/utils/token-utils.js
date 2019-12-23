@@ -1,4 +1,4 @@
-import { ETHER_TOKEN_VERIFIED_ADDRESSES } from './verified-tokens'
+import { ETHER_TOKEN_VERIFIED_ADDRESSES } from '../../../../shared/lib/verified-tokens'
 import { toUtf8 } from './web3-utils'
 import tokenSymbolAbi from '../../../shared/json-abis/token-symbol.json'
 import tokenSymbolBytesAbi from '../../../shared/json-abis/token-symbol-bytes.json'
@@ -7,23 +7,23 @@ import tokenNameBytesAbi from '../../../shared/json-abis/token-name-bytes.json'
 import tokenCreationBlockAbi from '../../../shared/json-abis/token-creationblock.json'
 import tokenTransferAbi from '../../../shared/json-abis/token-transferable.json'
 
-export const DAI_MAINNET_TOKEN_ADDRESS = '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359'
+export const SAI_MAINNET_TOKEN_ADDRESS = '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359'
 export const ETHER_TOKEN_FAKE_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 // Some known tokens don’t strictly follow ERC-20 and it would be difficult to
 // adapt to every situation. The data listed in this map is used as a fallback
 // if either some part of their interface doesn't conform to a standard we
 // support.
-const KNOWN_TOKENS_FALLBACK = new Map([
+const KNOWN_TOKENS_OVERRIDE = new Map([
   [
     'main',
     new Map([
       [
-        DAI_MAINNET_TOKEN_ADDRESS,
-        { symbol: 'DAI', name: 'Dai Stablecoin v1.0', decimals: '18' },
+        SAI_MAINNET_TOKEN_ADDRESS,
+        { symbol: 'SAI', name: 'Sai Stablecoin v1.0', decimals: '18' },
       ],
     ]),
-  ],
+  ]
 ])
 
 export const isTokenVerified = (tokenAddress, networkType) =>
@@ -36,7 +36,7 @@ export const tokenDataFallback = (tokenAddress, fieldName, networkType) => {
   // The fallback list is without checksums
   const addressWithoutChecksum = tokenAddress.toLowerCase()
 
-  const fallbacksForNetwork = KNOWN_TOKENS_FALLBACK.get(networkType)
+  const fallbacksForNetwork = KNOWN_TOKENS_OVERRIDE.get(networkType)
   if (
     fallbacksForNetwork == null ||
     !fallbacksForNetwork.has(addressWithoutChecksum)

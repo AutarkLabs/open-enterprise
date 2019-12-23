@@ -1,5 +1,3 @@
-/* eslint-disable react/prop-types */
-// issues are validated using correct shape - eslint problem?
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
@@ -12,13 +10,16 @@ import { toHex } from 'web3-utils'
 import { IconClose } from '@aragon/ui'
 import NoFunds from '../../../assets/noFunds.svg'
 import {
+  Button,
+  DropDown,
+  GU,
+  Help,
+  Info,
+  LoadingRing,
+  Switch,
   Text,
   TextInput,
-  DropDown,
   useTheme,
-  GU,
-  Button,
-  Info,
 } from '@aragon/ui'
 
 import { Form, FormField, DateInput } from '../../Form'
@@ -47,6 +48,7 @@ const errorMessages = {
 const bountiesFor = ({ bountySettings, issues, tokens }) => issues.reduce(
   (bounties, issue) => {
     bounties[issue.id] = {
+      fundingHistory: issue.fundingHistory || [],
       issueId: issue.id,
       repo: issue.repo,
       number: issue.number,
@@ -70,6 +72,7 @@ const BountyUpdate = ({
   issue,
   bounty,
   submitBounties,
+  submitting,
   description,
   tokens,
   updateBounty,
@@ -101,8 +104,11 @@ const BountyUpdate = ({
         css={`margin: ${2 * GU}px 0`}
         onSubmit={submitBounties}
         description={description}
-        submitText="Submit"
-        submitDisabled={submitDisabled}
+        submitText={submitting
+          ? <><LoadingRing /> Saving...</>
+          : 'Submit'
+        }
+        submitDisabled={submitDisabled || submitting}
       >
         <FormField
           input={
@@ -207,6 +213,7 @@ BountyUpdate.propTypes = {
   issue: issueShape,
   bounty: PropTypes.object.isRequired,
   submitBounties: PropTypes.func.isRequired,
+  submitting: PropTypes.bool.isRequired,
   description: PropTypes.string.isRequired,
   tokens: PropTypes.array.isRequired,
   updateBounty: PropTypes.func.isRequired,
@@ -215,11 +222,14 @@ BountyUpdate.propTypes = {
 const FundForm = ({
   issues,
   bounties,
+  submitting,
   submitBounties,
   description,
   tokens,
   descriptionChange,
   updateBounty,
+  openSubmission,
+  setOpenSubmission,
 }) => {
   const { appState: { bountySettings } } = useAragonApi()
   const [ submitDisabled, setSubmitDisabled ] = useState(true)
@@ -258,7 +268,7 @@ const FundForm = ({
     const zeroErrArray = []
     const dateErrArray = []
     Object.values(bounties).forEach(bounty => {
-      if (!bounty.payout) zeroErrArray.push(bounty.issueId)
+      if (!bounty.payout || bounty.payout === '0') zeroErrArray.push(bounty.issueId)
       if (today > bounty.deadline) dateErrArray.push(bounty.issueId)
     })
     setZeroError(zeroErrArray)
@@ -269,7 +279,7 @@ const FundForm = ({
       !!zeroErrArray.length ||
       !!dateErrArray.length
     )
-  }, [ validate, bounties, description, maxErrors ])
+  }, [ bounties, description, maxErrors ])
 
   return (
     <>
@@ -277,8 +287,11 @@ const FundForm = ({
         css={`margin: ${2 * GU}px 0`}
         onSubmit={submitBounties}
         description={description}
-        submitText={issues.length > 1 ? 'Fund Issues' : 'Fund Issue'}
-        submitDisabled={submitDisabled}
+        submitText={submitting
+          ? <><LoadingRing /> Saving...</>
+          : issues.length > 1 ? 'Fund Issues' : 'Fund Issue'
+        }
+        submitDisabled={submitDisabled || submitting}
       >
         <FormField
           label="Description"
@@ -295,22 +308,50 @@ const FundForm = ({
           }
         />
         <FormField
+          label="Work terms"
+          input={
+            <div css={`
+              display: flex;
+              justify-content: space-between;
+              margin: ${GU}px 0 ${2 * GU}px 0;
+            `}>
+              <Text css="display: flex">
+                Applications required to work on issues&nbsp;
+                <Help hint="The work terms" css={`margin-left: ${.5 * GU}`}>
+                  By default, the issues in this funding proposal will not require
+                  applications to work on a bounty before work is submitted.
+                  To require applications, click on the switch to enable this term.
+                </Help>
+              </Text>
+              <Switch
+                checked={!openSubmission}
+                onChange={() => setOpenSubmission(!openSubmission)}
+              />
+            </div>
+          }
+        />
+
+        <FormField
           label="Issues"
-          hint="Enter the estimated hours per issue"
           required
           input={
-            <React.Fragment>
-              {issues.map(issue => (
-                <EditBounty
-                  key={issue.id}
-                  issue={issue}
-                  bounty={bounties[issue.id]}
-                  tokens={tokens}
-                  onBlur={() => setValidate(true)}
-                  updateBounty={updateBounty(issue.id)}
-                />
-              ))}
-            </React.Fragment>
+            <>
+              <Text css={`display: flex; display: block; margin: ${GU}px 0 ${2 * GU}px 0`}>
+                Enter the estimated hours per issue
+              </Text>
+              <React.Fragment>
+                {issues.map(issue => (
+                  <EditBounty
+                    key={issue.id}
+                    issue={issue}
+                    bounty={bounties[issue.id]}
+                    tokens={tokens}
+                    onFocus={() => setValidate(true)}
+                    updateBounty={updateBounty(issue.id)}
+                  />
+                ))}
+              </React.Fragment>
+            </>
           }
         />
       </Form>
@@ -334,10 +375,13 @@ FundForm.propTypes = {
   issues: PropTypes.arrayOf(issueShape),
   bounties: PropTypes.object.isRequired,
   submitBounties: PropTypes.func.isRequired,
+  submitting: PropTypes.bool.isRequired,
   description: PropTypes.string.isRequired,
   tokens: PropTypes.array.isRequired,
   descriptionChange: PropTypes.func.isRequired,
   updateBounty: PropTypes.func.isRequired,
+  openSubmission: PropTypes.bool.isRequired,
+  setOpenSubmission: PropTypes.func.isRequired,
 }
 
 const FundIssues = ({ issues, mode }) => {
@@ -345,12 +389,26 @@ const FundIssues = ({ issues, mode }) => {
   const { api, appState } = useAragonApi()
   const { bountySettings } = appState
   const { closePanel } = usePanelManagement()
+  const [ submitting, setSubmitting ] = useState(false)
   const [ description, setDescription ] = useState('')
+  const [ openSubmission, setOpenSubmission ] = useState(true)
   const tokens = useMemo(() => {
     if (bountySettings.fundingModel === 'Fixed') return appState.tokens
     return [appState.tokens.find(t => t.addr === bountySettings.bountyCurrency)]
   }, [bountySettings])
-  const [ bounties, setBounties ] = useState(bountiesFor({ bountySettings, issues, tokens }))
+  const bountylessIssues = useMemo(
+    () => issues.filter(i => !i.hasBounty),
+    [issues]
+  )
+  const alreadyAdded = useMemo(
+    () => issues.filter(i => i.hasBounty),
+    [issues]
+  )
+  const [ bounties, setBounties ] = useState(bountiesFor({
+    bountySettings,
+    issues: bountylessIssues,
+    tokens
+  }))
 
   const fundsAvailable = useMemo(() => tokens.reduce(
     (sum, t) => sum.plus(BigNumber(t.balance)),
@@ -368,7 +426,7 @@ const FundIssues = ({ issues, mode }) => {
       }
     }
 
-    if (update.hours || update.exp) {
+    if (update.hours !== undefined || update.exp) {
       const { exp, hours } = newBounties[issueId]
       const { baseRate, expLvls } = bountySettings
       newBounties[issueId].payout = hours * baseRate * expLvls[exp].mul
@@ -377,25 +435,10 @@ const FundIssues = ({ issues, mode }) => {
     setBounties(newBounties)
   }, [ bounties, bountySettings ])
 
-  const submitBounties = async (e) => {
+  const submitBounties = useCallback(async e => {
     e.preventDefault()
-    const today = new Date()
-    const activity = {
-      user: githubCurrentUser,
-      date: today.toISOString(),
-      description,
-    }
 
-    Object.keys(bounties).map(id => {
-      // if it's an update, there is only one issue
-      if (mode === 'update') {
-        bounties[id]['fundingHistory'] = [ ...issues[0].fundingHistory, activity ]
-      } else {
-        bounties[id]['fundingHistory'] = [activity]
-      }
-    })
-
-    closePanel()
+    setSubmitting(true)
 
     // computes an array of issues and denests the actual issue object for smart contract
     const issuesArray = []
@@ -420,39 +463,40 @@ const FundIssues = ({ issues, mode }) => {
       }))
 
     const ipfsAddresses = issueHashArray.join('')
-    const repoIds = issuesArray.map(issue => toHex(issue.repoId))
-    const issueNumbers = issuesArray.map(issue => issue.number)
-    let tokenContracts = []
-    let bountySizes = []
-    let tokenTypes = []
-    for (let i = 0; i < issuesArray.length; i++) {
-      const issue = issuesArray[i]
-      tokenContracts.push(issue.token.addr)
-      tokenTypes.push(issue.token.addr === ETHER_TOKEN_FAKE_ADDRESS ? 1 : 20)
+    const repoIds = []
+    const issueNumbers = []
+    const bountySizes = []
+    const deadlines = []
+    const tokenTypes = []
+    const tokenContracts = []
+    const ipfsData = []
+    Object.values(bounties).forEach(bounty => {
+      repoIds.push(toHex(bounty.repoId))
+      issueNumbers.push(bounty.number)
+      tokenContracts.push(bounty.token.addr)
+      tokenTypes.push(bounty.token.addr === ETHER_TOKEN_FAKE_ADDRESS ? 1 : 20)
       bountySizes.push(
-        BigNumber(issue.payout).times(10 ** issue.token.decimals).toString()
+        BigNumber(bounty.payout).times(10 ** bounty.token.decimals).toString()
       )
-    }
-    const deadlines = Object.keys(bounties).map(
-      id => bounties[id]['deadline'].getTime()
-    )
+      deadlines.push(bounty.deadline.getTime())
+      ipfsData.push({
+        issueId: bounty.issueId,
+        exp: bounty.exp,
+        fundingHistory: [
+          ...bounty.fundingHistory,
+          {
+            user: githubCurrentUser,
+            date: new Date().toISOString(),
+            description,
+          },
+        ],
+        hours: bounty.hours,
+        repo: bounty.repo,
+      })
+    })
 
-    // during development, sometimes this fails with a cryptic "cannot perform action" error
-    // in case this happens in QA, let's leave this logging here to at least have some paper trail
-    //console.log( // eslint-disable-line
-    //  'ipfs file', issuesArray,
-    //  'bounties', bounties,
-    //  'repoIds', repoIds,
-    //  'issueNumbers', issueNumbers,
-    //  'bountySizes', bountySizes,
-    //  'deadlines', deadlines,
-    //  'tokenTypes', tokenTypes,
-    //  'tokenContracts', tokenContracts,
-    //  'ipfsAddresses', ipfsAddresses,
-    //  'description', description
-    //)
-
-    api.addBounties(
+    const addBountiesF = openSubmission ? api.addBountiesNoAssignment : api.addBounties
+    await addBountiesF(
       repoIds,
       issueNumbers,
       bountySizes,
@@ -461,25 +505,10 @@ const FundIssues = ({ issues, mode }) => {
       tokenContracts,
       ipfsAddresses,
       description
-    ).subscribe(
-      () => {
-        // TODO: Temporarily disable commenting on github. Linting was also disabled at lines 480 and 488 for this, to make CI pass
-        // A better workaround in the future would be refactor into an opt-in feature, maybe with a checkbox in Settings?
-        // issuesArray.forEach(issue => {
-        //   post({
-        //     variables: {
-        //       body:
-        //         'This issue has a bounty attached to it.\n' +
-        //         `Amount: ${issue.payout.toFixed(2)} ${issue.token.symbol}\n` +
-        //         `Deadline: ${issue.deadline.toUTCString()}`,
-        //       subjectId: issue.key,
-        //     },
-        //   })
-        // })
-      },
-      err => console.error(`error: ${err}`)
-    )
-  }
+    ).toPromise()
+
+    closePanel()
+  }, [ bounties, openSubmission ])
 
   if (fundsAvailable.toString() === '0') {
     return (
@@ -500,6 +529,7 @@ const FundIssues = ({ issues, mode }) => {
         issue={issue}
         bounty={bounty}
         submitBounties={submitBounties}
+        submitting={submitting}
         description={description}
         tokens={tokens}
         updateBounty={updateBounty(issue.id)}
@@ -507,34 +537,29 @@ const FundIssues = ({ issues, mode }) => {
     )
   }
 
-  const bountylessIssues = []
-  const alreadyAdded = []
-
-  issues.forEach(issue => {
-    if (issue.hasBounty) alreadyAdded.push(issue)
-    else bountylessIssues.push(issue)
-  })
-
   return (
     <React.Fragment>
       {(bountylessIssues.length > 0) && (
         <FundForm
           submitBounties={submitBounties}
+          submitting={submitting}
           issues={bountylessIssues}
           bounties={bounties}
           description={description}
           tokens={tokens}
           descriptionChange={descriptionChange}
           updateBounty={updateBounty}
+          openSubmission={openSubmission}
+          setOpenSubmission={setOpenSubmission}
         />
       )}
       {(alreadyAdded.length > 0) && (
         <Info.Action title="Warning" style={{ marginBottom: `${2 * GU}px` }}>
           <p style={{ margin: '10px 0' }}>
-          The following issues already have bounties and cannot be updated on a bulk basis. To update an individual issue, select “Update Bounty” from the issue’s context menu.
+          The following issues already have active bounties, so they have been discarded from this funding proposal:
           </p>
           <WarningIssueList>
-            {issues.map(issue => <li key={issue.id}>{issue.title}</li>)}
+            {alreadyAdded.map(issue => <li key={issue.id}>{issue.title}</li>)}
           </WarningIssueList>
         </Info.Action>
       )}
@@ -587,6 +612,11 @@ const InfoPanel = ({ imgSrc, title, message }) => {
       </div>
     </div>
   )
+}
+InfoPanel.propTypes = {
+  imgSrc: PropTypes.string.isRequired,
+  title: PropTypes.string.isRequired,
+  message: PropTypes.string.isRequired,
 }
 
 const ErrorText = styled.div`

@@ -27,7 +27,7 @@ Form.propTypes = {
   children: PropTypes.node.isRequired,
   className: PropTypes.string,
   onSubmit: PropTypes.func.isRequired,
-  submitText: PropTypes.string.isRequired,
+  submitText: PropTypes.node.isRequired,
   heading: PropTypes.string,
   separator: PropTypes.bool,
   subHeading: PropTypes.string,

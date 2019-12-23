@@ -2,8 +2,6 @@ import { hexToAscii, toHex } from 'web3-utils'
 import { app } from '../app'
 import standardBounties from '../../abi/StandardBounties.json'
 
-const assignmentRequestStatus = [ 'Unreviewed', 'Accepted', 'Rejected' ]
-
 export const loadIssueData = async ({ repoId, issueNumber }) => {
   const {
     hasBounty,
@@ -58,35 +56,26 @@ export const loadIssueData = async ({ repoId, issueNumber }) => {
     deadline: new Date(Number(deadline)).toISOString(),
     token,
     workStatus,
+    openSubmission: /^0xf{40}$/i.test(assignee),
   }
 }
 
 export const loadIpfsData = async ipfsHash => {
   const res = await app.datastore('cat', ipfsHash).toPromise()
   const {
-    detailsOpen,
+    issueId,
     exp,
-    deadline,
     fundingHistory,
     hours,
-    key,
     repo,
-    size,
-    slots,
-    slotsIndex,
   } = res.data
 
   return {
-    detailsOpen,
+    issueId,
     exp,
-    deadline,
     fundingHistory,
     hours,
-    key,
     repo,
-    size,
-    slots,
-    slotsIndex,
   }
 }
 
@@ -157,7 +146,6 @@ const getRequest = (repoId, issueNumber, applicantId) => {
       const bountyData = res.data
       resolve({
         contributorAddr: response.applicant,
-        status: assignmentRequestStatus[parseInt(response.status)],
         requestIPFSHash: response.application,
         ...bountyData
       })
@@ -197,7 +185,6 @@ export const buildSubmission = async ({ fulfillmentId, fulfillers, ipfsHash, sub
     fulfillers,
     hours,
     proof,
-    status: '0',
     submissionDate,
     submissionIPFSHash: ipfsHash,
     submitter,

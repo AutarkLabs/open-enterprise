@@ -9,11 +9,13 @@ import {
   Field,
   GU,
   Info,
+  IconRemove,
   Link,
   Text,
   TextInput,
   useLayout,
   useTheme,
+  unselectable,
 } from '@aragon/ui'
 
 import { LocalIdentityBadge } from '../../../../../shared/identity'
@@ -114,37 +116,71 @@ SettingLabel.propTypes = {
 const ExperienceLevel = ({
   expLevels,
   onAddExpLevel,
+  onRemoveExpLevel,
   generateExpLevelHandler,
+  fundingModel,
 }) => {
+  const theme = useTheme()
   let last = expLevels[expLevels.length - 1]
   let canAdd = last && last.mul !== '' && last.name !== ''
   return (
     <React.Fragment>
-      <SettingLabel text="Difficulty multipliers" />
-
+      <SettingLabel text={`Difficulty ${fundingModel === 'Hourly' ? 'multipliers' : ''}`} />
       {expLevels.map((exp, index) => (
-        <Field
-          css={`margin-bottom: ${1.5 * GU}px`}
-          key={index}
-          label={'LEVEL ' + index}
-        >
-          <div css="display: flex">
-            <NumberInput
-              css="width: 32%; margin-right: 3%"
-              fixedDecimalScale
-              decimalScale={2}
-              value={exp.mul}
-              allowNegative={false}
-              onChange={generateExpLevelHandler(index, 'M')}
-            />
-            <TextInput
-              type="text"
-              css="font-size: 16px; width: 65%"
-              defaultValue={exp.name}
-              onChange={generateExpLevelHandler(index, 'N')}
-            />
-          </div>
-        </Field>
+        <React.Fragment key={index}>
+          {fundingModel === 'Hourly' ? (
+            <Field
+              css={`margin-bottom: ${1.5 * GU}px`}
+              label={'LEVEL ' + index}
+            >
+              <div css="display: flex">
+                <NumberInput
+                  css="width: 32%; margin-right: 3%"
+                  fixedDecimalScale
+                  decimalScale={2}
+                  value={exp.mul}
+                  allowNegative={false}
+                  onChange={generateExpLevelHandler(index, 'M')}
+                />
+                <TextInput
+                  type="text"
+                  css="font-size: 16px; width: 65%"
+                  value={exp.name}
+                  onChange={generateExpLevelHandler(index, 'N')}
+                />
+                <IconContainer
+                  theme={theme}
+                  disabled={expLevels.length <= 1}
+                  style={{ transform: 'scale(.8)' }}
+                  onClick={() => onRemoveExpLevel(index)}
+                  title="Remove this difficulty multiplier"
+                >
+                  <IconRemove />
+                </IconContainer>
+              </div>
+            </Field>
+          ) : (
+            <div
+              css={`display: flex; margin-bottom: ${1.5 * GU}px`}
+            >
+              <TextInput
+                type="text"
+                css="font-size: 16px; flex-grow: 1"
+                value={exp.name}
+                onChange={generateExpLevelHandler(index, 'N')}
+              />
+              <IconContainer
+                theme={theme}
+                disabled={expLevels.length <= 1}
+                style={{ transform: 'scale(.8)' }}
+                onClick={() => onRemoveExpLevel(index)}
+                title="Remove this difficulty setting"
+              >
+                <IconRemove />
+              </IconContainer>
+            </div>
+          )}
+        </React.Fragment>
       ))}
       <Button
         disabled={!canAdd}
@@ -152,7 +188,7 @@ const ExperienceLevel = ({
         mode="secondary"
         onClick={onAddExpLevel}
       >
-        + Add Another
+        + Add another
       </Button>
     </React.Fragment>
   )
@@ -160,7 +196,9 @@ const ExperienceLevel = ({
 ExperienceLevel.propTypes = {
   expLevels: PropTypes.array.isRequired,
   onAddExpLevel: PropTypes.func.isRequired,
+  onRemoveExpLevel: PropTypes.func.isRequired,
   generateExpLevelHandler: PropTypes.func.isRequired,
+  fundingModel: PropTypes.string.isRequired,
 }
 
 const BaseRate = ({
@@ -346,6 +384,12 @@ const Settings = ({ onLogin }) => {
     setExpLevels(newExpLevels)
   }
 
+  const removeExpLevel = (index) => {
+    const newExpLevels = [...expLevels]
+    newExpLevels.splice(index, 1)
+    setExpLevels(newExpLevels)
+  }
+
   const generateExpLevelHandler = (index, key) => e => {
     const newExpLevels = [...expLevels]
     if (key === 'M') newExpLevels[index].mul = e.target.value
@@ -428,13 +472,15 @@ const Settings = ({ onLogin }) => {
               <ExperienceLevel
                 expLevels={expLevels}
                 onAddExpLevel={addExpLevel}
+                onRemoveExpLevel={removeExpLevel}
                 generateExpLevelHandler={generateExpLevelHandler}
+                fundingModel={fundingModels[selectedFundingModelIndex]}
               />
             </Column>
           </SettingsFunding>
 
           <Button mode="strong" onClick={submitChanges}>
-              Save Changes
+              Save changes
           </Button>
         </Box>
       </div>
@@ -500,6 +546,33 @@ const SettingsFunding = styled.div`
 
 const Column = styled.div`
   max-width: ${35 * GU}px;
+`
+
+const IconContainer = styled.button`
+  ${unselectable};
+  all: unset;
+  display: flex;
+  justify-content: center;
+  ${({ disabled, theme }) => (disabled ? `
+      color: ${theme.disabled};
+      cursor: not-allowed;
+    ` : `
+      color: ${theme.contentSecondary};
+      cursor: pointer;
+      :hover {
+        color: ${theme.surfaceOpened};
+      }
+      :active {
+        color: ${theme.accent};
+      }
+    `)
+}
+  > svg {
+    color: inherit;
+    height: 40px;
+    width: 40px;
+    transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+  }
 `
 
 export default Settings

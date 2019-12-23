@@ -1,14 +1,10 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { formatDistance } from 'date-fns'
+import { format as formatDate, formatDistance } from 'date-fns'
 import {
-  Button,
   DropDown,
   GU,
-  IconCheck,
-  IconCross,
-  Link,
   Text,
   TextInput,
   useTheme,
@@ -19,9 +15,18 @@ import { useAragonApi } from '../../../api-react'
 import { usePanelManagement } from '../../Panel'
 import { toHex } from 'web3-utils'
 import { issueShape } from '../../../utils/shapes.js'
-import { IssueTitle } from '../PanelComponents'
+import { DetailHyperText } from '../../../../../../shared/ui'
+import {
+  Avatar,
+  FieldText,
+  IssueTitle,
+  ReviewButtons,
+  Status,
+  SubmissionDetails,
+  UserLink,
+} from '../PanelComponents'
 
-const ReviewApplication = ({ issue, requestIndex }) => {
+const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
   const githubCurrentUser = useGithubAuth()
   const { api } = useAragonApi()
   const reviewApplication = api.reviewApplication
@@ -68,13 +73,13 @@ const ReviewApplication = ({ issue, requestIndex }) => {
   const application = {
     user: {
       login: request.user.login,
-      name: request.user.login,
-      avatar: request.user.avatarUrl,
+      name: request.user.name,
+      avatarUrl: request.user.avatarUrl,
       url: request.user.url
     },
     workplan: request.workplan,
     hours: request.hours,
-    eta: (request.eta === '-') ? request.eta : (new Date(request.eta)).toLocaleDateString(),
+    eta: (request.eta === '-') ? request.eta : formatDate(new Date(request.eta), 'MMM d'),
     applicationDate: request.applicationDate
   }
 
@@ -91,68 +96,47 @@ const ReviewApplication = ({ issue, requestIndex }) => {
         name="Applicant"
         items={issue.requestsData.map(request => request.user.login)}
         onChange={changeRequest}
-        selected={requestIndex}
+        selected={index}
         wide
+        css={`margin-bottom: ${3 * GU}px`}
       />
 
-      <ApplicationDetails background={`${theme.background}`} border={`${theme.border}`}>
+      <SubmissionDetails background={`${theme.background}`} border={`${theme.border}`}>
         <UserLink>
-          <img
-            alt=""
-            src={applicant.avatar}
-            css="width: 32px; height: 32px; margin-right: 10px; border-radius: 50%;"
-          />
-          <Link
-            href={applicant.url}
-            target="_blank"
-            style={{ textDecoration: 'none', color: `${theme.link}`, marginRight: 6 }}
-          >
-            {applicantName}
-          </Link>
-            applied {applicationDateDistance} ago
+          <Avatar user={applicant} />
+          {applicantName} applied {applicationDateDistance} ago
         </UserLink>
 
-        <Separator/>
-
         <FieldTitle>Work Plan</FieldTitle>
-        <DetailText>{application.workplan}</DetailText>
+        <DetailHyperText>{application.workplan}</DetailHyperText>
 
         <Estimations>
           <div>
             <FieldTitle>Estimated Hours</FieldTitle>
-            <DetailText>{application.hours}</DetailText>
+            <Text>{application.hours}</Text>
           </div>
           <div>
-            <FieldTitle>Estimated Completion</FieldTitle>
-            <DetailText>{application.eta}</DetailText>
+            <FieldTitle>Estimated Date</FieldTitle>
+            <Text>{application.eta}</Text>
           </div>
         </Estimations>
-      </ApplicationDetails>
+      </SubmissionDetails>
 
-      {('review' in request) ? (
+      {('review' in request) && (
         <React.Fragment>
-
           <FieldTitle>Application Status</FieldTitle>
-          <div css="margin: 10px 0">
-            {request.review.approved ? (
-              <div css="display: flex; align-items: center">
-                <IconCheck color={`${theme.positive}`} css="margin-top: -4px; margin-right: 8px"/>
-                <Text color={`${theme.positive}`}>Accepted</Text>
-              </div>
-            ) : (
-              <div css="display: flex; align-items: center">
-                <IconCross color={`${theme.negative}`} css="margin-top: -4px; margin-right: 8px" />
-                <Text color={`${theme.negative}`}>Rejected</Text>
-              </div>
-            )}
-          </div>
+
+          <FieldText>
+            <Status reviewDate={request.review.reviewDate} approved={request.review.approved} />
+          </FieldText>
 
           <FieldTitle>Feedback</FieldTitle>
           <Text.Block style={{ margin: '10px 0' }}>
             {request.review.feedback.length ? request.review.feedback : 'No feedback was provided'}
           </Text.Block>
         </React.Fragment>
-      ) : (
+      )}
+      {!readOnly && !request.review && (
         <React.Fragment>
           <FormField
             label="Feedback"
@@ -167,22 +151,9 @@ const ReviewApplication = ({ issue, requestIndex }) => {
               />
             }
           />
-          <ReviewRow>
-            <ReviewButton
-              mode="negative"
-              onClick={onReject}
-              icon={<IconCross />}
-            >
-                Reject
-            </ReviewButton>
-            <ReviewButton
-              icon={<IconCheck />}
-              mode="positive"
-              onClick={onAccept}
-            >
-                Accept
-            </ReviewButton>
-          </ReviewRow>
+
+          <ReviewButtons onAccept={onAccept} onReject={onReject} disabled={false} />
+
         </React.Fragment>
       )}
 
@@ -192,39 +163,9 @@ const ReviewApplication = ({ issue, requestIndex }) => {
 ReviewApplication.propTypes = {
   issue: issueShape,
   requestIndex: PropTypes.number.isRequired,
+  readOnly: PropTypes.bool.isRequired,
 }
 
-const UserLink = styled.div`
-  display: flex;
-  align-items: center;
-`
-const DetailText = styled(Text)`
-  display: block;
-  margin-bottom: 10px;
-`
-const Separator = styled.hr`
-  height: 1px;
-  width: 100%;
-  color: #d1d1d1;
-  opacity: 0.1;
-`
-const ApplicationDetails = styled.div`
-  border: 1px solid ${p => p.border};
-  background-color: ${p => p.background};
-  padding: 14px;
-  margin-top: 8px;
-  margin-bottom: 14px;
-`
-const ReviewButton = styled(Button).attrs({
-  mode: 'strong',
-})`
-  width: 48%;
-`
-const ReviewRow = styled.div`
-  display: flex;
-  margin-bottom: 8px;
-  justify-content: space-between;
-`
 const Estimations = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;

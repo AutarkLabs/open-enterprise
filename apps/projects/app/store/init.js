@@ -3,13 +3,14 @@ import standardBounties from '../abi/StandardBounties.json'
 import { app, handleEvent, INITIAL_STATE } from './'
 import { initializeTokens } from './helpers'
 
-export const initStore = (vaultAddress, standardBountiesAddress) => {
+export const initStore = (vaultAddress, standardBountiesAddress, network) => {
   const vaultContract = app.external(vaultAddress, vaultAbi.abi)
   const standardBountiesContract = app.external(standardBountiesAddress, standardBounties.abi)
+  const settings = { network }
   return app.store(
     async (state, action) => {
       try {
-        return await handleEvent(state, action, vaultAddress, vaultContract)
+        return await handleEvent(state, action, vaultAddress, vaultContract, settings)
       } catch (err) {
         console.error(
           `[PROJECTS] store error: ${err}
