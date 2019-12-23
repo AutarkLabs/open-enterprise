@@ -30,8 +30,8 @@
     "test": "cross-env TRUFFLE_TEST=true npm run ganache-cli:test"
   },
   "dependencies": {
-    "@aragon/api": "2.0.0-beta.8",
-    "@aragon/api-react": "2.0.0-beta.8",
+    "@aragon/api": "openworklabs/aragon-api",
+    "@aragon/api-react": "2.0.0-beta.6",
     "@aragon/apps-shared-minime": "1.0.1",
     "@aragon/os": "4.2.0",
     "@aragon/ui": "1.0.0",
@@ -102,6 +102,7 @@
     ">2%",
     "last 1 edge versions",
     "not ie > 0",
-    "not op_mini all"
+    "not op_mini all",
+    "last 2 Chrome versions"
   ]
 }

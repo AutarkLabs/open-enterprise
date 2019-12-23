@@ -3,17 +3,19 @@
   "version": "1.0.0",
   "description": "",
   "dependencies": {
-    "@aragon/api": "2.0.0-beta.8",
-    "@aragon/api-react": "2.0.0-beta.8",
-    "@aragon/ui": "1.0.0-alpha.11",
     "@babel/polyfill": "^7.2.5",
-    "prop-types": "^15.7.2",
+    "ipfs-http-client": "^32.0.1",
+    "lodash.clonedeep": "^4.5.0",
+    "react-markdown": "^4.1.0"
+  },
+  "peerDependencies": {
+    "@aragon/api": "openworklabs/aragon-api",
+    "@aragon/api-react": "2.0.0-beta.6",
+    "@aragon/ui": "^1.0.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
-    "react-markdown": "^4.1.0",
-    "styled-components": "4.1.3",
-    "ipfs-http-client": "^32.0.1",
-    "lodash.clonedeep": "^4.5.0"
+    "prop-types": "^15.7.2",
+    "styled-components": "4.1.3"
   },
   "devDependencies": {
     "@babel/core": "^7.4.5",
@@ -62,7 +64,8 @@
     "lint": "solium --dir ./contracts",
     "lint:fix": "eslint . --fix && solium --dir ./contracts --fix",
     "coverage": "cross-env SOLIDITY_COVERAGE=true npm run ganache-cli:test",
-    "ganache-cli:test": "sh ./node_modules/@aragon/test-helpers/ganache-cli.sh"
+    "ganache-cli:test": "sh ./node_modules/@aragon/test-helpers/ganache-cli.sh",
+    "frontend": "npm run sync-assets && parcel app/index.html --port 9999"
   },
   "browserslist": [
     "last 2 Chrome versions"

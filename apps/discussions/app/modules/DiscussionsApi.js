@@ -38,8 +38,11 @@ class Discussions {
   _pastEvents = () =>
     new Promise(resolve =>
       this.contract.pastEvents().subscribe(events => {
-        this.lastEventBlock = events[events.length - 1].blockNumber
-        resolve(events)
+        if (events.length > 0) {
+          this.lastEventBlock = events[events.length - 1].blockNumber
+          return resolve(events)
+        }
+        resolve([])
       })
     )
 
@@ -257,10 +260,14 @@ class Discussions {
   }
 
   listenForUpdates = callback =>
-    this.contract.events(this.lastEventBlock + 1).subscribe(async event => {
-      this.discussions = await this._buildState(this.discussions, [event])
-      callback(this.discussions)
-    })
+    this.contract
+      .events({
+        fromBlock: this.lastEventBlock + 1,
+      })
+      .subscribe(async event => {
+        this.discussions = await this._buildState(this.discussions, [event])
+        callback(this.discussions)
+      })
 
   post = async (text, discussionThreadId, ethereumAddress) => {
     const discussionPost = {

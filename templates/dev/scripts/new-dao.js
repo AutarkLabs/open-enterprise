@@ -16,17 +16,18 @@ module.exports = async function newDao({
     votingSettings,
   } = settings
 
-  
-
   const { getEventArgument } = require('@aragon/test-helpers/events')
-  const { getTemplateAddress } = require('../../open-enterprise/temp/lib/ens')(web3, artifacts)
+  const { getTemplateAddress } = require('../../open-enterprise/temp/lib/ens')(
+    web3,
+    artifacts
+  )
   // TODO: Allow using DevTemplate or OpenEnterpriseTemplate with an env variable
   const OpenEnterpriseTemplate = artifacts.require('DevTemplate')
   const Kernel = artifacts.require('Kernel')
 
   try {
     const template = OpenEnterpriseTemplate.at(await getTemplateAddress())
-    
+
     const baseDAO = await template.newTokenAndInstance(
       token.name,
       token.symbol,
@@ -37,12 +38,12 @@ module.exports = async function newDao({
       0,
       { from: members[0] }
     )
-      
+
     const dao = Kernel.at(getEventArgument(baseDAO, 'DeployDao', 'dao'))
     const baseOpenEnterprise = await template.newOpenEnterprise(
       dotVotingSettings,
       0,
-      false,
+      useDiscussions,
       { from: members[0] }
     )
 
@@ -51,7 +52,8 @@ module.exports = async function newDao({
       '🚀 Created new DEV dao at address:',
       dao.address,
       '\n⛽️ Total gas cost for creation:',
-      baseDAO.receipt.gasUsed + baseOpenEnterprise.receipt.gasUsed, 'gas',
+      baseDAO.receipt.gasUsed + baseOpenEnterprise.receipt.gasUsed,
+      'gas',
       '\n🌐 You can access it at:',
       `http://localhost:8080/ipfs/QmVptozeYf3XxqHfvMjofCkZsYSqi6YuvHFLMc83SECbNw/#/dev-${id}`
     )
