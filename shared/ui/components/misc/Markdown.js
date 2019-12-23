@@ -20,8 +20,8 @@ const ListItem = ({ checked, children }) => {
 }
 
 ListItem.propTypes = {
-  checked: PropTypes.bool.isRequired,
-  children: PropTypes.element.isRequired,
+  checked: PropTypes.bool,
+  children: PropTypes.node.isRequired,
 }
 
 const Markdown = ({ content, style }) => {
