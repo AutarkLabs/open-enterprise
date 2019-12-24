@@ -20,8 +20,8 @@ const ListItem = ({ checked, children }) => {
 }
 
 ListItem.propTypes = {
-  checked: PropTypes.bool.isRequired,
-  children: PropTypes.element.isRequired,
+  checked: PropTypes.bool,
+  children: PropTypes.node.isRequired,
 }
 
 const Markdown = ({ content, style }) => {
@@ -103,7 +103,10 @@ const MarkdownWrapper = styled.div`
 
   a {
     color: ${theme.gradientStart};
+    display: inline;
     text-decoration: none;
+    white-space: normal;
+    word-break: break-word;
   }
   a:hover {
     text-decoration: underline;
