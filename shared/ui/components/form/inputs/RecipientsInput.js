@@ -67,7 +67,7 @@ const RecipientsInput = ({
         onClick={addRecipient}
         title={'Click to add'}
       >
-        + Add Another
+        + Add another
       </StyledButton>
     </div>
   )

@@ -122,7 +122,7 @@ const Popup = styled(animated.div)`
   border: 1px solid ${theme.contentBorder};
   border-radius: 3px;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.3);
-  padding: ${2 * GU}px;
+  padding: ${GU}px;
   position: absolute;
   top: 100%;
   left: 0;

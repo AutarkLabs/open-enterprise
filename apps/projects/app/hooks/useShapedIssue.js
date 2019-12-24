@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react'
-import { useAragonApi } from '@aragon/api-react'
+import { useAragonApi } from '../api-react'
 import BigNumber from 'bignumber.js'
 
 export default () => {
@@ -19,7 +19,7 @@ export default () => {
   const shapeIssue = useCallback(issue => {
     const bounty = bounties[issue.number]
     const repoIdFromBounty = bounty && bounty.data.repoId
-    if (bounty && repoIdFromBounty === issue.repository.id) {
+    if ((bounty && tokens[bounty.data.token]) && repoIdFromBounty === issue.repository.id) {
       const data = bounties[issue.number].data
       const balance = BigNumber(bounties[issue.number].data.balance)
         .div(BigNumber(10 ** tokens[data.token].decimals))

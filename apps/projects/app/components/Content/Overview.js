@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react'
-import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
 import { Project, Empty } from '../Card'
@@ -7,7 +6,7 @@ import { useLayout } from '@aragon/ui'
 import { CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
 import { useDecoratedRepos } from '../../context/DecoratedRepos'
 
-const Overview = ({ changeActiveIndex }) => {
+const Overview = () => {
   const { width } = useLayout()
   const repos = useDecoratedRepos()
 
@@ -22,7 +21,6 @@ const Overview = ({ changeActiveIndex }) => {
       // TODO: Disabled for now
       // contributors={repo.metadata.collaborators}
       url={repo.metadata.url}
-      changeActiveIndex={changeActiveIndex}
     />
   ), [repos]
   ))
@@ -36,10 +34,6 @@ const Overview = ({ changeActiveIndex }) => {
       {projectsCards}
     </StyledProjects>
   )
-}
-
-Overview.propTypes = {
-  changeActiveIndex: PropTypes.func.isRequired,
 }
 
 const StyledProjects = styled.div`

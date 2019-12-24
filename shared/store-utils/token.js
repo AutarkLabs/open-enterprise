@@ -6,7 +6,7 @@ import {
   getTokenName,
   isTokenVerified,
   tokenAbi,
-  tokenDataFallback,
+  tokenDataOverride,
 } from '../lib/token-utils'
 import {addressesEqual} from '../lib/web3-utils'
 import {app} from '.'
@@ -18,7 +18,7 @@ const tokenDecimals = new Map() // External contract -> decimals
 const tokenNames = new Map() // External contract -> name
 const tokenSymbols = new Map() // External contract -> symbol
 
-const initEthToken = () => {
+export const initEthToken = () => {
   // Set up ETH placeholders
   const ETH_CONTRACT = Symbol('ETH_CONTRACT')
   tokenContracts.set(ETHER_TOKEN_FAKE_ADDRESS, ETH_CONTRACT)
@@ -124,21 +124,21 @@ const newBalanceEntry = async (tokenContract, tokenAddress, settings) => {
 const loadTokenBalance = (tokenAddress, {vault}) =>
   vault.contract.balance(tokenAddress).toPromise()
 
-const loadTokenDecimals = async (tokenContract, tokenAddress, {network}) => {
+export const loadTokenDecimals = async (tokenContract, tokenAddress, {network}) => {
   if (tokenDecimals.has(tokenContract)) {
     return tokenDecimals.get(tokenContract)
   }
 
-  const fallback =
-    tokenDataFallback(tokenAddress, 'decimals', network.type) || '0'
+  const override =
+    tokenDataOverride(tokenAddress, 'decimals', network.type)
 
   let decimals
   try {
-    decimals = (await getTokenDecimals(app, tokenAddress)) || fallback
+    decimals = override || (await getTokenDecimals(app, tokenAddress))
     tokenDecimals.set(tokenContract, decimals)
   } catch (err) {
     // decimals is optional
-    decimals = fallback
+    decimals = '0'
   }
   return decimals
 }
@@ -147,32 +147,33 @@ const loadTokenName = async (tokenContract, tokenAddress, {network}) => {
   if (tokenNames.has(tokenContract)) {
     return tokenNames.get(tokenContract)
   }
-  const fallback = tokenDataFallback(tokenAddress, 'name', network.type) || ''
+  const override = tokenDataOverride(tokenAddress, 'name', network.type)
 
   let name
   try {
-    name = (await getTokenName(app, tokenAddress)) || fallback
+    name = override || (await getTokenName(app, tokenAddress))
     tokenNames.set(tokenContract, name)
   } catch (err) {
     // name is optional
-    name = fallback
+    name = ''
   }
   return name
 }
 
-const loadTokenSymbol = async (tokenContract, tokenAddress, {network}) => {
+// exported for Dot Voting
+export const loadTokenSymbol = async (tokenContract, tokenAddress, {network}) => {
   if (tokenSymbols.has(tokenContract)) {
     return tokenSymbols.get(tokenContract)
   }
-  const fallback = tokenDataFallback(tokenAddress, 'symbol', network.type) || ''
+  const override = tokenDataOverride(tokenAddress, 'symbol', network.type)
 
   let symbol
   try {
-    symbol = (await getTokenSymbol(app, tokenAddress)) || fallback
+    symbol = override || (await getTokenSymbol(app, tokenAddress))
     tokenSymbols.set(tokenContract, symbol)
   } catch (err) {
     // symbol is optional
-    symbol = fallback
+    symbol = ''
   }
   return symbol
 }

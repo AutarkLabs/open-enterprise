@@ -2,172 +2,152 @@ import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
 import BigNumber from 'bignumber.js'
-import { displayCurrency } from '../../utils/helpers'
+import { displayCurrency } from '../../../../../shared/ui/helpers'
+import * as types from '../../utils/prop-types'
 
+import usePathHelpers from '../../hooks/usePathHelpers'
 import {
   Card,
-  ContextMenu,
-  ContextMenuItem,
-  IconEdit,
-  IconPlus,
-  // IconProhibited,
-  IconView,
+  IconCheck,
+  IconCross,
+  Link,
   ProgressBar,
   Text,
   useTheme,
 } from '@aragon/ui'
 
-const Budget = ({
-  id,
-  name,
-  amount,
-  token,
-  remaining = 0,
-  inactive,
-  onNewAllocation,
-  onEdit,
-  // onDeactivate,
-  onReactivate,
-}) => {
+const Budget = ({ budget }) => {
   const theme = useTheme()
+  const { active, amount, remaining, token } = budget
 
-  const newAllocation = () => {
-    onNewAllocation(id)
-  }
-  const edit = () => {
-    onEdit(id)
-  }
-  // const deactivate = () => {
-  //   onDeactivate(id)
-  // }
-
-  const reactivate = () => {
-    onReactivate(id)
-  }
   const tokensSpent = BigNumber(amount).minus(remaining)
-  if (inactive) {
-    return (
-      <Wrapper
-        name={name}
-        theme={theme}
-        menu={
-          <ContextMenuItem onClick={reactivate}>
-            <IconView />
-            <ActionLabel>Reactivate</ActionLabel>
-          </ContextMenuItem>
-        }
-      >
-        <StatsValueBig theme={theme}>
-          <Text>Inactive</Text>
-        </StatsValueBig>
-      </Wrapper>
-    )
-  }
 
   return (
-    <Wrapper
-      name={name}
-      theme={theme}
-      menu={
+    <Wrapper budget={budget} theme={theme}>
+      {active && (
         <React.Fragment>
-          <ContextMenuItem onClick={newAllocation}>
-            <IconPlus />
-            <ActionLabel>New Allocation</ActionLabel>
-          </ContextMenuItem>
-          {/*<ContextMenuItem onClick={edit}>*/}
-          {/*  <IconEdit />*/}
-          {/*  <ActionLabel>Edit</ActionLabel>*/}
-          {/*</ContextMenuItem>*/}
-          {/* <ContextMenuItem onClick={deactivate}> */}
-          {/*   <IconProhibited /> */}
-          {/*   <ActionLabel>Deactivate</ActionLabel> */}
-          {/* </ContextMenuItem> */}
+          <ProgressBar
+            color={String(theme.accentEnd)}
+            value={tokensSpent.div(amount).toNumber()}
+          />
+          <StatsValueSmall css={{
+            color: theme.content,
+            paddingTop: '8px',
+          }}>
+            {displayCurrency(tokensSpent, token.decimals)}
+            <Text>{' ' + token.symbol + ' utilized'}</Text>
+          </StatsValueSmall>
         </React.Fragment>
-      }
-    >
-      <StatsValueBig theme={theme}>
-        {displayCurrency(BigNumber(amount))}
-        <Text>{' ' + token.symbol + ' per period'}</Text>
-      </StatsValueBig>
-      <StatsValueBig css={{ paddingTop: '24px' }} theme={theme}>
-        <ProgressBar
-          color={String(theme.accentEnd)}
-          value={tokensSpent.div(amount).toNumber()}
-        />
-      </StatsValueBig>
-      <StatsValueSmall css={{
-        color: theme.content,
-        paddingTop: '8px',
-      }}>
-        {displayCurrency(tokensSpent)}
-        <Text>{' ' + token.symbol + ' utilized'}</Text>
-      </StatsValueSmall>
+      )}
     </Wrapper>
   )
 }
 
 Budget.propTypes = {
-  id: PropTypes.string.isRequired,
-  name: PropTypes.string.isRequired,
-  amount: PropTypes.string.isRequired,
-  token: PropTypes.object.isRequired,
-  // TODO: fix remaining (should be required?)
-  remaining: PropTypes.string,
-  inactive: PropTypes.bool.isRequired,
-  onNewAllocation: PropTypes.func.isRequired,
-  onEdit: PropTypes.func.isRequired,
-  // onDeactivate: PropTypes.func.isRequired,
-  onReactivate: PropTypes.func.isRequired,
+  budget: types.budget.isRequired,
 }
 
-const Wrapper = ({ children, name, theme, menu }) => (
-  <StyledCard theme={theme}>
-    <MenuContainer>
-      <ContextMenu>
-        {menu}
-      </ContextMenu>
-    </MenuContainer>
-    <CardTitle theme={theme}>{name}</CardTitle>
-    <StatsContainer>
-      <StyledStats>
-        {children}
-      </StyledStats>
-    </StatsContainer>
-  </StyledCard>
-)
+const Wrapper = ({ budget, children, theme }) => {
+  const { requestPath } = usePathHelpers()
+  const { active, amount, id, name, token } = budget
+  return (
+    <Link
+      css="white-space: normal"
+      onClick={() => requestPath(`/budgets/${id}`)}
+    >
+      <StyledCard theme={theme}>
+        <CardTop>
+          <CardTitle theme={theme}>{name}</CardTitle>
+          <StatsContainer>
+            {children}
+          </StatsContainer>
+        </CardTop>
+        <CardBottom theme={theme}>
+          <Text>{displayCurrency(amount, token.decimals) + ' ' + token.symbol + ' / PERIOD'}</Text>
+          {active ? (
+            <Status
+              color={theme.positive}
+              icon={<IconCheck />}
+            >
+              ACTIVE
+            </Status>
+          ) : (
+            <Status
+              color={theme.negative}
+              icon={<IconCross />}
+            >
+              INACTIVE
+            </Status>
+          )}
+        </CardBottom>
+      </StyledCard>
+    </Link>
+  )
+}
 
 Wrapper.propTypes = {
+  budget: types.budget.isRequired,
   children: PropTypes.node.isRequired,
-  name: PropTypes.string.isRequired,
   theme: PropTypes.object.isRequired,
-  menu: PropTypes.node.isRequired,
+}
+
+const Status = ({ children, color, icon }) => (
+  <div css={`
+      display: flex;
+      color: ${color}
+    `}
+  >
+    {icon}
+    <span>{children}</span>
+  </div>
+)
+
+Status.propTypes = {
+  children: PropTypes.node.isRequired,
+  icon: PropTypes.node.isRequired,
+  color: PropTypes.object.isRequired,
 }
 
 const StyledCard = styled(Card)`
   box-shadow: ${({ theme }) => '0 2px 4px ' + theme.border};
   border: 0;
-  padding: 12px;
-  height: 264px;
+  cursor: pointer;
+  height: 234px;
   width: auto;
+  :hover {
+    box-shadow: ${p => `0 2px 4px ${p.theme.border},
+    0 2px 8px ${p.theme.border}`}
+  }
 `
 
-const MenuContainer = styled.div`
-  align-self: flex-end;
-  align-items: center;
+const CardTop = styled.div`
+  padding: 12px;
+  height: 229px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 `
 
-const ActionLabel = styled.span`
-  margin-left: 15px;
+const CardBottom = styled.div`
+  padding: 4px 12px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  line-height: 26px;
+  vertical-align: middle;
+  color: ${({ theme }) => theme.contentSecondary};
+  border-top: 1px solid ${({ theme }) => theme.border};
 `
 
 const CardTitle = styled(Text.Block).attrs({
   size: 'large',
   weight: 'bold',
 })`
-  font-size: 26px;
+  height: 78px;
+  font-size: 24px;
   font-weight: 400;
-  margin-top: 10px;
-  margin-bottom: 5px;
+  margin: 20px 12px;
   text-align: center;
   color: ${({ theme }) => theme.content};
   display: block;
@@ -181,21 +161,8 @@ const CardTitle = styled(Text.Block).attrs({
 `
 
 const StatsContainer = styled.div`
-  display: flex;
-  flex-grow: 1;
-  justify-content: center;
-  align-content: stretch;
-`
-
-const StyledStats = styled.div`
-  display: inline-block;
   text-align: center;
-  flex-grow: 1;
-`
-
-const StatsValueBig = styled.div`
-  font-size: 16px;
-  color: ${({ theme }) => theme.contentSecondary};
+  padding: 12px;
 `
 
 const StatsValueSmall = styled.div`

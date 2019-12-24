@@ -15,10 +15,10 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
 import { STATUSES } from '../../utils/constants'
-import { displayCurrency } from '../../utils/helpers'
+import { displayCurrency } from '../../../../../shared/ui/helpers'
 import { addressesEqual } from '../../../../../shared/lib/web3-utils'
 
-const AllocationsHistory = ({ allocations }) => {
+const AllocationsHistory = ({ allocations, skipBudgetColumn }) => {
   const theme = useTheme()
   const { layoutName } = useLayout()
   const { balances = [], budgets = [] } = useAppState()
@@ -31,6 +31,16 @@ const AllocationsHistory = ({ allocations }) => {
     const matchingName = budgets.find(({ id }) => inputId === id)
     return matchingName ? matchingName.name : `# ${inputId}`
   }
+  const fields = [
+    'Date',
+    { label: 'Recipients', childStart: true },
+    'Description',
+    'Status',
+    'Amount'
+  ]
+  if (!skipBudgetColumn) {
+    fields.splice(1, 0, 'Budget')
+  }
   return (
     <DataView
       mode="adaptive"
@@ -38,14 +48,7 @@ const AllocationsHistory = ({ allocations }) => {
       heading={
         <Text size="xlarge">Allocations history</Text>
       }
-      fields={[
-        'Date',
-        'Budget',
-        { label: 'Recipients', childStart: true },
-        'Description',
-        'Status',
-        'Amount'
-      ]}
+      fields={fields}
       entries={allocations}
       renderEntry={({
         date,
@@ -54,23 +57,29 @@ const AllocationsHistory = ({ allocations }) => {
         description,
         status,
         amount,
-        token
+        token,
+        tokenDecimal
       }, index) => {
-        return [
+        const entry = [
           new Date(Number(date)).toLocaleDateString(),
-          <div key={index}>
-            {getBudgetName(accountId)}
-          </div>,
           recipients.length === 1 ? '1 entity'
             : recipients.length + ' entities',
           description,
           <Status key={index} code={status} />,
           <Amount key={index} theme={theme} >
-            { displayCurrency(BigNumber(-amount)) } { getTokenSymbol(token) }
+            { displayCurrency(-amount, tokenDecimal) } { getTokenSymbol(token) }
           </Amount>
         ]
+        if (!skipBudgetColumn) {
+          entry.splice(1, 0, (
+            <div key={index}>
+              {getBudgetName(accountId)}
+            </div>
+          ))
+        }
+        return entry
       }}
-      renderEntryExpansion={({ recipients, amount, token }) => {
+      renderEntryExpansion={({ recipients, amount, token, tokenDecimal }) => {
         const totalSupports = recipients.reduce((total, recipient) => {
           return total + Number(recipient.supports)
         }, 0)
@@ -92,7 +101,7 @@ const AllocationsHistory = ({ allocations }) => {
                 />
               </RecipientProgress>
               <RecipientAmount theme={theme}>
-                { displayCurrency(BigNumber(amount).times(allocated)) } {' '}
+                { displayCurrency(BigNumber(amount).times(allocated), tokenDecimal) } {' '}
                 {getTokenSymbol(token)} {' • '}
                 { allocated.times(100).dp(0).toNumber() }{'%'}
               </RecipientAmount>
@@ -106,6 +115,7 @@ const AllocationsHistory = ({ allocations }) => {
 
 AllocationsHistory.propTypes = {
   allocations: PropTypes.arrayOf(PropTypes.object).isRequired,
+  skipBudgetColumn: PropTypes.bool,
 }
 
 const Status = ({ code }) => {

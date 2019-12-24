@@ -37,7 +37,7 @@ import { STATUS } from '../utils/github'
 
 import { app } from './app'
 
-export const handleEvent = async (state, action, vaultAddress, vaultContract) => {
+export const handleEvent = async (state, action, vaultAddress, vaultContract, settings) => {
   const { event, returnValues, address } = action
   switch (event) {
   case SYNC_STATUS_SYNCING: {
@@ -187,10 +187,10 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract) =>
   }
   case BOUNTY_SETTINGS_CHANGED:
     state = await syncSettings(state) // No returnValues on this
-    return await syncTokens(state, { token: state.bountySettings.bountyCurrency }, vaultContract )
+    return await syncTokens(state, { token: state.bountySettings.bountyCurrency }, vaultContract, settings )
   case VAULT_DEPOSIT:
     if (vaultAddress !== address) return state
-    return await syncTokens(state, returnValues, vaultContract)
+    return await syncTokens(state, returnValues, vaultContract, settings)
   default:
     return state
   }

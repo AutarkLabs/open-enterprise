@@ -1,9 +1,9 @@
 import { ETHER_TOKEN_VERIFIED_ADDRESSES } from './verified-tokens'
 import { toUtf8 } from './web3-utils'
-import tokenSymbolAbi from '../json-abis/token-symbol.json'
-import tokenSymbolBytesAbi from '../json-abis/token-symbol-bytes.json'
-import tokenNameAbi from '../json-abis/token-name.json'
-import tokenNameBytesAbi from '../json-abis/token-name-bytes.json'
+import tokenSymbolAbi from '../abi/token-symbol.json'
+import tokenSymbolBytesAbi from '../abi/token-symbol-bytes.json'
+import tokenNameAbi from '../abi/token-name.json'
+import tokenNameBytesAbi from '../abi/token-name-bytes.json'
 
 // Some known tokens don’t strictly follow ERC-20 and it would be difficult to
 // adapt to every situation. The data listed in this map is used as a fallback

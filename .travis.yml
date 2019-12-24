@@ -71,12 +71,15 @@ jobs:
       install:
         - travis_wait npm i -g @aragon/cli@5.6.2
         - npm run bootstrap
-      script: travis_wait 60 npm run publish:cd
+      script: npm run publish:cd
 
 
 notifications:
   webhooks: https://coveralls.io/webhook
-  email: false
+  email:
+    recipients:
+      - jobs@autark.xyz
+    if: branch = dev
 
 # Only build pushes to dev. All pull requests still build
 branches:

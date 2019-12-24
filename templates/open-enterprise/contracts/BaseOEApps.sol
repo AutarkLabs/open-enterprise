@@ -132,8 +132,8 @@ contract BaseOEApps is BaseCache, TokenCache {
 
     /* PROJECTS */
 
-    function _installProjectsApp(Kernel _dao, Vault _vault, MiniMeToken _token) internal returns (Projects) {
-        bytes memory initializeData = abi.encodeWithSelector(Projects(0).initialize.selector, bountiesRegistry, _vault, _token);
+    function _installProjectsApp(Kernel _dao, Vault _vault) internal returns (Projects) {
+        bytes memory initializeData = abi.encodeWithSelector(Projects(0).initialize.selector, bountiesRegistry, _vault);
         return Projects(_installNonDefaultApp(_dao, PROJECTS_APP_ID, initializeData));
     }
 

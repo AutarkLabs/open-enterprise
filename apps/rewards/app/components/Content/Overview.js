@@ -8,6 +8,7 @@ import {
   IconView,
   Text,
 } from '@aragon/ui'
+import { isAfter } from 'date-fns'
 import {
   ONE_TIME_DIVIDEND,
   RECURRING_DIVIDEND,
@@ -84,8 +85,10 @@ const renderOneTimeDividend = (reward) => {
     amount,
     amountToken,
     dateReference,
+    endBlock,
   } = reward
-  const nextPayout = dateReference.toDateString()
+  const nextPayout = isAfter(dateReference, new Date())
+    ? dateReference.toDateString() + ` (block: ${endBlock})` : 'Completed'
   const displayAmount = `${displayCurrency(amount)} ${amountToken}`
   return [ description, DIVIDEND, ONE_TIME, nextPayout, displayAmount ]
 }
@@ -97,12 +100,15 @@ const renderRecurringDividend = (reward) => {
     amountToken,
     disbursement,
     disbursementUnit,
-    disbursements
+    disbursements,
+    disbursementBlocks,
   } = reward
   const frequency = `${RECURRING} (${disbursement} ${disbursementUnit})`
   const today = new Date()
-  const nextPayout = (disbursements.find(d => d.getTime() > today.getTime()) || disbursements[disbursements.length - 1])
-    .toDateString()
+  const date = disbursements.find(d => d.getTime() > today.getTime())
+  const block = disbursementBlocks[disbursements.indexOf(date)]
+  const nextPayout = date === undefined
+    ? 'Completed' : `${date.toDateString()} (block: ${block})`
   const displayAmount = `${displayCurrency(amount)} ${amountToken}`
   return [ description, DIVIDEND, frequency, nextPayout, displayAmount ]
 }
@@ -114,8 +120,10 @@ const renderOneTimeMerit = (reward) => {
     amount,
     amountToken,
     endDate,
+    endBlock,
   } = reward
-  const nextPayout = new Date(endDate).toDateString()
+  const nextPayout = isAfter(endDate, new Date())
+    ? new Date(endDate).toDateString() + ` (block: ${endBlock})` : 'Completed'
   const displayAmount = `${displayCurrency(amount)} ${amountToken}`
   return [ description, MERIT, ONE_TIME, nextPayout, displayAmount ]
 }

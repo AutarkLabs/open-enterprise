@@ -18,7 +18,7 @@ const VoteEnact = ({ voteId }) => {
         onClick={handleExecuteVote}
         css="margin: 10px 0"
       >
-          Execute Vote
+          Execute vote
       </Button>
       <Info>
         The voting period is closed and the vote status is passed. <span css="font-weight: bold">Anyone</span> can now enact this vote to execute its action.

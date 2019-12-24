@@ -3,12 +3,13 @@ import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { useQuery } from '@apollo/react-hooks'
 
-import { useAragonApi } from '@aragon/api-react'
+import { useAragonApi } from '../../api-react'
 import { Button, GU, Text } from '@aragon/ui'
 import { compareAsc, compareDesc } from 'date-fns'
 
 import { initApolloClient } from '../../utils/apollo-client'
 import useShapedIssue from '../../hooks/useShapedIssue'
+import usePathSegments from '../../hooks/usePathSegments'
 import { STATUS } from '../../utils/github'
 import { getIssuesGQL } from '../../utils/gql-queries.js'
 import { FilterBar } from '../Shared'
@@ -31,9 +32,6 @@ const ISSUES_PER_CALL = 100
 
 class Issues extends React.PureComponent {
   static propTypes = {
-    activeIndex: PropTypes.shape({
-      tabData: PropTypes.object.isRequired,
-    }).isRequired,
     bountyIssues: PropTypes.array.isRequired,
     bountySettings: PropTypes.shape({
       expLvls: PropTypes.array.isRequired,
@@ -225,7 +223,6 @@ class Issues extends React.PureComponent {
         issuesFiltered={issuesFiltered}
         handleFiltering={this.handleFiltering}
         handleSorting={this.handleSorting}
-        activeIndex={this.props.activeIndex}
         bountyIssues={this.props.bountyIssues}
         disableFilter={this.disableFilter}
         disableAllFilters={this.disableAllFilters}
@@ -340,7 +337,7 @@ class Issues extends React.PureComponent {
               .map(issue => (
                 <Issue
                   isSelected={issue.id in this.state.selectedIssues}
-                  key={issue.number}
+                  key={issue.id}
                   {...issue}
                   onClick={this.props.setSelectedIssue}
                   onSelect={this.handleIssueSelection}
@@ -377,16 +374,15 @@ IssuesQuery.propTypes = {
   query: PropTypes.object.isRequired,
 }
 
-const IssuesWrap = ({ activeIndex, ...props }) => {
+const IssuesWrap = props => {
   const { appState: { github, repos } } = useAragonApi()
   const shapeIssue = useShapedIssue()
+  const { query: { repoId } } = usePathSegments()
   const [ client, setClient ] = useState(null)
   const [ downloadedRepos, setDownloadedRepos ] = useState({})
   const [ query, setQuery ] = useState(null)
   const [ filters, setFilters ] = useState({
-    projects: activeIndex.tabData.filterIssuesByRepoId
-      ? { [activeIndex.tabData.filterIssuesByRepoId]: true }
-      : {},
+    projects: repoId ? { [repoId]: true } : {},
     labels: {},
     milestones: {},
     deadlines: {},
@@ -436,7 +432,6 @@ const IssuesWrap = ({ activeIndex, ...props }) => {
 
   return (
     <IssuesQuery
-      activeIndex={activeIndex}
       client={client}
       filters={filters}
       query={query}
@@ -446,14 +441,6 @@ const IssuesWrap = ({ activeIndex, ...props }) => {
       {...props}
     />
   )
-}
-
-IssuesWrap.propTypes = {
-  activeIndex: PropTypes.shape({
-    tabData: PropTypes.shape({
-      filterIssuesByRepoId: PropTypes.string,
-    }).isRequired,
-  }).isRequired,
 }
 
 const StyledIssues = styled.div`

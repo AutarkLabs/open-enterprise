@@ -117,14 +117,20 @@ class NewEntity extends React.Component {
       <Form
         onSubmit={handleSubmit}
         disabled={!!formDisabled}
-        submitText="Submit Entity"
+        submitText="Submit entity"
         error={errorBlock}
       >
         <FormField
           required
           label="Name"
           input={
-            <TextInput name="name" onChange={changeField} value={name} wide />
+            <TextInput
+              name="name"
+              onChange={changeField}
+              value={name}
+              wide
+              aria-label="Entity name"
+            />
           }
         />
 
@@ -137,6 +143,7 @@ class NewEntity extends React.Component {
               onChange={changeField}
               value={address}
               wide
+              aria-label="Entity address"
             />
           }
         />

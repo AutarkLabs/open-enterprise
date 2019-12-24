@@ -25,7 +25,7 @@ const usePanelManagement = () => {
     editBounty: issues => {
       setActivePanel(PANELS.FundIssues)
       setPanelProps({
-        title: 'Update Funding',
+        title: 'Update funding',
         issues,
         mode: 'update',
       })
@@ -37,16 +37,23 @@ const usePanelManagement = () => {
         issue
       })
     },
-    reviewApplication: (issue, requestIndex = 0) => {
+    reviewApplication: ({ issue, requestIndex = 0, readOnly = false }) => {
       setActivePanel(PANELS.ReviewApplication)
       setPanelProps({
         issue,
         requestIndex,
+        readOnly,
+        title: 'View application',
       })
     },
-    reviewWork: (issue, index = 0) => {
+    reviewWork: ({ issue, submissionIndex = 0, readOnly = false }) => {
       setActivePanel(PANELS.ReviewWork)
-      setPanelProps({ issue, index })
+      setPanelProps({
+        issue,
+        submissionIndex,
+        readOnly,
+        title: 'View work'
+      })
     },
     setupNewIssue: () => {
       setActivePanel(PANELS.NewIssue)

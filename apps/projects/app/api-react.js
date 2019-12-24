@@ -1,6 +1,7 @@
 import { hexToAscii } from 'web3-utils'
+import { Observable } from 'rxjs'
+import { ipfsGet } from '../../../shared/utils/ipfs'
 import buildStubbedApiReact from '../../../shared/api-react'
-import { STATUS } from './utils/github'
 import {
   REQUESTED_GITHUB_TOKEN_SUCCESS,
   REQUESTED_GITHUB_DISCONNECT,
@@ -14,7 +15,7 @@ const initialState = process.env.NODE_ENV !== 'production' && {
       addr: '0x0000000000000000000000000000000000000000',
       symbol: 'ETH',
       decimals: '18',
-      balance: '0',
+      balance: '100000000000000000000',
     },
     {
       addr: '0xB1Aa712237895EF25fb8c6dA491Ba8662bB80256',
@@ -52,7 +53,8 @@ const initialState = process.env.NODE_ENV !== 'production' && {
     ],
     fundingModel: 'Fixed',
   },
-  github: { status: STATUS.INITIAL, token: null, event: '' }
+  github: INITIAL_STATE.github,
+  isSyncing: false,
 }
 
 const functions = process.env.NODE_ENV !== 'production' && ((appState, setAppState) => ({
@@ -66,7 +68,63 @@ const functions = process.env.NODE_ENV !== 'production' && ((appState, setAppSta
       },
     ]
   }),
-  trigger: (event, { status, token }) => {
+  addBounties: (
+    repoIds,
+    issueNumbers,
+    bountySizes,
+    deadlines,
+    tokenTypes,
+    tokenContracts, // ignored here
+    ipfsAddresses,
+    description // FIXME: also stored in IPFS fundingHistory
+  ) => new Observable(subscriber => {
+    async function getIssues() {
+      const issues = await Promise.all([
+        ...appState.issues,
+        ...repoIds.map(async (repoId, index) => {
+          const token = appState.tokens.find(({ symbol }) =>
+            tokenTypes[index] === 1 ? symbol === 'ETH' : symbol !== 'ETH'
+          )
+          const ipfsAddress = ipfsAddresses.slice(46 * index, 46 * (index + 1))
+          const {
+            issueId,
+            exp,
+            fundingHistory,
+            hours,
+            repo,
+          } = await ipfsGet(ipfsAddress)
+          return {
+            issueNumber: String(issueNumbers[index]),
+            data: {
+              assignee: '0x0000000000000000000000000000000000000000',
+              balance: bountySizes[index],
+              deadline: new Date(deadlines[index]).toISOString(),
+              exp,
+              fundingHistory: [{
+                ...fundingHistory[0], // only one item in array at this point
+                description, // could omit this here; including for clarity
+              }],
+              hasBounty: true,
+              hours,
+              issueId,
+              number: issueNumbers[index],
+              repo,
+              repoId: hexToAscii(repoId),
+              standardBountyId: undefined, // FIXME: how to spoof?
+              token: token.addr,
+              workStatus: 'funded',
+            }
+          }
+        })
+      ])
+      const nextState = { ...appState, issues }
+      setAppState(nextState)
+      subscriber.next(nextState)
+      subscriber.complete()
+    }
+    getIssues()
+  }),
+  emitTrigger: (event, { status, token }) => {
     switch (event) {
     case REQUESTED_GITHUB_TOKEN_SUCCESS:
       setAppState({
@@ -83,6 +141,6 @@ const functions = process.env.NODE_ENV !== 'production' && ((appState, setAppSta
   }
 }))
 
-const { AragonApi, useAragonApi, useNetwork } = buildStubbedApiReact({ initialState, functions })
+const { AragonApi, useAragonApi, useNetwork, usePath } = buildStubbedApiReact({ initialState, functions })
 
-export { AragonApi, useAragonApi, useNetwork }
+export { AragonApi, useAragonApi, useNetwork, usePath }

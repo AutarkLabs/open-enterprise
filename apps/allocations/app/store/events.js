@@ -44,7 +44,15 @@ const eventHandler = async eventData => {
       accounts: await updateAccounts(state.accounts, returnValues.accountId),
       allocations: await updateAllocations(state.allocations, returnValues)
     }
-
+  case 'NewPeriod':
+    return {
+      ...state,
+      period: {
+        id: returnValues.periodId,
+        startDate: new Date(returnValues.periodStarts * 1000),
+        endDate: new Date(returnValues.periodEnds * 1000),
+      }
+    }
   default:
     return { ...state }
   }
