@@ -25,7 +25,8 @@ import Routes from './Routes'
 let popupRef = null
 
 const App = () => {
-  const { api, appState } = useAragonApi()
+  const { api, appState, guiStyle } = useAragonApi()
+  const { appearance } = guiStyle
   const [ githubLoading, setGithubLoading ] = useState(false)
   const [ panel, setPanel ] = useState(null)
   const [ panelProps, setPanelProps ] = useState(null)
@@ -105,20 +106,20 @@ const App = () => {
     )
   } else if (github.status === STATUS.INITIAL) {
     return (
-      <Main role="main">
+      <Main role="main" theme={appearance}>
         <Unauthorized onLogin={handleGithubSignIn} isSyncing={isSyncing} />
       </Main>
     )
   } else if (github.status === STATUS.FAILED) {
     return (
-      <Main>
+      <Main theme={appearance}>
         <Error action={noop} />
       </Main>
     )
   }
 
   return (
-    <Main>
+    <Main theme={appearance}>
       <ApolloProvider client={client}>
         <PanelContext.Provider value={configurePanel}>
           <IdentityProvider

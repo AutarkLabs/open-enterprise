@@ -8,7 +8,7 @@ const NumberInput = ({ className, ...props }) => {
   const theme = useTheme()
   return (
     <Wrap className={className} theme={theme}>
-      <Input {...props} />
+      <Input {...props} theme={theme}/>
     </Wrap>
   )
 }
@@ -22,7 +22,7 @@ NumberInput.propTypes = {
 // containing row to expand beyond the desired bounds
 const Wrap = styled.div`
   border-radius: 3px;
-  border: 1px solid #e6e6e6;
+  border: 1px solid ${props => props.theme.border};
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
   :focus-within {
     border: 1px solid ${props => props.theme.accent};
@@ -30,6 +30,7 @@ const Wrap = styled.div`
 `
 
 const Input = styled(NumberFormat)`
+  background-color: ${props => props.theme.surface};
   border: none;
   border-radius: 3px;
   height: 38px;

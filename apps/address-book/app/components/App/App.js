@@ -14,7 +14,8 @@ const ASSETS_URL = './aragon-ui'
 
 const App = () => {
   const [ panelVisible, setPanelVisible ] = useState(false)
-  const { api, appState = {} } = useAragonApi()
+  const { api, appState = {}, guiStyle } = useAragonApi()
+  const { appearance } = guiStyle
 
   const { entries = [], isSyncing = true } = appState
 
@@ -61,7 +62,7 @@ const App = () => {
   const addressList = entries.map(entry => entry.addr)
 
   return (
-    <Main assetsUrl={ASSETS_URL}>
+    <Main assetsUrl={ASSETS_URL} theme={appearance}>
       <IdentityProvider
         onResolve={handleResolveLocalIdentity}
         onShowLocalIdentityModal={handleShowLocalIdentityModal}
