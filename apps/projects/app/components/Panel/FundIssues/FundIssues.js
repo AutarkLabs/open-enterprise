@@ -59,8 +59,7 @@ const bountiesFor = ({ bountySettings, issues, tokens }) => issues.reduce(
       deadline: issue.deadline
         ?  new Date(issue.deadline)
         : addHours(new Date(), bountySettings.bountyDeadline),
-      slots: 1,
-      slotsIndex: 0,
+      bounties: issue.bounties || 1,
       payout: issue.payout || 0,
       token: tokens.find(t => t.symbol === issue.symbol) || tokens[0],
     }
@@ -220,6 +219,8 @@ BountyUpdate.propTypes = {
   updateBounty: PropTypes.func.isRequired,
 }
 
+const isFixed = bountySettings => bountySettings.fundingModel === 'Fixed'
+
 const FundForm = ({
   issues,
   bounties,
@@ -316,12 +317,10 @@ const FundForm = ({
               justify-content: space-between;
               margin: ${GU}px 0 ${2 * GU}px 0;
             `}>
-              <Text css="display: flex">
+              <Text css="display: flex; align-items: center">
                 Applications required to work on issues&nbsp;
-                <Help hint="The work terms" css={`margin-left: ${.5 * GU}`}>
-                  By default, the issues in this funding proposal will not require
-                  applications to work on a bounty before work is submitted.
-                  To require applications, click on the switch to enable this term.
+                <Help hint="TDB">
+                TBD
                 </Help>
               </Text>
               <Switch
@@ -338,7 +337,7 @@ const FundForm = ({
           input={
             <>
               <Text css={`display: flex; display: block; margin: ${GU}px 0 ${2 * GU}px 0`}>
-                Enter the estimated hours per issue
+                Enter the {isFixed(bountySettings) ? 'amount' : 'estimated hours'} per issue
               </Text>
               <React.Fragment>
                 {issues.map(issue => (
@@ -362,7 +361,7 @@ const FundForm = ({
       {!!zeroError.length &&
         <ErrorMessage text={
           errorMessages.amount({
-            sayAmount: bountySettings.fundingModel === 'Fixed',
+            sayAmount: isFixed(bountySettings),
             plural: issues.length > 1,
           })}
         />
@@ -428,9 +427,9 @@ const FundIssues = ({ issues, mode }) => {
     }
 
     if (update.hours !== undefined || update.exp) {
-      const { exp, hours } = newBounties[issueId]
+      const { exp, hours, bounties } = newBounties[issueId]
       const { baseRate, expLvls } = bountySettings
-      newBounties[issueId].payout = hours * baseRate * expLvls[exp].mul
+      newBounties[issueId].payout = bounties * hours * baseRate * expLvls[exp].mul
     }
 
     setBounties(newBounties)
@@ -460,6 +459,7 @@ const FundIssues = ({ issues, mode }) => {
       ipfsData.push({
         issueId: bounty.issueId,
         exp: bounty.exp,
+        bounties: bounty.bounties,
         fundingHistory: [
           ...bounty.fundingHistory,
           {
@@ -472,8 +472,8 @@ const FundIssues = ({ issues, mode }) => {
         repo: bounty.repo,
       })
     })
-    const ipfsAddresses = await computeIpfsString(ipfsData)
 
+    const ipfsAddresses = await computeIpfsString(ipfsData)
     const addBountiesF = openSubmission ? api.addBountiesNoAssignment : api.addBounties
     await addBountiesF(
       repoIds,

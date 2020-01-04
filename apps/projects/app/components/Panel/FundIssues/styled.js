@@ -35,8 +35,10 @@ export const HoursInput = styled(TextInput.Number).attrs({
   step: '0.25',
   min: '0',
 })`
-  width: 100%;
-  display: inline-block;
+  padding-top: 3px;
+`
+
+export const NumericInput = styled(TextInput)`
   padding-top: 3px;
 `
 
