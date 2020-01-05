@@ -17,44 +17,33 @@ cleanup() {
 }
 
 setup_coverage_variables() {
-  PORT=${PORT-8555}
+  ACCOUNTS=${ACCOUNTS-200}  
   BALANCE=${BALANCE-100000}
+  COMMAND=${COMMAND-testrpc-sc}
+  ENVIRONMENT=${ENVIRONMENT-coverage}
   GAS_LIMIT=${GAS_LIMIT-0xfffffffffff}
+  MAIN_TASK=${MAIN_TASK-run_coverage}
   NETWORK_ID=${NETWORK_ID-16}
+  PORT=${PORT-8555}
 }
 
 setup_testing_variables() {
-  PORT=${PORT-8545}
-  BALANCE=${BALANCE-100000}
-  GAS_LIMIT=${GAS_LIMIT-8000000}
-  NETWORK_ID=${NETWORK_ID-15}
   ACCOUNTS=${ACCOUNTS-200}
+  BALANCE=${BALANCE-100000}
+  COMMAND=${COMMAND-ganache-cli}
+  ENVIRONMENT=${ENVIRONMENT-rpc}
+  GAS_LIMIT=${GAS_LIMIT-8000000}
+  MAIN_TASK=${MAIN_TASK-run_tests}
+  NETWORK_ID=${NETWORK_ID-15}
+  PORT=${PORT-8545}
 }
 
-start_ganache() {
-  echo "Starting ganache-cli..."
-  npx ganache-cli -i ${NETWORK_ID} -l ${GAS_LIMIT} -a ${ACCOUNTS} -e ${BALANCE} -p ${PORT} > /dev/null &
+start_chain() {
+  echo "Starting ${COMMAND}..."
+  ${COMMAND} -i ${NETWORK_ID} -l ${GAS_LIMIT} -a ${ACCOUNTS} -e ${BALANCE} -p ${PORT} > /dev/null &
   pid=$!
-  sleep 3
+  sleep 3 # give time to init chain
   echo "Running ganache-cli with pid ${pid} in port ${PORT}, gas limit set to: ${GAS_LIMIT}"
-}
-
-start_testrpc() {
-  echo "Starting testrpc-sc..."
-  npx testrpc-sc -i ${NETWORK_ID} -l ${GAS_LIMIT} -e ${BALANCE} -p ${PORT} > /dev/null &
-  rpc_pid=$!
-  sleep 3
-  echo "Running testrpc-sc with pid ${rpc_pid} in port ${PORT}"
-}
-
-deploy_template_rpc() {
-  echo "Deploying template..."
-  npm run deploy:rpc
-}
-
-deploy_template_coverage() {
-  echo "Deploying template..."
-  npm run deploy:coverage
 }
 
 clean_deploy() {
@@ -63,24 +52,18 @@ clean_deploy() {
 
 run_tests() {
   echo "Running tests $@..."
-  npx truffle test --network rpc $@
+  truffle test --network rpc $@
 }
 
-measure_coverage() {
-  echo "Measuring coverage..."
-  npx solidity-coverage
+run_coverage() {
+  echo "Measuring coverage $@..."
+  # TODO: rimraf or crossenv
+  # It is needed to remove this folder to prevent wrong instrumentation
+  # I didn't find a way to tell solidity-coverage to ignore it
+  rm -rf flattened_contracts
+  solidity-coverage $@
 }
 
-if [ "$SOLIDITY_COVERAGE" = true ]; then
-  setup_coverage_variables
-  start_testrpc
-  clean_deploy
-  deploy_template_coverage
-  measure_coverage
-else
-  setup_testing_variables
-  start_ganache
-  clean_deploy
-  deploy_template_rpc
-  run_tests $@
-fi
+[[ "$SOLIDITY_COVERAGE" = true ]] && setup_coverage_variables || setup_testing_variables
+start_chain
+${MAIN_TASK} $@

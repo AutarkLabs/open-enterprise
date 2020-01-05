@@ -10,7 +10,8 @@
     "compile": "truffle compile",
     "test": "truffle test",
     "cvg": "./node_modules/.bin/solidity-coverage",
-    "migrate": "node_modules/.bin/truffle migrate | grep \"^0x[[:alnum:]]\\{40\\}\""
+    "migrate": "node_modules/.bin/truffle migrate | grep \"^0x[[:alnum:]]\\{40\\}\"",
+    "migrate:coverage": "node_modules/.bin/truffle migrate --network coverage | grep \"^0x[[:alnum:]]\\{40\\}\""
   },
   "repository": {
     "type": "git",

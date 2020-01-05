@@ -25,7 +25,7 @@ module.exports = {
       host: 'localhost',
       port: 8545,
       network_id: '*',
-      gas: 8.2e6,
+      gas: 8e6,
       gasPrice: 2000000000, // same as latest on Mainnet https://ethstats.net/
     },
     coverage: {
