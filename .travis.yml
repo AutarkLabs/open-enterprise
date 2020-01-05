@@ -62,6 +62,12 @@ jobs:
       install: npm run bootstrap
       after_success: npm run coveralls
 
+    - stage: test
+      script: travis_wait 60 npm run coverage -- --scope=@autarklabs/templates-open-enterprise
+      name: Template tests and coverage report
+      install: npm run bootstrap
+      after_success: npm run coveralls
+
     - stage: deploy
       before_install:
       - mkdir $HOME/.aragon
