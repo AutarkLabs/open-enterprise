@@ -176,7 +176,7 @@ Cypress.Commands.add(
   'getWithinIframe',
   (targetElement, { timeout = 60000 } = {}) => {
     cy.log('get element ', targetElement)
-    cy.iframeElementLoaded(targetElement, timeout)
+    cy.iframeElementLoaded(targetElement, { timeout })
     .getInDocument(targetElement)
   }
 )
@@ -200,7 +200,7 @@ const retryEvery = async (
       // Exponentially backoff attempts if increaseFactor > 1
       const nextRetryTime = retryTimer * increaseFactor
       console.log(
-        `Retrying in ${nextRetryTime}s... (attempt ${retryNum} of ${maxRetries})`
+        `Retrying in ${nextRetryTime}ms... (attempt ${retryNum} of ${maxRetries})`
       )
       await sleep(nextRetryTime)
       return attempt(nextRetryTime)
