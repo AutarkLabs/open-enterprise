@@ -123,7 +123,6 @@ const NewProject = () => {
           <Query
             fetchPolicy="cache-first"
             query={GET_REPOSITORIES}
-            onError={console.error}
           >
             {({ data, loading, error, refetch }) => {
               if (data && data.viewer) {

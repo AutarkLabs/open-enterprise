@@ -2,6 +2,7 @@ const STATUS = {
   AUTHENTICATED: 'authenticated',
   FAILED: 'failed',
   INITIAL: 'initial',
+  REVOKED: 'revoked',
 }
 // TODO: STATUS.loading with a smooth transition component
 

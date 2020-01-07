@@ -7,7 +7,7 @@ import { useAragonApi } from '../../api-react'
 import { Button, GU, Header, IconPlus, Text } from '@aragon/ui'
 import { compareAsc, compareDesc } from 'date-fns'
 
-import { initApolloClient } from '../../utils/apollo-client'
+import { useApolloClient } from '../../utils/apollo-client'
 import useShapedIssue from '../../hooks/useShapedIssue'
 import usePathSegments from '../../hooks/usePathSegments'
 import { STATUS } from '../../utils/github'
@@ -350,7 +350,7 @@ class Issues extends React.PureComponent {
 }
 
 const IssuesQuery = ({ client, query, ...props }) => {
-  const graphqlQuery = useQuery(query, { client, onError: console.error })
+  const graphqlQuery = useQuery(query, { client })
   return <Issues graphqlQuery={graphqlQuery} {...props} />
 }
 
@@ -360,6 +360,7 @@ IssuesQuery.propTypes = {
 }
 
 const IssuesWrap = props => {
+  const initApolloClient = useApolloClient()
   const { appState } = useAragonApi()
   const {
     repos,
@@ -417,7 +418,8 @@ const IssuesWrap = props => {
   }, [ downloadedRepos, filters, repos ])
 
   useEffect(() => {
-    setClient(github.token ? initApolloClient(github.token) : null)
+    const apolloClient = initApolloClient(github.token)
+    setClient(apolloClient)
   }, [github.token])
 
   return (

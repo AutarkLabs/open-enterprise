@@ -6,6 +6,7 @@ import {
   REQUESTED_GITHUB_TOKEN_SUCCESS,
   REQUESTED_GITHUB_TOKEN_FAILURE,
   REQUESTED_GITHUB_DISCONNECT,
+  GITHUB_TOKEN_REVOKED,
   REPO_ADDED,
   REPO_REMOVED,
   BOUNTY_ADDED,
@@ -74,6 +75,14 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract, se
   }
   case REQUESTED_GITHUB_DISCONNECT: {
     state.github = INITIAL_STATE.github
+    app.cache('github', state.github).toPromise()
+    return state
+  }
+  case GITHUB_TOKEN_REVOKED: {
+    state.github = {
+      ...INITIAL_STATE.github,
+      status: STATUS.REVOKED,
+    }
     app.cache('github', state.github).toPromise()
     return state
   }

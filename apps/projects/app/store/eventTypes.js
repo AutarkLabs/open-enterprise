@@ -3,6 +3,7 @@ export const REQUESTING_GITHUB_TOKEN = 'Requesting_GitHub_Token'
 export const REQUESTED_GITHUB_TOKEN_SUCCESS = 'Requesting_GitHub_Token_Success'
 export const REQUESTED_GITHUB_TOKEN_FAILURE = 'Requesting_GitHub_Token_Failure'
 export const REQUESTED_GITHUB_DISCONNECT = 'Requested_GitHub_Disconnect'
+export const GITHUB_TOKEN_REVOKED = 'Github_Token_Revoked'
 
 /* Projects.sol events */
 export const REPO_ADDED = 'RepoAdded'
