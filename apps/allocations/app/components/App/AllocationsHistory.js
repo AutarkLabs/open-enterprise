@@ -2,13 +2,14 @@ import React from 'react'
 import { useAppState, useNetwork } from '@aragon/api-react'
 import {
   DataView,
-  IconCheck,
   IconCross,
   ProgressBar,
   Text,
   useLayout,
   useTheme,
 } from '@aragon/ui'
+import doubleCheck
+  from '../../../../../shared/ui/components/assets/svg/double-check.svg'
 import LocalIdentityBadge from '../LocalIdentityBadge/LocalIdentityBadge'
 import { BigNumber } from 'bignumber.js'
 import PropTypes from 'prop-types'
@@ -17,6 +18,8 @@ import styled from 'styled-components'
 import { STATUSES } from '../../utils/constants'
 import { displayCurrency } from '../../../../../shared/ui/helpers'
 import { addressesEqual } from '../../../../../shared/lib/web3-utils'
+
+const IconDoubleCheck = () => <img src={doubleCheck} alt="" />
 
 const AllocationsHistory = ({ allocations, skipBudgetColumn }) => {
   const theme = useTheme()
@@ -123,7 +126,7 @@ const Status = ({ code }) => {
   return (
     <StatusContent theme={theme} code={code}>
       { code === 1 && <IconCross size="medium" color={theme.negative} /> }
-      { code > 1 && <IconCheck size="medium" color={theme.positive} /> }
+      { code > 1 && <IconDoubleCheck size="medium" color={theme.positive} /> }
       <StatusText>
         {STATUSES[code]}
       </StatusText>
@@ -160,8 +163,11 @@ const RecipientAmount = styled.div`
  `
 
 const StatusContent = styled.div`
-  color: ${({ code, theme }) => code === 0 ?
-    theme.contentSecondary : theme.content};
+  color: ${({ code, theme }) => code === 0
+    ? theme.contentSecondary
+    : code === 1
+      ? theme.negative
+      : theme.positive };
   display: flex;
   align-items: center;
 `

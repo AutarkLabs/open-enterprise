@@ -4,7 +4,8 @@ import {
   ETH_DECIMALS_NUMBER,
   RECURRING_DIVIDEND,
 } from './constants'
-import doubleCheck from '../assets/double-check.svg'
+import doubleCheck
+  from '../../../../shared/ui/components/assets/svg/double-check.svg'
 import BigNumber from 'bignumber.js'
 import {
   GU,
