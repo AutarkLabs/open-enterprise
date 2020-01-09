@@ -2,7 +2,7 @@ import React, { useState, useEffect, Fragment } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { format, formatDistance } from 'date-fns'
-import { Card, IdentityBadge, theme } from '@aragon/ui'
+import { GU, IdentityBadge, theme } from '@aragon/ui'
 import { IconEdit, IconDelete, Markdown } from '../../../../shared/ui'
 import CommentForm from './CommentForm'
 
@@ -38,13 +38,8 @@ const Top = ({ author, createdAt, identity }) => {
   )
 }
 
-const CommentCard = styled(Card).attrs({
-  width: '100%',
-  height: 'auto',
-})`
-  margin-top: 15px;
-  margin-bottom: 15px;
-  padding: 15px 20px 10px;
+const CommentDiv = styled.div`
+  padding: ${2 * GU}px;
   position: relative;
 `
 
@@ -55,7 +50,7 @@ const Footer = styled.footer`
   right: 20px;
   bottom: 10px;
   :focus-within,
-  ${CommentCard}:hover & {
+  ${CommentDiv}:hover & {
     opacity: 1;
   }
 `
@@ -89,7 +84,7 @@ const Delete = styled(Button)`
       fill: ${theme.negative};
     }
   }
-  // hack to make the svg flush with the right edge of CommentCard
+  // hack to make the svg flush with the right edge of CommentDiv
   ${Edit} + & {
     margin-right: -5px;
   }
@@ -144,7 +139,7 @@ const Comment = ({
   }, [author])
 
   return (
-    <CommentCard>
+    <CommentDiv>
       {editing ? (
         <CommentForm
           defaultValue={text}
@@ -160,7 +155,7 @@ const Comment = ({
           )}
         </Fragment>
       )}
-    </CommentCard>
+    </CommentDiv>
   )
 }
 

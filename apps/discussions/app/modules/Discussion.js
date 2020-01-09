@@ -1,10 +1,22 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import styled from 'styled-components'
+import { Box, GU, useTheme } from '@aragon/ui'
 import { useDiscussion } from './'
 import Comment from './Comment'
 import CommentForm from './CommentForm'
 
-const Discussion = ({ discussionId, ethereumAddress }) => {
+const CommentsBox = styled(Box)`
+  margin: ${3 * GU}px 0;
+  > div {
+    padding: 0;
+    > div > div:not(:last-child) {
+      border-bottom: 1px solid ${({theme}) => theme.border};
+    }
+  }
+`
+const Discussion = ({ discussionId, ethereumAddress, className }) => {
+  const theme = useTheme()
   const { discussion, discussionApi, app } = useDiscussion(discussionId)
 
   const save = ({ text, id, revisions, postCid }) =>
@@ -26,17 +38,21 @@ const Discussion = ({ discussionId, ethereumAddress }) => {
   // location in the sidebar. If either of these factors change later, we may be
   // able to remove this 40px spacer.
   return (
-    <div css="margin-bottom: 40px">
-      {discussion.map(comment => (
-        <Comment
-          app={app}
-          comment={comment}
-          currentUser={ethereumAddress}
-          key={comment.id}
-          onDelete={hide(comment)}
-          onSave={save}
-        />
-      ))}
+    <div className={className} css="margin-bottom: 40px">
+      {discussion.length > 0 && (
+        <CommentsBox heading='Comments' theme={theme}>
+          {discussion.map(comment => (
+            <Comment
+              app={app}
+              comment={comment}
+              currentUser={ethereumAddress}
+              key={comment.id}
+              onDelete={hide(comment)}
+              onSave={save}
+            />
+          ))}
+        </CommentsBox>
+      )}
       <CommentForm onSave={save} />
     </div>
   )
@@ -45,6 +61,7 @@ const Discussion = ({ discussionId, ethereumAddress }) => {
 Discussion.propTypes = {
   discussionId: PropTypes.number.isRequired,
   ethereumAddress: PropTypes.string.isRequired,
+  className: PropTypes.string,
 }
 
 export default Discussion
