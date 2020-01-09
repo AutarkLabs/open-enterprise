@@ -30,7 +30,7 @@
     "test": "cross-env TRUFFLE_TEST=true npm run ganache-cli:test"
   },
   "dependencies": {
-    "@aragon/api": "2.0.0-beta.9",
+    "@aragon/api": "openworklabs/aragon-api",
     "@aragon/api-react": "2.0.0-beta.9",
     "@aragon/ui": "1.2.1",
     "axios": "^0.18.0",
