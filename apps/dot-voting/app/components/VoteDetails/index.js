@@ -123,16 +123,10 @@ const VoteDetails = ({ vote, onVote }) => {
                 )}
               </div>
             </Box>
-            <Text
-              css={`display: block; margin-top: ${3 * GU}px`}
-              size="large"
-              color={theme.textSecondary}
-            >
-              Discussion
-            </Text>
             <Discussion
               discussionId={Number(voteId)}
               ethereumAddress={connectedAccount}
+              css={`margin-top: ${3 * GU}px`}
             />
           </>
         }
