@@ -68,7 +68,7 @@ const EditVoteOption = ({
           onUpdate={x => onUpdate(Math.round(x * 100))}
           value={value / 100}
         />
-        <HiddenLabel htmlFor="percentage">Percentage</HiddenLabel>
+        <HiddenLabel htmlFor={`percentage-${label}`}>Percentage</HiddenLabel>
         <TextInput
           name="percentage"
           min={0}
@@ -77,6 +77,7 @@ const EditVoteOption = ({
           ref={input}
           theme={theme}
           type="number"
+          id={`percentage-${label}`}
           value={
             !value && input.current === document.activeElement
               ? ''

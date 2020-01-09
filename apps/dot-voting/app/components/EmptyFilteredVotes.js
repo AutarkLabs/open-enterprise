@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Box, Button, GU, useTheme } from '@aragon/ui'
+import { Box, Button, GU, Text, useTheme } from '@aragon/ui'
 import noResultsSvg from '../assets/no-results.svg'
 
 function EmptyFilteredVotes({ onClear }) {
@@ -24,14 +24,9 @@ function EmptyFilteredVotes({ onClear }) {
           src={noResultsSvg}
           alt="No results"
         />
-        <h3
-          css={`
-            font-size: 28px;
-            color: ${theme.content};
-          `}
-        >
+        <Text size="xxlarge" color={`${theme.content}`}>
           No results found.
-        </h3>
+        </Text>
         <div
           css={`
             max-width: 270px;
