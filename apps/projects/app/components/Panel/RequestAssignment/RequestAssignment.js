@@ -3,7 +3,8 @@ import styled from 'styled-components'
 
 import { Checkbox, Text, TextInput, GU, useTheme } from '@aragon/ui'
 
-import { Form, FormField, DateInput } from '../../Form'
+import { Form, FormField } from '../../Form'
+import { DateInput } from '../../../../../../shared/ui'
 import { useAragonApi } from '../../../api-react'
 import useGithubAuth from '../../../hooks/useGithubAuth'
 import { usePanelManagement } from '..'
@@ -74,6 +75,7 @@ const RequestAssignment = ({ issue }) => {
               onChange={updateWorkplan}
               placeholder="Describe how you plan to accomplish the task and any questions you may have."
               wide
+              aria-label="Work plan"
             />
           }
         />
@@ -87,6 +89,7 @@ const RequestAssignment = ({ issue }) => {
                 value={hours}
                 onChange={updateHours}
                 wide
+                aria-label="Estimated hours"
               />
             }
           />
@@ -98,6 +101,7 @@ const RequestAssignment = ({ issue }) => {
                 value={eta}
                 onChange={updateEta}
                 width="100%"
+                label="Estimated completion"
               />
             }
           />

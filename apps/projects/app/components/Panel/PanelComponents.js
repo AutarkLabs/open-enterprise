@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import PropTypes from 'prop-types'
 import { Button, GU, IconCheck, IconCross, Link, Text, useTheme } from '@aragon/ui'
 import { IconGitHub } from '../Shared'
-import { issueShape } from '../../utils/shapes.js'
+import { issueShape, userGitHubShape } from '../../utils/shapes.js'
 import { format as formatDate } from 'date-fns'
 
 export const IssueTitleLink = ({ issue }) => {
@@ -50,6 +50,7 @@ export const Avatar = ({ user }) => {
       href={user.url}
       target="_blank"
       css={`text-decoration: none; color: ${theme.link}; margin-right: ${.7 * GU}px`}
+      aria-label={`${user.login}'s GitHub account`}
     >
       <img
         alt=""
@@ -59,12 +60,7 @@ export const Avatar = ({ user }) => {
     </Link>
   )
 }
-Avatar.propTypes = {
-  user: PropTypes.shape({
-    url: PropTypes.string.isRequired,
-    avatarUrl: PropTypes.string.isRequired,
-  }).isRequired,
-}
+Avatar.propTypes = userGitHubShape
 
 const statuses = [
   { color: 'negative', text: 'Rejected' },

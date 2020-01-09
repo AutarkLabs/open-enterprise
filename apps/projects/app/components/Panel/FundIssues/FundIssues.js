@@ -23,12 +23,12 @@ import {
   useTheme,
 } from '@aragon/ui'
 
-import { Form, FormField, DateInput } from '../../Form'
+import { Form, FormField } from '../../Form'
+import { DateInput } from '../../../../../../shared/ui'
 import { issueShape } from '../../../utils/shapes.js'
 import EditBounty from './EditBounty'
 import {
   AmountInput,
-  HorizontalInputGroup,
   HoursInput,
   IssueTitleCompact,
   TokenInput,
@@ -132,7 +132,7 @@ const BountyUpdate = ({
                   <FormField
                     label="Amount"
                     input={
-                      <HorizontalInputGroup>
+                      <div css="display: flex">
                         <AmountInput
                           name="amount"
                           value={bounty.payout}
@@ -145,7 +145,7 @@ const BountyUpdate = ({
                           selected={tokens.indexOf(bounty.token)}
                           onChange={i => updateBounty({ token: tokens[i] })}
                         />
-                      </HorizontalInputGroup>
+                      </div>
                     }
                   />
                 ) : (
@@ -189,6 +189,7 @@ const BountyUpdate = ({
                       value={bounty.deadline}
                       onChange={deadline => updateBounty({ deadline })}
                       width="100%"
+                      label="Deadline"
                     />
                   }
                 />
@@ -305,6 +306,7 @@ const FundForm = ({
               onChange={descriptionChange}
               value={description}
               wide
+              aria-label="Description"
             />
           }
         />
