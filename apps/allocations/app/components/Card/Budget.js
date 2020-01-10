@@ -51,7 +51,10 @@ const Wrapper = ({ budget, children, theme }) => {
   const { requestPath } = usePathHelpers()
   const { active, amount, id, name, token } = budget
   return (
-    <Link onClick={() => requestPath(`/budgets/${id}`)}>
+    <Link
+      css="white-space: normal"
+      onClick={() => requestPath(`/budgets/${id}`)}
+    >
       <StyledCard theme={theme}>
         <CardTop>
           <CardTitle theme={theme}>{name}</CardTitle>
