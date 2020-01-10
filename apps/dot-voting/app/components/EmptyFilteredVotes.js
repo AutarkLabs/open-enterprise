@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Box, Button, GU, Text, useTheme } from '@aragon/ui'
+import { Box, Button, GU, Text, textStyle, useTheme } from '@aragon/ui'
 import noResultsSvg from '../assets/no-results.svg'
 
 function EmptyFilteredVotes({ onClear }) {
@@ -24,7 +24,7 @@ function EmptyFilteredVotes({ onClear }) {
           src={noResultsSvg}
           alt="No results"
         />
-        <Text size="xxlarge" color={`${theme.content}`}>
+        <Text css={`${textStyle('title2')}`} color={`${theme.content}`}>
           No results found.
         </Text>
         <div
@@ -33,7 +33,7 @@ function EmptyFilteredVotes({ onClear }) {
             text-align: center;
             margin-bottom: ${4 * GU}px;
             color: ${theme.surfaceContentSecondary};
-            font-size: 16px;
+            ${textStyle('body2')}
           `}
         >
           We can’t find any item matching your search query.{' '}
@@ -46,7 +46,7 @@ function EmptyFilteredVotes({ onClear }) {
               box-shadow: none;
               padding: 0;
               min-width: unset;
-
+              height: auto;
               &:hover {
                 border: none;
                 box-shadow: none;
