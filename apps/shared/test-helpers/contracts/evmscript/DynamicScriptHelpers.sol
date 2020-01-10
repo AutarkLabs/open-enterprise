@@ -5,7 +5,7 @@
 pragma solidity ^0.4.18;
 
 
-library ScriptHelpers {
+library DynamicScriptHelpers {
     // To test with JS and compare with actual encoder. Maintaining for reference.
     // t = function() { return IEVMScriptExecutor.at('0x4bcdd59d6c77774ee7317fc1095f69ec84421e49').contract.execScript.getData(...[].slice.call(arguments)).slice(10).match(/.{1,64}/g) }
     // run = function() { return ScriptHelpers.new().then(sh => { sh.abiEncode.call(...[].slice.call(arguments)).then(a => console.log(a.slice(2).match(/.{1,64}/g)) ) }) }
