@@ -37,9 +37,59 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
 
   const [ feedback, setFeedback ] = useState('')
   const [ index, setIndex ] = useState(requestIndex)
+  /*
+  issue.requestsData = [{
+    contributorAddr: "0xb4124cEB3451635DAcedd11767f004d8a28c6eE7", requestIPFSHash: "QmR9AjJ5Smhah5SnziqvZctosqpkCsTwbmPEgE1FydNXEe",
+    workplan: "app1", hours: "1", eta: "2020-01-20T23:00:00.000Z", ack1: true, ack2: true,
+    user: {
+      id: "MDQ6VXNlcjM0NDUyMTMx", login: "rkzel", url: "https://github.com/rkzel", avatarUrl: "https://avatars0.githubusercontent.com/u/34452131?v=4", applicationDate: "2020-01-13T09:40:08.065Z",
+    }
+  }, {
+    contributorAddr: "0xb4124cEB3451635DAcedd11767f004d8a28c6eE7", requestIPFSHash: "QmR9AjJ5Smhah5SnziqvZctosqpkCsTwbmPEgE1FydNXEe",
+    workplan: "app2", hours: "2", eta: "2020-01-21T23:00:00.000Z", ack1: true, ack2: true,
+    user: {
+      id: "MDQ6VXNlcjM0NDUyMTMx", login: "rkzel2", url: "https://github.com/rkzel", avatarUrl: "https://avatars0.githubusercontent.com/u/34452131?v=4", applicationDate: "2020-01-13T09:40:08.065Z",
+    }
+
+  }, {
+    contributorAddr: "0xb4124cEB3451635DAcedd11767f004d8a28c6eE7", requestIPFSHash: "QmR9AjJ5Smhah5SnziqvZctosqpkCsTwbmPEgE1FydNXEe",
+    workplan: "app3", hours: "3", eta: "2020-01-21T23:00:00.000Z", ack1: true, ack2: true,
+    user: {
+      id: "MDQ6VXNlcjM0NDUyMTMx", login: "rkzel3", url: "https://github.com/rkzel", avatarUrl: "https://avatars0.githubusercontent.com/u/34452131?v=4", applicationDate: "2020-01-13T09:40:08.065Z",
+    },
+    review: {
+      approved: true,
+      reviewDate: '2020-01-21T23:00:00.000Z',
+      feedback: 'haha'
+    },
+  }
+  ]
+*/
+
+  // are both types present?
+  const types = issue.requestsData.reduce((types, request) => {
+    types['review' in request ? 1 : 0] = true
+    return types
+  }, [ false, false ] )
+
+  const typesToShow = []
+  if (types[0]) typesToShow.push('Available for review')
+  if (types[1]) typesToShow.push('Reviewed')
+
+  // of what type is the request asked for - default 'Available for review'
+  let indexTypeSelected = 0
+  // unless requested was 'reviewed' and there are no unreviewed reqs
+  if ('review' in issue.requestsData[requestIndex])
+    indexTypeSelected = (typesToShow[0] === 'Reviewed') ? 0 : 1
+
+  const [ indexType, setIndexType ] = useState(indexTypeSelected)
+
+  // filter requests
+  const requests = issue.requestsData.filter(r => {
+    return (typesToShow[indexType] === 'Reviewed') ? 'review' in r : !('review' in r)
+  })
 
   const updateFeedback = e => setFeedback(e.target.value)
-
   const buildReturnData = approved => {
     const today = new Date()
     return {
@@ -53,24 +103,27 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
   const onAccept = () => onReviewApplication(true)
   const onReject = () => onReviewApplication(false)
   const changeRequest = (index) => setIndex(index)
+  const changeRequestType = (index) => {
+    setIndex(0)
+    setIndexType(index)
+  }
 
   const onReviewApplication = async (approved) => {
     closePanel()
     const review = buildReturnData(approved)
     // new IPFS data is old data plus state returned from the panel
-    const ipfsData = issue.requestsData[index]
+    const ipfsData = requests[index]
     const requestIPFSHash = await ipfsAdd({ ...ipfsData, review })
-
     reviewApplication(
       toHex(issue.repoId),
       issue.number,
-      issue.requestsData[index].contributorAddr,
+      requests[index].contributorAddr,
       requestIPFSHash,
       approved
     ).toPromise()
   }
 
-  const request = issue.requestsData[index]
+  const request = requests[index]
   const application = {
     user: {
       login: request.user.login,
@@ -92,15 +145,25 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
     <div css={`margin: ${2 * GU}px 0`}>
       <IssueTitle issue={issue} />
 
-      <FieldTitle>Applicant</FieldTitle>
-      <DropDown
-        name="Applicant"
-        items={issue.requestsData.map(request => request.user.login)}
-        onChange={changeRequest}
-        selected={index}
-        wide
-        css={`margin-bottom: ${3 * GU}px`}
-      />
+      <div css={`display: flex; margin-bottom: ${3 * GU}px`}>
+        <DropDown
+          name="Type"
+          items={typesToShow}
+          onChange={changeRequestType}
+          selected={indexType}
+          wide
+          css={`margin-right: ${0.5 * GU}px`}
+        />
+
+        <DropDown
+          name="Applicant"
+          items={requests.map(request => request.user.login)}
+          onChange={changeRequest}
+          selected={index}
+          wide
+          css={`margin-left: ${0.5 * GU}px`}
+        />
+      </div>
 
       <SubmissionDetails background={`${theme.background}`} border={`${theme.border}`}>
         <UserLink>

@@ -42,6 +42,30 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
   const [ rating, setRating ] = useState(-1)
   const [ index, setIndex ] = useState(submissionIndex)
 
+  // are both types present?
+  const types = issue.requestsData.reduce((types, request) => {
+    types['review' in request ? 1 : 0] = true
+    return types
+  }, [ false, false ] )
+
+  const typesToShow = []
+  if (types[0]) typesToShow.push('Available for review')
+  if (types[1]) typesToShow.push('Reviewed')
+
+  // of what type is the request asked for - default 'Available for review'
+  let indexTypeSelected = 0
+  // unless requested was 'reviewed' and there are no unreviewed reqs
+  if ('review' in issue.requestsData[submissionIndex])
+    indexTypeSelected = (typesToShow[0] === 'Reviewed') ? 0 : 1
+
+  const [ indexType, setIndexType ] = useState(indexTypeSelected)
+
+  // filter requests
+  const workSubmissions = issue.requestsData.filter(r => {
+    return (typesToShow[indexType] === 'Reviewed') ? 'review' in r : !('review' in r)
+  })
+
+
   const buildReturnData = accepted => {
     const today = new Date()
     return {
@@ -58,6 +82,10 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
   const updateRating = (index) => setRating(index)
   const updateFeedback = e => setFeedback(e.target.value)
   const changeSubmission = (index) => setIndex(index)
+  const changeRequestType = (index) => {
+    setIndex(0)
+    setIndexType(index)
+  }
 
   const canSubmit = () => !(rating > 0)
 
@@ -86,7 +114,7 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
     ).toPromise()
   }
 
-  const work = issue.workSubmissions[index]
+  const work = workSubmissions[index]
   const submitter = issue.work.user
   const submissionDateDistance = formatDistance(new Date(work.submissionDate), new Date())
   const submitterName = submitter.name ? submitter.name : submitter.login
@@ -95,15 +123,25 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
     <div css={`margin: ${2 * GU}px 0`}>
       <IssueTitle issue={issue} />
 
-      <FieldTitle>Work Submissions</FieldTitle>
-      <DropDown
-        name="Submission"
-        items={issue.workSubmissions.map(submission => submission.user.login)}
-        onChange={changeSubmission}
-        selected={index}
-        wide
-        css={`margin-bottom: ${3 * GU}px`}
-      />
+      <div css={`display: flex; margin-bottom: ${3 * GU}px`}>
+        <DropDown
+          name="Type"
+          items={typesToShow}
+          onChange={changeRequestType}
+          selected={indexType}
+          wide
+          css={`margin-right: ${0.5 * GU}px`}
+        />
+
+        <DropDown
+          name="Submission"
+          items={workSubmissions.map(submission => submission.user.login)}
+          onChange={changeSubmission}
+          selected={index}
+          wide
+          css={`margin-bottom: ${3 * GU}px`}
+        />
+      </div>
 
       <SubmissionDetails background={`${theme.background}`} border={`${theme.border}`}>
         <UserLink>
