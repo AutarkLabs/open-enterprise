@@ -1,5 +1,6 @@
 {
     "viewportWidth": 1280,
     "viewportHeight": 800,
-    "chromeWebSecurity": false
+    "chromeWebSecurity": false,
+    "modifyObstructiveCode": false
 }

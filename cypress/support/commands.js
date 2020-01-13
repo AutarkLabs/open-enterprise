@@ -124,3 +124,88 @@ function onIframeReady($iframe, successFn, errorFn) {
     errorFn()
   }
 }
+
+Cypress.Commands.add(
+  'iframeLoaded',
+  { prevSubject: 'element' },
+  ($iframe) => {
+    const contentWindow = $iframe.prop('contentWindow')
+    return new Promise(resolve => {
+      if (
+        contentWindow &&
+        contentWindow.document.readyState === 'complete'
+      ) {
+        resolve(contentWindow)
+      } else {
+        $iframe.on('load', () => {
+          resolve(contentWindow)
+        })
+      }
+    })
+  })
+
+Cypress.Commands.add(
+  'getInDocument',
+  { prevSubject: 'window' },
+  ({ document }, selector) => Cypress.$(selector, document)
+)
+
+Cypress.Commands.add(
+  'iframeElementLoaded',
+  (targetElement, { timeout = 15000 } = {}) => {
+    const retryInterval = 250 // ms
+    const retries = Math.ceil(timeout / retryInterval)
+    cy.log('load element ', targetElement)
+    cy.get('iframe', { log: false })
+    .iframeLoaded()
+    .then({ timeout: timeout + 1000 }, async window => {
+      await retryEvery(() => {
+          const res = Cypress.$(targetElement, window.document)
+          console.log('result: ', res)
+          if (res.length === 0) {
+            throw new Error('timeout exceeded: no element found')
+          }
+        },
+        {initialRetryTimer: retryInterval, increaseFactor: 1, maxRetries: retries}
+      )
+    })
+  }
+)
+
+Cypress.Commands.add(
+  'getWithinIframe',
+  (targetElement, { timeout = 60000 } = {}) => {
+    cy.log('get element ', targetElement)
+    cy.iframeElementLoaded(targetElement, { timeout })
+    .getInDocument(targetElement)
+  }
+)
+
+const retryEvery = async (
+  callback,
+  { initialRetryTimer = 1000, increaseFactor = 3, maxRetries = 3 } = {}
+) => {
+  const sleep = time => new Promise(resolve => setTimeout(resolve, time))
+
+  let retryNum = 0
+  const attempt = async (retryTimer = initialRetryTimer) => {
+    try {
+      return await callback()
+    } catch (err) {
+      if (retryNum === maxRetries) {
+        throw err
+      }
+      ++retryNum
+
+      // Exponentially backoff attempts if increaseFactor > 1
+      const nextRetryTime = retryTimer * increaseFactor
+      console.log(
+        `Retrying in ${nextRetryTime}ms... (attempt ${retryNum} of ${maxRetries})`
+      )
+      await sleep(nextRetryTime)
+      return attempt(nextRetryTime)
+    }
+  }
+
+  return attempt()
+}

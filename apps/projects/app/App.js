@@ -64,7 +64,7 @@ const App = () => {
 
   const handlePopupMessage = useCallback(message => {
     if (!popupRef) return
-    if (message.source !== popupRef) return
+    if (message.data.from !== 'popup') return
 
     popupRef = null
 
