@@ -19,7 +19,7 @@ const getTokenFromAddress = (tokenAddress, tokenList) => {
 }
 
 function appStateReducer(state) {
-  const { accounts: budgets, balances } = state || {}
+  const { accounts: budgets, balances , allocations } = state || {}
 
   const balancesBn = balances
     ? balances
@@ -44,11 +44,18 @@ function appStateReducer(state) {
       active: budget.hasBudget && Number(budget.amount) > 0,
       // get some extra info about the token
       token: getTokenFromAddress(budget.token, balances)
-
       // amount: new BigNumber(budget.amount),
       // numData: {
       //   amount: parseInt(budget.amount, 10),
       // },
+    }))
+    : []
+
+  const allocationsBn = allocations
+    ? allocations.map(allocation => ({
+      ...allocation,
+      // get some extra info about the token
+      tokenDecimal: getTokenFromAddress(allocation.token, balances).decimals
     }))
     : []
 
@@ -82,8 +89,8 @@ function appStateReducer(state) {
     balances: balancesBn.filter(balance => balance.amount !== 0),
 
     budgets: budgetsBn,
+    allocations: allocationsBn,
   }
-
   return newState
 }
 

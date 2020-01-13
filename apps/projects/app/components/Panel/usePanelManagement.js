@@ -46,11 +46,11 @@ const usePanelManagement = () => {
         title: 'View application',
       })
     },
-    reviewWork: ({ issue, index = 0, readOnly = false }) => {
+    reviewWork: ({ issue, submissionIndex = 0, readOnly = false }) => {
       setActivePanel(PANELS.ReviewWork)
       setPanelProps({
         issue,
-        index,
+        submissionIndex,
         readOnly,
         title: 'View work'
       })

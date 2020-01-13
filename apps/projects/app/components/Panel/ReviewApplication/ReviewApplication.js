@@ -80,7 +80,7 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
     },
     workplan: request.workplan,
     hours: request.hours,
-    eta: (request.eta === '-') ? request.eta : (new Date(request.eta)).toLocaleDateString(),
+    eta: (request.eta === '-') ? request.eta : formatDate(new Date(request.eta), 'MMM d'),
     applicationDate: request.applicationDate
   }
 
@@ -118,7 +118,7 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
           </div>
           <div>
             <FieldTitle>Estimated Date</FieldTitle>
-            <Text>{formatDate(new Date(application.eta), 'MMM d')}</Text>
+            <Text>{application.eta}</Text>
           </div>
         </Estimations>
       </SubmissionDetails>

@@ -20,7 +20,7 @@ const VoteDetails = ({ vote, onVote }) => {
   const { api, appState: { tokenAddress = '' }, connectedAccount } = useAragonApi()
   const [ votingMode, setVotingMode ] = useState(false)
   const [ canIVote, setCanIVote ] = useState(false)
-  const [ decimals, setDecimals ] = useState(0)
+  const [ decimals, setDecimals ] = useState(18)
   const toggleVotingMode = () => setVotingMode(!votingMode)
   const { description, voteId, data: { creator, executionTargetData, type } } = vote
   const { voteWeights, votingPower } = useUserVoteStats(vote)

@@ -487,7 +487,7 @@ const FundIssues = ({ issues, mode }) => {
     ).toPromise()
 
     closePanel()
-  }, [bounties])
+  }, [ bounties, openSubmission ])
 
   if (fundsAvailable.toString() === '0') {
     return (

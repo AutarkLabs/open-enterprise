@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { ApolloProvider } from 'react-apollo'
 
 import { useAragonApi, usePath } from './api-react'
@@ -24,7 +24,7 @@ import {
 } from './store/eventTypes'
 
 import { initApolloClient } from './utils/apollo-client'
-import { getToken, getURLParam, githubPopup, STATUS } from './utils/github'
+import { getToken, githubPopup, STATUS } from './utils/github'
 import Unauthorized from './components/Content/Unauthorized'
 import { LoadingAnimation } from './components/Shared'
 import { EmptyWrapper } from './components/Shared'
@@ -32,13 +32,14 @@ import { Error } from './components/Card'
 import { DecoratedReposProvider } from './context/DecoratedRepos'
 import usePathSegments from './hooks/usePathSegments'
 
+let popupRef = null
+
 const App = () => {
   const { api, appState } = useAragonApi()
   const [ , requestPath ] = usePath()
   const [ githubLoading, setGithubLoading ] = useState(false)
   const [ panel, setPanel ] = useState(null)
   const [ panelProps, setPanelProps ] = useState(null)
-  const [ popupRef, setPopupRef ] = useState(null)
 
   const {
     repos = [],
@@ -61,32 +62,22 @@ const App = () => {
     setSelectedIssue(selectedIssueId)
   }, [selectedIssueId])
 
-  useEffect(() => {
-    const code = getURLParam('code')
-    code &&
-      window.opener.postMessage(
-        { from: 'popup', name: 'code', value: code },
-        '*'
-      )
-    window.close()
-  })
+  const handlePopupMessage = useCallback(message => {
+    if (!popupRef) return
+    if (message.source !== popupRef) return
 
-  const handlePopupMessage = async message => {
-    if (message.data.from !== 'popup') return
-    if (message.data.name === 'code') {
-      // TODO: Optimize the listeners lifecycle, ie: remove on unmount
-      window.removeEventListener('message', handlePopupMessage)
+    popupRef = null
 
-      const code = message.data.value
+    async function processCode() {
       try {
-        const token = await getToken(code)
+        const token = await getToken(message.data.value)
         setGithubLoading(false)
         api.emitTrigger(REQUESTED_GITHUB_TOKEN_SUCCESS, {
           status: STATUS.AUTHENTICATED,
           token
         })
-
       } catch (err) {
+        console.error(err)
         setGithubLoading(false)
         api.emitTrigger(REQUESTED_GITHUB_TOKEN_FAILURE, {
           status: STATUS.FAILED,
@@ -94,7 +85,16 @@ const App = () => {
         })
       }
     }
-  }
+
+    processCode()
+  }, [api])
+
+  useEffect(() => {
+    window.addEventListener('message', handlePopupMessage)
+    return () => {
+      window.removeEventListener('message', handlePopupMessage)
+    }
+  }, [handlePopupMessage])
 
   const closePanel = () => {
     setPanel(null)
@@ -107,13 +107,8 @@ const App = () => {
   }
 
   const handleGithubSignIn = () => {
-    // The popup is launched, its ref is checked and saved in the state in one step
     setGithubLoading(true)
-
-    setPopupRef(githubPopup(popupRef))
-
-    // Listen for the github redirection with the auth-code encoded as url param
-    window.addEventListener('message', handlePopupMessage)
+    popupRef = githubPopup(popupRef)
   }
 
   const handleResolveLocalIdentity = address => {
@@ -154,12 +149,13 @@ const App = () => {
   tabs.push({ name: 'Settings', body: Settings })
 
   // Determine current tab details
-  const currentTab = tabs.find(t => t.name.toLowerCase() === selectedTab)
-  const TabComponent = currentTab.body
+  const currentTab = tabs.find(t => t.name.toLowerCase() === selectedTab) || {}
+  const { body: tabBody = null, name: tabName = null } = currentTab
+  const TabComponent = tabBody
   const TabAction = () => {
     const { setupNewIssue, setupNewProject } = usePanelManagement()
 
-    switch (currentTab.name) {
+    switch (tabName) {
     case 'Overview': return (
       <Button mode="strong" icon={<IconPlus />} onClick={setupNewProject} label="New project" />
     )

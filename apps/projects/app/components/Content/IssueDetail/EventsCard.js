@@ -50,18 +50,18 @@ IssueEvent.propTypes = {
   date: PropTypes.string.isRequired,
 }
 
-const applicationLink = (user, onReviewApplication, issue, index) => (
+const applicationLink = (user, onReviewApplication, issue, requestIndex) => (
   <React.Fragment>
     {user} submitted <Link onClick={() =>
-      onReviewApplication({ issue, index, readOnly: true })
+      onReviewApplication({ issue, requestIndex, readOnly: true })
     }>an application for review</Link>
   </React.Fragment>
 )
 
-const workLink = (user, onReviewWork, issue, index) => (
+const workLink = (user, onReviewWork, issue, submissionIndex) => (
   <React.Fragment>
     {user} submitted <Link onClick={() =>
-      onReviewWork({ issue, index, readOnly: true })
+      onReviewWork({ issue, submissionIndex, readOnly: true })
     }>work for review</Link>
   </React.Fragment>
 )
@@ -108,11 +108,11 @@ const activities = (
   }
 
   if (workSubmissions) {
-    workSubmissions.forEach((data, index) => {
+    workSubmissions.forEach((data, submissionIndex) => {
       events[data.submissionDate] = {
         date: data.submissionDate,
         user: data.user,
-        eventDescription: workLink(data.user.login, onReviewWork, issue, index),
+        eventDescription: workLink(data.user.login, onReviewWork, issue, submissionIndex),
       }
 
       if ('review' in data) {

@@ -69,7 +69,7 @@ const NewProject = () => {
   // already are
   const RepoList = ({ visibleRepos, repoArray }) => {
     if (visibleRepos.length) return (
-      <RadioList
+      <StyledRadioList
         items={repoArray}
         selected={repoSelected}
         onChange={onRepoSelected(repoArray)}
@@ -214,8 +214,17 @@ const ScrollableList = styled.div`
   overflow-y: auto;
   padding-right: 10px;
   margin: 16px 0;
-  // Hack needed to make the scrollable list, since the whole SidePanel is a scrollable container
-  height: calc(100vh - 420px);
+  /* Hack needed to make the scrollable list, since the whole SidePanel is a scrollable container */
+  height: calc(100vh - 428px);
+`
+const StyledRadioList = styled(RadioList)`
+  > * {
+    div {
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
 `
 const RepoInfo = styled.div`
   margin: 20px 0;

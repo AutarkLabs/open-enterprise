@@ -20,7 +20,8 @@ import { addressesEqual } from '../../../../../shared/lib/web3-utils'
 import { RecipientsInput } from '../../../../../shared/ui'
 import { MIN_AMOUNT } from '../../utils/constants'
 import { usePanel } from '../../context/Panel'
-import { displayCurrency, formatDate, isStringEmpty } from '../../utils/helpers'
+import { formatDate, isStringEmpty } from '../../utils/helpers'
+import { displayCurrency } from '../../../../../shared/ui/helpers'
 import { DescriptionInput, Form } from '../Form'
 import CurrencyBox from '../Form/Field/CurrencyBox'
 
@@ -203,7 +204,6 @@ class NewAllocation extends React.Component {
     const { name, value } = e.target
     const { balances } = this.props
     const { recipients, recipientsValid, budgetValue, tokenValue } = this.state
-
     if (name === 'budget') {
       this.setState({
         budgetValue: value,
@@ -224,7 +224,7 @@ class NewAllocation extends React.Component {
         amountValue: value,
         amountInvalid: isStringEmpty(value)
           || BigNumber(value).lt(MIN_AMOUNT),
-        amountOverBudget: BigNumber(value + 'e18').gt(budgetValue.amount),
+        amountOverBudget: BigNumber(value + 'e18').gt(budgetValue.remaining),
         amountOverFunds: BigNumber(value + 'e18').gt(tokenValue.amount),
       })
     }
@@ -268,7 +268,7 @@ class NewAllocation extends React.Component {
       tokenValue
     } = this.state
     const allocation = {
-      budgetId: this.props.budgetId,
+      budgetId: budgetValue.id,
       budgetName: budgetValue,
       balance: BigNumber(amountValue).times(BigNumber(10).pow(tokenValue.decimals)).toString(10),
       description: descriptionValue,
