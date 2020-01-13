@@ -106,7 +106,7 @@ class VotingOptions extends React.Component {
 const AllocationText = ({ balance, percentage, symbol }) => {
   const theme = useTheme()
   return (
-    <Text size="xsmall" color={theme.contentSecondary} css={`margin-left: ${0.25 * GU}px`}>
+    <Text size="xsmall" color={`${theme.contentSecondary}`} css={`margin-left: ${0.25 * GU}px`}>
       {`(${balance.times(percentage).dp(3).toString()} ${symbol})`}
     </Text>
   )
