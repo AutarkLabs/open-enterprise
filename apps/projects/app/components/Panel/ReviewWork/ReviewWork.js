@@ -173,6 +173,7 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
                 value={feedback}
                 placeholder="Do you have any feedback to provide the contributor?"
                 wide
+                aria-label="Feedback"
               />
             }
           />

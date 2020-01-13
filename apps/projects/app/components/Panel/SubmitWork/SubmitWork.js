@@ -79,6 +79,7 @@ const SubmitWork = ({ issue }) => {
               onChange={updateProof}
               placeholder="Add a link to your work, such as a document or a pull request."
               wide
+              aria-label="Proof of work"
             />
           }
         />
@@ -92,6 +93,7 @@ const SubmitWork = ({ issue }) => {
               onChange={updateComments}
               placeholder="Comments or details that haven’t already been described elsewhere."
               wide
+              aria-label="Comments"
             />
           }
         />
@@ -104,6 +106,7 @@ const SubmitWork = ({ issue }) => {
               value={hours}
               onChange={updateHours}
               wide
+              aria-label="Hours worked"
             />
           }
         />

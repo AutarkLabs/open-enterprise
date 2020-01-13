@@ -1,7 +1,9 @@
 import styled from 'styled-components'
 import { unselectable } from '@aragon/ui'
 
-const EmptyWrapper = styled.div`
+const EmptyWrapper = styled.div.attrs({
+  role: 'main'
+})`
   ${unselectable};
   flex-grow: 1;
   display: flex;
