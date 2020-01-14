@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { Button, EmptyStateCard, GU, LoadingRing, unselectable } from '@aragon/ui'
 import icon from '../../assets/empty-rewards.svg'
 
-const Icon = () => <img src={icon} height={20 * GU} />
+const Icon = () => <img src={icon} height={20 * GU} alt="No rewards" />
 
 const Empty = ({ action, isSyncing, noButton=false }) => (
 
