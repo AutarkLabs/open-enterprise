@@ -8,7 +8,7 @@ module.exports = async function newDao({
     allocationsPeriod,
     dotVotingSettings,
     financePeriod,
-    id,
+    id: presetId,
     members,
     stakes,
     token,
@@ -23,10 +23,11 @@ module.exports = async function newDao({
   // TODO: Allow using DevTemplate or OpenEnterpriseTemplate with an env variable
   const OpenEnterpriseTemplate = artifacts.require('DevTemplate')
   const Kernel = artifacts.require('Kernel')
+  const getId = require('./getId')
 
   try {
     const template = OpenEnterpriseTemplate.at(await getTemplateAddress())
-    
+    const id = presetId || await getId(artifacts)
     const baseDAO = await template.newTokenAndInstance(
       token.name,
       token.symbol,

@@ -34,15 +34,14 @@ start_testrpc() {
 	elif [ "$START_KIT" = true ]; then
 		aragon devchain --port "$testrpc_port" &
 	elif [ "$RESTART_KIT" = true ] || [ "$CYPRESS" = true ]; then
-		rm -rf ~/.ipfs
 		aragon devchain --reset --port "$testrpc_port" &
 	elif [ "$DEV" = true ]; then
 		aragon devchain --reset --port "$testrpc_port" &
 		sleep 10 # wait for devchain to start TODO: modify cli to return rather than require interruption
 		npm run frontend &
 	elif [ "$NO_CLIENT" = true ]; then
-		aragon devchain --reset --port "$testrpc_port" &
 		npm run frontend &
+		aragon devchain --reset --port "$testrpc_port" &
 	fi
 
 	testrpc_pid=$!
@@ -76,11 +75,29 @@ elif [ "$NO_CLIENT" = true ]; then
 	npm run publish:http && npm run start:kit:no:client
 	result=$?
 elif [ "$CYPRESS" = true ]; then
-	npm run publish:apps && npm run start:kit &> /dev/null &
+	npm run frontend 2> /dev/null &
+	app_pgid=$!
+	aragon ipfs install
+	aragon ipfs start &
+	wait-on http://localhost:3333 # wait for bulkiest app service to load (Projects)
+	npm run publish:http && npm run start:dev-template
+	pushd . && cd .. 
+	git clone https://github.com/aragon/aragon.git a-client
+	cd a-client
+	git checkout bdf5d44bf1b3da72130c086b7a802470533058a1 # latest client commit tested thoroughly with OE
+	npm i
+	npm run start:local 2> /dev/null & popd
 	npm run cypress:run
 	result=$?
 	kill -9 "$(lsof -i:3000 -sTCP:LISTEN -t)" # kill parcel dev server
 	kill -9 "$(lsof -i:8080 -sTCP:LISTEN -t)" # kill IPFS daemon
+	kill -2 -- $app_pgid # kill app file services
+	kill -9 "$(lsof -i:1111 -sTCP:LISTEN -t)" # kill app service file descriptor
+	kill -9 "$(lsof -i:2222 -sTCP:LISTEN -t)" # kill app service file descriptor
+	kill -9 "$(lsof -i:3333 -sTCP:LISTEN -t)" # kill app service file descriptor
+	kill -9 "$(lsof -i:4444 -sTCP:LISTEN -t)" # kill app service file descriptor
+	kill -9 "$(lsof -i:5555 -sTCP:LISTEN -t)" # kill app service file descriptor
+	rm -rf ../a-client
 fi
 
 kill -9 $testrpc_pid

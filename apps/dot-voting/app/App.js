@@ -96,7 +96,8 @@ const App = () => {
   return (
     <IdentityProvider
       onResolve={handleResolveLocalIdentity}
-      onShowLocalIdentityModal={handleShowLocalIdentityModal}>
+      onShowLocalIdentityModal={handleShowLocalIdentityModal}
+    >
       <Header primary="Dot Voting" />
       <Decisions />
       <SyncIndicator visible={isSyncing} />
@@ -105,11 +106,13 @@ const App = () => {
 }
 
 const DotVoting = () =>
-  <Main  assetsUrl={ASSETS_URL}>
-    <AppLogicProvider>
-      <App />
-    </AppLogicProvider>
-  </Main>
+  <main>
+    <Main assetsUrl={ASSETS_URL}>
+      <AppLogicProvider>
+        <App />
+      </AppLogicProvider>
+    </Main>
+  </main>
 
 // eslint-disable-next-line react/display-name
 export default DotVoting

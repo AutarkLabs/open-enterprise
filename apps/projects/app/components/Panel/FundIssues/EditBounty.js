@@ -6,10 +6,10 @@ import { useAragonApi } from '../../../api-react'
 import { issueShape } from '../../../utils/shapes.js'
 import { IconOpen, IconCollapse } from '../../../assets'
 import { Box, DropDown, GU, useTheme } from '@aragon/ui'
-import { FormField, FieldTitle, DateInput } from '../../Form'
+import { FormField, FieldTitle } from '../../Form'
+import { DateInput } from '../../../../../../shared/ui'
 import {
   AmountInput,
-  HorizontalInputGroup,
   HoursInput,
   IssueTitleCompact,
   TokenInput,
@@ -70,13 +70,14 @@ const EditBounty = ({
         {bountySettings.fundingModel === 'Fixed' ? (
           <div css={`grid-area: hours; padding-left: ${2 * GU}px`}>
             <FieldTitle>Amount</FieldTitle>
-            <HorizontalInputGroup>
+            <div css="display: flex">
               <AmountInput
                 name="amount"
                 value={bounty.payout}
                 onFocus={onFocus}
                 onChange={e => updateBounty({ payout: e.target.value })}
                 wide
+                aria-label="Amount"
               />
               <TokenInput
                 name="token"
@@ -84,7 +85,7 @@ const EditBounty = ({
                 selected={tokens.indexOf(bounty.token)}
                 onChange={i => updateBounty({ token: tokens[i] })}
               />
-            </HorizontalInputGroup>
+            </div>
           </div>
         ) : (
           <div css={`grid-area: hours; padding-left: ${2 * GU}px`}>
@@ -122,6 +123,8 @@ const EditBounty = ({
                 value={bounty.deadline}
                 onChange={deadline => updateBounty({ deadline })}
                 width="100%"
+                label="Deadline"
+                wide
               />
             }
           />

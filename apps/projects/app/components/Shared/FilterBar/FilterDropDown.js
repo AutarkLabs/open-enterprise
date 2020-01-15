@@ -39,6 +39,7 @@ export const OverflowDropDown = ({ children, enabled }) => {
             onClick={handleBaseButtonClick}
             disabled={!enabled}
             width="40px"
+            title="More Filters"
           >
             <IconMore />
           </FilterButton>

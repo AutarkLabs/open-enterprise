@@ -1,9 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { isDate, format as formatDate } from 'date-fns'
-
-import { TextInput } from '@aragon/ui'
+import { format as formatDate } from 'date-fns'
+import { TextInput, useTheme } from '@aragon/ui'
 import DatePicker from './DatePicker'
 import { IconCalendar } from '../../assets'
 
@@ -17,13 +16,27 @@ const IconWrapper = styled.div`
   height: 14px;
   width: 26px;
 `
-const TextInputDate = styled(TextInput).attrs({
-  readOnly: true
-})`
-  width: ${props => props.width};
-  display: inline-block;
-  padding-top: 3px;
-`
+const TextInputDate = props => {
+  const theme = useTheme()
+
+  return (
+    <TextInput
+      readOnly
+      css={`
+        width: ${props.width};
+        display: inline-block;
+        padding-top: 3px;
+        :read-only {
+          color: ${theme.surfaceContent};
+        }
+        `}
+      { ...props }
+    />
+  )
+}
+TextInputDate.propTypes = {
+  width: PropTypes.string.isRequired,
+}
 
 class DateInput extends React.PureComponent {
   constructor(props) {
@@ -67,18 +80,18 @@ class DateInput extends React.PureComponent {
   }
 
   render () {
-    const { value, width, wide, horizontalAlign, verticalAlign } = this.props
+    const { value, width, wide, horizontalAlign, verticalAlign, label } = this.props
     const formattedValue = formatDate(value, this.props.format)
 
     return (
       <Container
         ref={this.setWrapperRef}
-        width={ wide ? "100%" : width }
+        width={ wide ? '100%' : width }
       >
         <TextInputDate
           value={formattedValue}
           onClick={this.handleClick}
-          width={ wide ? "100%" : width }
+          width={ wide ? '100%' : width }
           wide={wide}
           adornment={
             <IconWrapper onClick={this.handleClick}>
@@ -86,6 +99,7 @@ class DateInput extends React.PureComponent {
             </IconWrapper>
           }
           adornmentPosition="end"
+          aria-label={label}
         />
 
         {this.state.showPicker && (
@@ -110,14 +124,15 @@ DateInput.propTypes = {
   position: PropTypes.string,
   horizontalAlign: PropTypes.string,
   verticalAlign: PropTypes.string,
-  wide: PropTypes.bool
+  wide: PropTypes.bool,
+  label: PropTypes.string.isRequired,
 }
 
 DateInput.defaultProps = {
   value: new Date(),
   format: 'LL/dd/yyyy',
   onChange: () => {},
-  width: '180px',
+  width: '181px',
   horizontalAlign: 'right',
   verticalALign: 'top',
 }

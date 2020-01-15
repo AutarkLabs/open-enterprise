@@ -64,7 +64,7 @@ const App = () => {
 
   const handlePopupMessage = useCallback(message => {
     if (!popupRef) return
-    if (message.source !== popupRef) return
+    if (message.data.from !== 'popup') return
 
     popupRef = null
 
@@ -130,7 +130,7 @@ const App = () => {
     )
   } else if (github.status === STATUS.INITIAL) {
     return (
-      <Main>
+      <Main role="main">
         <Unauthorized onLogin={handleGithubSignIn} isSyncing={isSyncing} />
       </Main>
     )
@@ -176,46 +176,48 @@ const App = () => {
             onShowLocalIdentityModal={handleShowLocalIdentityModal}
           >
             <DecoratedReposProvider>
-              <Header
-                primary="Projects"
-                secondary={
-                  <TabAction />
-                }
-              />
-              <ErrorBoundary>
+              <main>
+                <Header
+                  primary="Projects"
+                  secondary={
+                    <TabAction />
+                  }
+                />
+                <ErrorBoundary>
 
-                {selectedIssueId
-                  ? (
-                    <React.Fragment>
-                      <Bar>
-                        <BackButton onClick={() => setSelectedIssue(null)} />
-                      </Bar>
-                      <IssueDetail issueId={selectedIssueId} />
-                    </React.Fragment>
-                  )
-                  : (
-                    <React.Fragment>
-                      <Tabs
-                        items={tabNames}
-                        onChange={index => {
-                          if (index === 0) requestPath('/')
-                          else requestPath('/' + tabNames[index].toLowerCase())
-                        }}
-                        selected={tabs.indexOf(currentTab)}
-                      />
-                      <TabComponent
-                        status={github.status}
-                        app={api}
-                        bountyIssues={issues}
-                        bountySettings={bountySettings}
-                        tokens={tokens}
-                        setSelectedIssue={setSelectedIssue}
-                        onLogin={handleGithubSignIn}
-                      />
-                    </React.Fragment>
-                  )
-                }
-              </ErrorBoundary>
+                  {selectedIssueId
+                    ? (
+                      <React.Fragment>
+                        <Bar>
+                          <BackButton onClick={() => setSelectedIssue(null)} />
+                        </Bar>
+                        <IssueDetail issueId={selectedIssueId} />
+                      </React.Fragment>
+                    )
+                    : (
+                      <React.Fragment>
+                        <Tabs
+                          items={tabNames}
+                          onChange={index => {
+                            if (index === 0) requestPath('/')
+                            else requestPath('/' + tabNames[index].toLowerCase())
+                          }}
+                          selected={tabs.indexOf(currentTab)}
+                        />
+                        <TabComponent
+                          status={github.status}
+                          app={api}
+                          bountyIssues={issues}
+                          bountySettings={bountySettings}
+                          tokens={tokens}
+                          setSelectedIssue={setSelectedIssue}
+                          onLogin={handleGithubSignIn}
+                        />
+                      </React.Fragment>
+                    )
+                  }
+                </ErrorBoundary>
+              </main>
               <PanelManager
                 activePanel={panel}
                 onClose={closePanel}

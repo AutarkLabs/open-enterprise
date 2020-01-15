@@ -212,6 +212,7 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
                 placeholder="Do you have any feedback to provide the applicant?"
                 value={feedback}
                 wide
+                aria-label="Feedback"
               />
             }
           />

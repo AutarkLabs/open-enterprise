@@ -2,14 +2,15 @@
   "private": true,
   "name": "planning-suite-monorepo",
   "devDependencies": {
-    "@commitlint/cli": "^8.2.0",
-    "@commitlint/config-conventional": "^8.2.0",
+    "@commitlint/cli": "^8.3.4",
+    "@commitlint/config-conventional": "^8.3.4",
     "coveralls": "3.0.2",
     "cypress": "^3.1.5",
     "husky": "^3.0.0",
     "lerna": "^3.10.8",
     "truffle-privatekey-provider": "1.1.0",
-    "wait-on": "^3.2.0"
+    "wait-on": "^3.2.0",
+    "web3": "^1.2.4"
   },
   "scripts": {
     "bootstrap": "lerna bootstrap --hoist",
@@ -32,7 +33,7 @@
     "coverage": "lerna run coverage --no-bail",
     "coveralls": "cat apps/*/coverage/lcov.info | coveralls",
     "cypress:open": "cypress open",
-    "cypress:run": "wait-on http://localhost:3000/#/0x5b6a3301a67A4bfda9D3a528CaD34cac6e7F8070 && cypress run",
+    "cypress:run": "wait-on http://localhost:3000/#/dev-dao-0 && cypress run --browser chrome",
     "cypress": "CYPRESS=true apps/shared/test-helpers/ganache-cli.sh",
     "deploy:apps:rinkeby": "lerna run --scope='@tps/apps-*' deploy:rinkeby --stream",
     "deploy:apps:rpc": "lerna run --scope='@tps/apps-*' deploy:rpc --stream",
