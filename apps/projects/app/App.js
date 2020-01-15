@@ -9,11 +9,12 @@ import {
   Header,
   IconPlus,
   Main,
+  SyncIndicator,
   Tabs,
 } from '@aragon/ui'
 
 import ErrorBoundary from './components/App/ErrorBoundary'
-import { Issues, Overview, Settings } from './components/Content'
+import { Bounties, General, Issues, Settings } from './components/Content'
 import IssueDetail from './components/Content/IssueDetail'
 import { PanelManager, PanelContext, usePanelManagement } from './components/Panel'
 
@@ -25,10 +26,6 @@ import {
 
 import { initApolloClient } from './utils/apollo-client'
 import { getToken, githubPopup, STATUS } from './utils/github'
-import Unauthorized from './components/Content/Unauthorized'
-import { LoadingAnimation } from './components/Shared'
-import { EmptyWrapper } from './components/Shared'
-import { Error } from './components/Card'
 import { DecoratedReposProvider } from './context/DecoratedRepos'
 import usePathSegments from './hooks/usePathSegments'
 
@@ -56,7 +53,10 @@ const App = () => {
     selectIssue: setSelectedIssue,
   } = usePathSegments()
 
-  const client = github.token ? initApolloClient(github.token) : null
+  // TODO: usePathSegments for this
+  const selectedProjectId = 0
+
+  const client = initApolloClient(github.token)
 
   useEffect(() => {
     setSelectedIssue(selectedIssueId)
@@ -121,47 +121,31 @@ const App = () => {
       .toPromise()
   }
 
-  const noop = () => {}
-  if (githubLoading) {
-    return (
-      <EmptyWrapper>
-        <LoadingAnimation />
-      </EmptyWrapper>
-    )
-  } else if (github.status === STATUS.INITIAL) {
-    return (
-      <Main>
-        <Unauthorized onLogin={handleGithubSignIn} isSyncing={isSyncing} />
-      </Main>
-    )
-  } else if (github.status === STATUS.FAILED) {
-    return (
-      <Main>
-        <Error action={noop} />
-      </Main>
-    )
-  }
-
-  // Tabs are not fixed
-  const tabs = [{ name: 'Overview', body: Overview }]
-  if (repos.length)
-    tabs.push({ name: 'Issues', body: Issues })
-  tabs.push({ name: 'Settings', body: Settings })
+  const tabs = [
+    { name: 'General', body: General },
+    { name: 'Bounties', body: Bounties },
+    { name: 'Settings', body: Settings },
+  ]
 
   // Determine current tab details
   const currentTab = tabs.find(t => t.name.toLowerCase() === selectedTab) || {}
   const { body: tabBody = null, name: tabName = null } = currentTab
   const TabComponent = tabBody
+
   const TabAction = () => {
     const { setupNewIssue, setupNewProject } = usePanelManagement()
 
     switch (tabName) {
-    case 'Overview': return (
-      <Button mode="strong" icon={<IconPlus />} onClick={setupNewProject} label="New project" />
-    )
-    case 'Issues': return (
-      <Button mode="strong" icon={<IconPlus />} onClick={setupNewIssue} label="New issue" />
-    )
+    case 'General':
+      if (selectedProjectId) return (
+        <Button mode="strong" icon={<IconPlus />} onClick={setupNewIssue} label="New issue" />
+      )
+    // eslint-disable-next-line no-fallthrough
+    case 'Bounties':
+    case 'Settings':
+      return (
+        <Button mode="strong" icon={<IconPlus />} onClick={setupNewProject} label="New project" />
+      )
     default: return null
     }
   }
@@ -183,38 +167,36 @@ const App = () => {
                 }
               />
               <ErrorBoundary>
-
-                {selectedIssueId
-                  ? (
-                    <React.Fragment>
-                      <Bar>
-                        <BackButton onClick={() => setSelectedIssue(null)} />
-                      </Bar>
-                      <IssueDetail issueId={selectedIssueId} />
-                    </React.Fragment>
-                  )
-                  : (
-                    <React.Fragment>
-                      <Tabs
-                        items={tabNames}
-                        onChange={index => {
-                          if (index === 0) requestPath('/')
-                          else requestPath('/' + tabNames[index].toLowerCase())
-                        }}
-                        selected={tabs.indexOf(currentTab)}
-                      />
-                      <TabComponent
-                        status={github.status}
-                        app={api}
-                        bountyIssues={issues}
-                        bountySettings={bountySettings}
-                        tokens={tokens}
-                        setSelectedIssue={setSelectedIssue}
-                        onLogin={handleGithubSignIn}
-                      />
-                    </React.Fragment>
-                  )
-                }
+                {isSyncing && <SyncIndicator visible={isSyncing} />}
+                {selectedIssueId ? (
+                  <React.Fragment>
+                    <Bar>
+                      <BackButton onClick={() => setSelectedIssue(null)} />
+                    </Bar>
+                    <IssueDetail issueId={selectedIssueId} />
+                  </React.Fragment>
+                ) : (
+                  <React.Fragment>
+                    <Tabs
+                      items={tabNames}
+                      onChange={index => {
+                        if (index === 0) requestPath('/')
+                        else requestPath('/' + tabNames[index].toLowerCase())
+                      }}
+                      selected={tabs.indexOf(currentTab)}
+                    />
+                    <TabComponent
+                      status={github.status}
+                      app={api}
+                      bountyIssues={issues}
+                      bountySettings={bountySettings}
+                      tokens={tokens}
+                      setSelectedIssue={setSelectedIssue}
+                      onLogin={handleGithubSignIn}
+                      isSyncing={isSyncing}
+                    />
+                  </React.Fragment>
+                )}
               </ErrorBoundary>
               <PanelManager
                 activePanel={panel}

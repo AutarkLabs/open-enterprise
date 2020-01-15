@@ -36,7 +36,7 @@ export function DecoratedReposProvider(props) {
   const [ decoratedRepos, setDecoratedRepos ] = React.useState([])
 
   React.useEffect(() => {
-    if (!github.token) return
+    if (!github || !github.token) return
 
     async function fetchGithubData() {
       const client = new GraphQLClient('https://api.github.com/graphql', {
@@ -84,7 +84,7 @@ export function DecoratedReposProvider(props) {
     }
 
     fetchGithubData()
-  }, [ github.token, repos ])
+  }, [ github, repos ])
 
   return <DecoratedReposContext.Provider value={decoratedRepos} {...props} />
 }

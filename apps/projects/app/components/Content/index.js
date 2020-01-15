@@ -1,6 +1,7 @@
+import Bounties from './Bounties'
 import Issues from './Issues'
-import Overview from './Overview'
+import General from './General'
 import Settings from './Settings'
 
-export { Issues, Overview, Settings }
+export { Bounties, Issues, General, Settings }
 

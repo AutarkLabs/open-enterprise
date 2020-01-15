@@ -1,5 +1,7 @@
-import Empty from './Empty'
-import Project from './Project'
-import Issue from './Issue'
 import Error from './Error'
-export { Empty, Project, Issue, Error }
+import Issue from './Issue'
+import NoProjects from './NoProjects'
+import NoBounties from './NoBounties'
+import Project from './Project'
+
+export { Error, Issue, NoBounties, NoProjects, Project }

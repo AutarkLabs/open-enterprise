@@ -404,7 +404,7 @@ const Settings = ({ onLogin }) => {
     })
   }
 
-  if (!settingsLoaded  || !user.avatarUrl)
+  if (!settingsLoaded)
     return (
       <EmptyWrapper>
         <Text size="large" css={`margin-bottom: ${3 * GU}px`}>

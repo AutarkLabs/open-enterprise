@@ -12,7 +12,7 @@ import {
 } from '@aragon/ui'
 import { EmptyWrapper } from '../Shared'
 
-import unauthorizedSvg from '../../assets/empty.svg'
+import unauthorizedSvg from '../../assets/connect.svg'
 
 const illustration = <img src={unauthorizedSvg} alt="" height="160" />
 
@@ -44,8 +44,8 @@ const Unauthorized = ({ onLogin, isSyncing }) => {
             </div>
           ) : (
             <React.Fragment>
-              <Text css={`margin: ${2 * GU}px`}>
-                Connect with GitHub
+              <Text css={`display: block; margin-top: ${2 * GU}px`}>
+                Connect to GitHub
                 <InlineHelp hint="">
                   The Projects app requires you to sign in with GitHub, as the
                   bounty and issue curation system is tied to GitHub issues.
@@ -56,21 +56,22 @@ const Unauthorized = ({ onLogin, isSyncing }) => {
                   >
                     Read here
                   </Link> for more details.
-                  <br /><br />
-                  Note: We are working towards decentralizing the Projects app
-                  to remove the need for GitHub: expect an update near the end
-                  of the year.
                 </InlineHelp>
               </Text>
-              <Text.Block size="small" color={`${theme.surfaceContentSecondary}`}>
+              <Text
+                css={`display: block; margin-top: ${GU}px; margin-bottom: ${2 * GU}px`}
+                size="small"
+                color={`${theme.surfaceContentSecondary}`}
+              >
                 Work on bounties, add funding to issues, or prioritize issues.
-              </Text.Block>
+              </Text>
             </React.Fragment>
           )}
         illustration={illustration}
         action={ !isSyncing && (
-          <Button onClick={onLogin}>Sign In</Button>
+          <Button onClick={onLogin}>Connect</Button>
         )}
+        css="height: auto"
       />
     </EmptyWrapper>
   )

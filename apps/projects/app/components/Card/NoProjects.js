@@ -3,9 +3,9 @@ import styled from 'styled-components'
 import { Button, Card, GU, Text } from '@aragon/ui'
 import { usePanelManagement } from '../Panel'
 
-import unauthorizedSvg from '../../assets/empty.svg'
+import noDataPng from '../../assets/noData.png'
 
-const Empty = () => {
+const NoProjects = () => {
   const { setupNewProject } = usePanelManagement()
 
   return (
@@ -18,7 +18,7 @@ const Empty = () => {
         align-items: center;
       `}
       >
-        <img css={`margin-bottom: ${2 * GU}px`} src={unauthorizedSvg} alt="" height="160" />
+        <img css={`margin-bottom: ${2 * GU}px`} src={noDataPng} alt="" height="160" />
         <Text size="xlarge" css={`margin: ${2 * GU}px`}>
             No projects found
         </Text>
@@ -37,4 +37,4 @@ const EmptyCard = styled(Card)`
   padding: ${7 * GU}px;
 `
 
-export default Empty
+export default NoProjects

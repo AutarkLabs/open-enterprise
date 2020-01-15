@@ -1,12 +1,12 @@
 import React, { useCallback } from 'react'
 import styled from 'styled-components'
 
-import { Project, Empty } from '../Card'
+import { NoProjects, Project } from '../Card'
 import { useLayout } from '@aragon/ui'
 import { CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
 import { useDecoratedRepos } from '../../context/DecoratedRepos'
 
-const Overview = () => {
+const General = () => {
   const { width } = useLayout()
   const repos = useDecoratedRepos()
 
@@ -26,7 +26,7 @@ const Overview = () => {
   ))
 
   if (!repos.length) {
-    return <Empty />
+    return <NoProjects />
   }
 
   return (
@@ -42,4 +42,4 @@ const StyledProjects = styled.div`
     props.screenSize < CARD_STRETCH_BREAKPOINT ? 'column' : 'row'};
   flex-wrap: wrap;
 `
-export default Overview
+export default General

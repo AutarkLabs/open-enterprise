@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { usePath } from '@aragon/api-react'
 
-const PATH_REGEX = /^\/(settings|issues)(?:\/([a-zA-Z0-9=]{24})?)?($|\?|#)/
+const PATH_REGEX = /^\/(settings|bounties|issues)(?:\/([a-zA-Z0-9=]{24})?)?($|\?|#)/
 const SEARCH_REGEX = /\?(.+)($|#)/ // everything between ? and end-of-line or a hash sign
 const SEARCH_PARAM_REGEX = /([a-zA-Z0-9]+)=([a-zA-Z0-9=]+)/
 
@@ -28,7 +28,7 @@ export default function usePathSegments() {
   }, [search])
 
   return {
-    selectedTab: selectedTab || 'overview',
+    selectedTab: selectedTab || 'general',
     selectedIssueId,
     selectIssue,
     query,
