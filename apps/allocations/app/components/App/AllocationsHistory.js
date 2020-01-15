@@ -8,18 +8,22 @@ import {
   useLayout,
   useTheme,
 } from '@aragon/ui'
-import doubleCheck
-  from '../../../../../shared/ui/components/assets/svg/double-check.svg'
+import IconDoubleCheck
+  from '../../../../../shared/ui/components/assets/svg/IconDoubleCheck'
 import LocalIdentityBadge from '../LocalIdentityBadge/LocalIdentityBadge'
 import { BigNumber } from 'bignumber.js'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
-import { STATUSES } from '../../utils/constants'
+import {
+  STATUSES,
+  STATUS_APPROVED,
+  STATUS_ENACTED,
+  STATUS_REJECTED,
+  STATUS_UNDERGOING_VOTE,
+} from '../../utils/constants'
 import { displayCurrency } from '../../../../../shared/ui/helpers'
 import { addressesEqual } from '../../../../../shared/lib/web3-utils'
-
-const IconDoubleCheck = () => <img src={doubleCheck} alt="" />
 
 const AllocationsHistory = ({ allocations, skipBudgetColumn }) => {
   const theme = useTheme()
@@ -125,8 +129,12 @@ const Status = ({ code }) => {
   const theme = useTheme()
   return (
     <StatusContent theme={theme} code={code}>
-      { code === 1 && <IconCross size="medium" color={theme.negative} /> }
-      { code > 1 && <IconDoubleCheck size="medium" color={theme.positive} /> }
+      { code === STATUS_REJECTED &&
+        <IconCross size="medium" color={theme.negative} />
+      }
+      { (code === STATUS_APPROVED || code === STATUS_ENACTED) &&
+        <IconDoubleCheck size="medium" color={theme.positive} />
+      }
       <StatusText>
         {STATUSES[code]}
       </StatusText>
@@ -135,7 +143,7 @@ const Status = ({ code }) => {
 }
 
 Status.propTypes = {
-  code: PropTypes.number.isRequired,
+  code: PropTypes.string.isRequired,
 }
 
 const Amount = styled.div`
@@ -163,9 +171,9 @@ const RecipientAmount = styled.div`
  `
 
 const StatusContent = styled.div`
-  color: ${({ code, theme }) => code === 0
+  color: ${({ code, theme }) => code === STATUS_UNDERGOING_VOTE
     ? theme.contentSecondary
-    : code === 1
+    : code === STATUS_REJECTED
       ? theme.negative
       : theme.positive };
   display: flex;
