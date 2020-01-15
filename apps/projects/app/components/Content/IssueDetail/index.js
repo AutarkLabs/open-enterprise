@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
 import { useAragonApi } from '../../../api-react'
 import {
@@ -44,9 +44,7 @@ Wrap.propTypes = {
 }
 
 const IssueDetail = ({ issueId }) => {
-  const { appState: { github } } = useAragonApi()
-  const initApolloClient = useApolloClient()
-  const client = useMemo(() => initApolloClient(github.token), [])
+  const client = useApolloClient()
   const { layoutName } = useLayout()
   const shapeIssue = useShapedIssue()
   const { loading, error, data } = useQuery(GET_ISSUE, {

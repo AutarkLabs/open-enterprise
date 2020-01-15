@@ -50,14 +50,12 @@ const App = () => {
   const [ githubLoading, setGithubLoading ] = useState(false)
   const [ panel, setPanel ] = useState(null)
   const [ panelProps, setPanelProps ] = useState(null)
-  const initApolloClient = useApolloClient()
+  const client = useApolloClient()
 
   const {
     github = { status : STATUS.INITIAL },
     isSyncing = true,
   } = appState
-
-  const client = initApolloClient(github.token)
 
   const handlePopupMessage = useCallback(message => {
     if (!popupRef) return

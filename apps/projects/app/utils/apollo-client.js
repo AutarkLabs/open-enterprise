@@ -4,31 +4,32 @@ import { GITHUB_TOKEN_REVOKED } from '../store/eventTypes'
 import { STATUS } from '../utils/github'
 
 export const useApolloClient = () => {
-  const { api } = useAragonApi()
-  const initApolloClient = token => {
-    if (token === null) return null
-    return new ApolloClient({
-      uri: 'https://api.github.com/graphql',
-      request: operation => {
-        if (token) {
-          operation.setContext({
-            headers: {
-              accept: 'application/vnd.github.starfire-preview+json', // needed to create issues
-              authorization: `bearer ${token}`,
-            },
-          })
-        }
-      },
-      onError: error => {
-        if (error.networkError && error.networkError.statusCode === 401) {
-          api.emitTrigger(GITHUB_TOKEN_REVOKED, {
-            status: STATUS.REVOKED,
-            scope: null,
-            token: null,
-          })
-        }
+  const {
+    api,
+    appState: {
+      github: { token } = { token: null }
+    }
+  } = useAragonApi()
+  if (token === null) return null
+  return new ApolloClient({
+    uri: 'https://api.github.com/graphql',
+    request: operation => {
+      operation.setContext({
+        headers: {
+          accept: 'application/vnd.github.starfire-preview+json', // needed to create issues
+          authorization: `bearer ${token}`,
+        },
+      })
+    },
+    onError: error => {
+      if (error.networkError && error.networkError.statusCode === 401) {
+        api.emitTrigger(GITHUB_TOKEN_REVOKED, {
+          status: STATUS.REVOKED,
+          scope: null,
+          token: null,
+        })
       }
-    })
-  }
-  return initApolloClient
+      else console.error(error)
+    }
+  })
 }
