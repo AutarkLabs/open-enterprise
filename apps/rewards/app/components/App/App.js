@@ -255,8 +255,11 @@ class App extends React.Component {
       <Main>
         <IdentityProvider
           onResolve={this.handleResolveLocalIdentity}
-          onShowLocalIdentityModal={this.handleShowLocalIdentityModal}>
-          { children }
+          onShowLocalIdentityModal={this.handleShowLocalIdentityModal}
+        >
+          <main>
+            { children }
+          </main>
           <PanelManager
             onClose={this.closePanel}
             activePanel={this.state.panel}

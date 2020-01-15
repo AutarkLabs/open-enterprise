@@ -40,7 +40,6 @@ const IconSpacer = styled.div`
 `
 
 const TokenName = styled.span`
-  max-width: 110px;
   margin-right: 10px;
   overflow: hidden;
   text-overflow: ellipsis;

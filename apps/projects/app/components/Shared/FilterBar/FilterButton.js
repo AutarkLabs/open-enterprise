@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { useTheme } from '@aragon/ui'
 
-const FilterButton = ({ width, children, onClick, disabled }) => {
+const FilterButton = ({ width, children, onClick, disabled, title }) => {
   const theme = useTheme()
 
   return (
@@ -34,6 +34,7 @@ const FilterButton = ({ width, children, onClick, disabled }) => {
       `}
       onClick={onClick}
       disabled={disabled}
+      title={title}
     >
       {children}
     </button>
@@ -44,6 +45,7 @@ FilterButton.propTypes = {
   children: PropTypes.node.isRequired,
   onClick: PropTypes.func.isRequired,
   disabled: PropTypes.bool.isRequired,
+  title: PropTypes.string,
 }
 
 export default FilterButton

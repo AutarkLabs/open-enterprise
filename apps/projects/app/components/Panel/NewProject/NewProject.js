@@ -160,6 +160,7 @@ const NewProject = () => {
                       }
                       adornmentPosition="end"
                       ref={searchRef}
+                      aria-label="Search"
                     />
 
                     <ScrollableList>

@@ -487,6 +487,7 @@ class NewRewardClass extends React.Component {
               this.state.disbursementUnit,
             )
           }}
+          label="Start date"
         />
       </Field>
       <Field
@@ -508,6 +509,7 @@ class NewRewardClass extends React.Component {
               this.state.disbursementUnit,
             )
           }}
+          label="End date"
         />
       </Field>
     </HorizontalContainer>
@@ -534,6 +536,7 @@ class NewRewardClass extends React.Component {
             this.setErrors({ dateReference })
           }}
           wide
+          label="Reference date"
         />
       </Field>
     </VerticalContainer>

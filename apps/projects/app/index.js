@@ -3,10 +3,15 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 
 // stub out axe; not interested in dealing with this noise rn
-// if (process.env.NODE_ENV !== 'production') {
-//   var axe = require('react-axe')
-//   axe(React, ReactDOM, 1000)
-// }
+if (process.env.NODE_ENV !== 'production') {
+  var axe = require('react-axe')
+  axe(React, ReactDOM, 1000, {
+    rules: [{
+      id: 'skip-link',
+      enabled: false,
+    }]
+  })
+}
 
 import { AragonApi } from './api-react'
 import appStateReducer from './app-state-reducer'

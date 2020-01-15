@@ -141,12 +141,14 @@ const ExperienceLevel = ({
                   value={exp.mul}
                   allowNegative={false}
                   onChange={generateExpLevelHandler(index, 'M')}
+                  aria-label="Experience level multiplier"
                 />
                 <TextInput
                   type="text"
                   css="font-size: 16px; width: 65%"
                   value={exp.name}
                   onChange={generateExpLevelHandler(index, 'N')}
+                  aria-label="Experience level name"
                 />
                 <IconContainer
                   theme={theme}
@@ -168,6 +170,7 @@ const ExperienceLevel = ({
                 css="font-size: 16px; flex-grow: 1"
                 value={exp.name}
                 onChange={generateExpLevelHandler(index, 'N')}
+                aria-label="Experience level name"
               />
               <IconContainer
                 theme={theme}
@@ -218,6 +221,7 @@ const BaseRate = ({
         allowNegative={false}
         onChange={onChangeRate}
         style={{ marginRight: '0' }}
+        aria-label="Base rate"
       />
       <DropDown
         items={bountyCurrencies}
@@ -252,6 +256,7 @@ const BountyDeadline = ({
         allowNegative={false}
         onChange={onChangeT}
         style={{ marginRight: '0' }}
+        aria-label="Default work deadline"
       />
       <DropDown
         items={bountyDeadlines}
@@ -480,7 +485,7 @@ const Settings = ({ onLogin }) => {
           </SettingsFunding>
 
           <Button mode="strong" onClick={submitChanges}>
-              Save changes
+            Save changes
           </Button>
         </Box>
       </div>
