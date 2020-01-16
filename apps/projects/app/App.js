@@ -1,21 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react'
+import PropTypes from 'prop-types'
 import { ApolloProvider } from 'react-apollo'
 
-import { useAragonApi, usePath } from './api-react'
-import {
-  Bar,
-  Button,
-  BackButton,
-  Header,
-  IconPlus,
-  Main,
-  Tabs,
-} from '@aragon/ui'
+import { useAragonApi } from './api-react'
+import { Main } from '@aragon/ui'
 
 import ErrorBoundary from './components/App/ErrorBoundary'
 import { Issues, Overview, Settings } from './components/Content'
 import IssueDetail from './components/Content/IssueDetail'
-import { PanelManager, PanelContext, usePanelManagement } from './components/Panel'
+import { PanelManager, PanelContext } from './components/Panel'
 
 import { IdentityProvider } from '../../../shared/identity'
 import {
@@ -34,33 +27,36 @@ import usePathSegments from './hooks/usePathSegments'
 
 let popupRef = null
 
+function Routes({ handleGithubSignIn }) {
+  const { selectedIssueId, selectedTab } = usePathSegments()
+
+  if (selectedIssueId) return <IssueDetail issueId={selectedIssueId} />
+
+  if (selectedTab === 'issues') return <Issues />
+
+  if (selectedTab === 'settings') return (
+    <Settings onLogin={handleGithubSignIn} />
+  )
+
+  return <Overview />
+}
+
+Routes.propTypes = {
+  handleGithubSignIn: PropTypes.func.isRequired,
+}
+
 const App = () => {
   const { api, appState } = useAragonApi()
-  const [ , requestPath ] = usePath()
   const [ githubLoading, setGithubLoading ] = useState(false)
   const [ panel, setPanel ] = useState(null)
   const [ panelProps, setPanelProps ] = useState(null)
 
   const {
-    repos = [],
-    bountySettings = {},
-    issues = [],
-    tokens = [],
     github = { status : STATUS.INITIAL },
     isSyncing = true,
   } = appState
 
-  const {
-    selectedIssueId,
-    selectedTab,
-    selectIssue: setSelectedIssue,
-  } = usePathSegments()
-
   const client = github.token ? initApolloClient(github.token) : null
-
-  useEffect(() => {
-    setSelectedIssue(selectedIssueId)
-  }, [selectedIssueId])
 
   const handlePopupMessage = useCallback(message => {
     if (!popupRef) return
@@ -142,31 +138,6 @@ const App = () => {
     )
   }
 
-  // Tabs are not fixed
-  const tabs = [{ name: 'Overview', body: Overview }]
-  if (repos.length)
-    tabs.push({ name: 'Issues', body: Issues })
-  tabs.push({ name: 'Settings', body: Settings })
-
-  // Determine current tab details
-  const currentTab = tabs.find(t => t.name.toLowerCase() === selectedTab) || {}
-  const { body: tabBody = null, name: tabName = null } = currentTab
-  const TabComponent = tabBody
-  const TabAction = () => {
-    const { setupNewIssue, setupNewProject } = usePanelManagement()
-
-    switch (tabName) {
-    case 'Overview': return (
-      <Button mode="strong" icon={<IconPlus />} onClick={setupNewProject} label="New project" />
-    )
-    case 'Issues': return (
-      <Button mode="strong" icon={<IconPlus />} onClick={setupNewIssue} label="New issue" />
-    )
-    default: return null
-    }
-  }
-  const tabNames = tabs.map(t => t.name)
-
   return (
     <Main>
       <ApolloProvider client={client}>
@@ -177,45 +148,8 @@ const App = () => {
           >
             <DecoratedReposProvider>
               <main>
-                <Header
-                  primary="Projects"
-                  secondary={
-                    <TabAction />
-                  }
-                />
                 <ErrorBoundary>
-
-                  {selectedIssueId
-                    ? (
-                      <React.Fragment>
-                        <Bar>
-                          <BackButton onClick={() => setSelectedIssue(null)} />
-                        </Bar>
-                        <IssueDetail issueId={selectedIssueId} />
-                      </React.Fragment>
-                    )
-                    : (
-                      <React.Fragment>
-                        <Tabs
-                          items={tabNames}
-                          onChange={index => {
-                            if (index === 0) requestPath('/')
-                            else requestPath('/' + tabNames[index].toLowerCase())
-                          }}
-                          selected={tabs.indexOf(currentTab)}
-                        />
-                        <TabComponent
-                          status={github.status}
-                          app={api}
-                          bountyIssues={issues}
-                          bountySettings={bountySettings}
-                          tokens={tokens}
-                          setSelectedIssue={setSelectedIssue}
-                          onLogin={handleGithubSignIn}
-                        />
-                      </React.Fragment>
-                    )
-                  }
+                  <Routes handleGithubSignIn={handleGithubSignIn} />
                 </ErrorBoundary>
               </main>
               <PanelManager
