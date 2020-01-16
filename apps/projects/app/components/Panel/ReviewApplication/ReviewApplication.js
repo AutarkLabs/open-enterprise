@@ -21,9 +21,11 @@ import {
   Avatar,
   FieldText,
   IssueTitle,
+  PanelContent,
   ReviewButtons,
   Status,
   SubmissionDetails,
+  TypeFilters,
   UserLink,
 } from '../PanelComponents'
 
@@ -34,60 +36,30 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
   } = useAragonApi()
   const { closePanel } = usePanelManagement()
   const theme = useTheme()
-
   const [ feedback, setFeedback ] = useState('')
-  const [ index, setIndex ] = useState(requestIndex)
-  /*
-  issue.requestsData = [{
-    contributorAddr: "0xb4124cEB3451635DAcedd11767f004d8a28c6eE7", requestIPFSHash: "QmR9AjJ5Smhah5SnziqvZctosqpkCsTwbmPEgE1FydNXEe",
-    workplan: "app1", hours: "1", eta: "2020-01-20T23:00:00.000Z", ack1: true, ack2: true,
-    user: {
-      id: "MDQ6VXNlcjM0NDUyMTMx", login: "rkzel", url: "https://github.com/rkzel", avatarUrl: "https://avatars0.githubusercontent.com/u/34452131?v=4", applicationDate: "2020-01-13T09:40:08.065Z",
-    }
-  }, {
-    contributorAddr: "0xb4124cEB3451635DAcedd11767f004d8a28c6eE7", requestIPFSHash: "QmR9AjJ5Smhah5SnziqvZctosqpkCsTwbmPEgE1FydNXEe",
-    workplan: "app2", hours: "2", eta: "2020-01-21T23:00:00.000Z", ack1: true, ack2: true,
-    user: {
-      id: "MDQ6VXNlcjM0NDUyMTMx", login: "rkzel2", url: "https://github.com/rkzel", avatarUrl: "https://avatars0.githubusercontent.com/u/34452131?v=4", applicationDate: "2020-01-13T09:40:08.065Z",
-    }
 
-  }, {
-    contributorAddr: "0xb4124cEB3451635DAcedd11767f004d8a28c6eE7", requestIPFSHash: "QmR9AjJ5Smhah5SnziqvZctosqpkCsTwbmPEgE1FydNXEe",
-    workplan: "app3", hours: "3", eta: "2020-01-21T23:00:00.000Z", ack1: true, ack2: true,
-    user: {
-      id: "MDQ6VXNlcjM0NDUyMTMx", login: "rkzel3", url: "https://github.com/rkzel", avatarUrl: "https://avatars0.githubusercontent.com/u/34452131?v=4", applicationDate: "2020-01-13T09:40:08.065Z",
-    },
-    review: {
-      approved: true,
-      reviewDate: '2020-01-21T23:00:00.000Z',
-      feedback: 'haha'
-    },
-  }
-  ]
-*/
-
-  // are both types present?
-  const types = issue.requestsData.reduce((types, request) => {
-    types['review' in request ? 1 : 0] = true
-    return types
-  }, [ false, false ] )
+  const canReview = issue.workStatus !== 'fulfilled' && !readOnly
 
   const typesToShow = []
-  if (types[0]) typesToShow.push('Available for review')
-  if (types[1]) typesToShow.push('Reviewed')
+  if (issue.requestsData.findIndex(request => !('review' in request)) !== -1)
+    typesToShow.push(canReview ? 'Available for review' : 'Unreviewed')
+  if (issue.requestsData.findIndex(request => 'review' in request) !== -1)
+    typesToShow.push('Reviewed')
 
-  // of what type is the request asked for - default 'Available for review'
   let indexTypeSelected = 0
-  // unless requested was 'reviewed' and there are no unreviewed reqs
   if ('review' in issue.requestsData[requestIndex])
     indexTypeSelected = (typesToShow[0] === 'Reviewed') ? 0 : 1
 
   const [ indexType, setIndexType ] = useState(indexTypeSelected)
 
-  // filter requests
   const requests = issue.requestsData.filter(r => {
     return (typesToShow[indexType] === 'Reviewed') ? 'review' in r : !('review' in r)
   })
+
+  const newRequestIndex = requests.findIndex(
+    request => request.contributorAddr === issue.requestsData[requestIndex].contributorAddr
+  )
+  const [ index, setIndex ] = useState(newRequestIndex)
 
   const updateFeedback = e => setFeedback(e.target.value)
   const buildReturnData = approved => {
@@ -142,10 +114,10 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
   const applicationDateDistance = formatDistance(new Date(application.applicationDate), new Date())
 
   return (
-    <div css={`margin: ${2 * GU}px 0`}>
+    <PanelContent>
       <IssueTitle issue={issue} />
 
-      <div css={`display: flex; margin-bottom: ${3 * GU}px`}>
+      <TypeFilters>
         <DropDown
           name="Type"
           items={typesToShow}
@@ -163,7 +135,7 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
           wide
           css={`margin-left: ${0.5 * GU}px`}
         />
-      </div>
+      </TypeFilters>
 
       <SubmissionDetails background={`${theme.background}`} border={`${theme.border}`}>
         <UserLink>
@@ -200,7 +172,7 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
           </Text.Block>
         </React.Fragment>
       )}
-      {!readOnly && !request.review && (
+      {canReview && !request.review && (
         <React.Fragment>
           <FormField
             label="Feedback"
@@ -222,7 +194,7 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
         </React.Fragment>
       )}
 
-    </div>
+    </PanelContent>
   )
 }
 ReviewApplication.propTypes = {

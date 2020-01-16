@@ -22,9 +22,11 @@ import {
   Avatar,
   FieldText,
   IssueTitle,
+  PanelContent,
   ReviewButtons,
   Status,
   SubmissionDetails,
+  TypeFilters,
   UserLink,
 } from '../PanelComponents'
 import workRatings from '../../../utils/work-ratings.js'
@@ -40,31 +42,34 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
 
   const [ feedback, setFeedback ] = useState('')
   const [ rating, setRating ] = useState(-1)
-  const [ index, setIndex ] = useState(submissionIndex)
 
-  // are both types present?
-  const types = issue.requestsData.reduce((types, request) => {
-    types['review' in request ? 1 : 0] = true
-    return types
-  }, [ false, false ] )
+  const submissionsApproved = issue.workSubmissions.reduce((counter, submission) => {
+    if ('review' in submission && submission.review.accepted) counter++
+    return counter
+  }, 0)
+
+  const canReview = submissionsApproved < (issue.bounties ? issue.bounties : 1) && !readOnly
 
   const typesToShow = []
-  if (types[0]) typesToShow.push('Available for review')
-  if (types[1]) typesToShow.push('Reviewed')
+  if (issue.workSubmissions.findIndex(submission => !('review' in submission)) !== -1)
+    typesToShow.push(canReview ? 'Available for review' : 'Unreviewed')
+  if (issue.workSubmissions.findIndex(submission => 'review' in submission) !== -1)
+    typesToShow.push('Reviewed')
 
-  // of what type is the request asked for - default 'Available for review'
   let indexTypeSelected = 0
-  // unless requested was 'reviewed' and there are no unreviewed reqs
-  if ('review' in issue.requestsData[submissionIndex])
+  if ('review' in issue.workSubmissions[submissionIndex])
     indexTypeSelected = (typesToShow[0] === 'Reviewed') ? 0 : 1
 
   const [ indexType, setIndexType ] = useState(indexTypeSelected)
 
-  // filter requests
-  const workSubmissions = issue.requestsData.filter(r => {
+  const workSubmissions = issue.workSubmissions.filter(r => {
     return (typesToShow[indexType] === 'Reviewed') ? 'review' in r : !('review' in r)
   })
 
+  const newSubmissionIndex = workSubmissions.findIndex(
+    submission => submission.submitter === issue.workSubmissions[submissionIndex].submitter
+  )
+  const [ index, setIndex ] = useState(newSubmissionIndex)
 
   const buildReturnData = accepted => {
     const today = new Date()
@@ -120,10 +125,10 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
   const submitterName = submitter.name ? submitter.name : submitter.login
 
   return(
-    <div css={`margin: ${2 * GU}px 0`}>
+    <PanelContent>
       <IssueTitle issue={issue} />
 
-      <div css={`display: flex; margin-bottom: ${3 * GU}px`}>
+      <TypeFilters>
         <DropDown
           name="Type"
           items={typesToShow}
@@ -139,9 +144,9 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
           onChange={changeSubmission}
           selected={index}
           wide
-          css={`margin-bottom: ${3 * GU}px`}
+          css={`margin-left: ${0.5 * GU}px`}
         />
-      </div>
+      </TypeFilters>
 
       <SubmissionDetails background={`${theme.background}`} border={`${theme.border}`}>
         <UserLink>
@@ -185,7 +190,7 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
           </FieldText>
         </React.Fragment>
       )}
-      {!readOnly && !work.review && (
+      {canReview && !work.review && (
         <React.Fragment>
           <FormField
             label="Quality Rating"
@@ -221,10 +226,9 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
         </React.Fragment>
       )}
 
-    </div>
+    </PanelContent>
   )
 }
-
 ReviewWork.propTypes = {
   issue: issueShape,
   readOnly: PropTypes.bool.isRequired,
