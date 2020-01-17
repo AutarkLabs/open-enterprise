@@ -1,6 +1,6 @@
 import Issues from './Issues'
-import Overview from './Overview'
+import General from './General'
 import Settings from './Settings'
 
-export { Issues, Overview, Settings }
+export { Issues, General, Settings }
 
