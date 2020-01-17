@@ -22,9 +22,11 @@ import {
   Avatar,
   FieldText,
   IssueTitle,
+  PanelContent,
   ReviewButtons,
   Status,
   SubmissionDetails,
+  TypeFilters,
   UserLink,
 } from '../PanelComponents'
 import workRatings from '../../../utils/work-ratings.js'
@@ -40,7 +42,34 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
 
   const [ feedback, setFeedback ] = useState('')
   const [ rating, setRating ] = useState(-1)
-  const [ index, setIndex ] = useState(submissionIndex)
+
+  const submissionsApproved = issue.workSubmissions.reduce((counter, submission) => {
+    if ('review' in submission && submission.review.accepted) counter++
+    return counter
+  }, 0)
+
+  const canReview = submissionsApproved < (issue.bounties ? issue.bounties : 1) && !readOnly
+
+  const typesToShow = []
+  if (issue.workSubmissions.findIndex(submission => !('review' in submission)) !== -1)
+    typesToShow.push(canReview ? 'Available for review' : 'Unreviewed')
+  if (issue.workSubmissions.findIndex(submission => 'review' in submission) !== -1)
+    typesToShow.push('Reviewed')
+
+  let indexTypeSelected = 0
+  if ('review' in issue.workSubmissions[submissionIndex])
+    indexTypeSelected = (typesToShow[0] === 'Reviewed') ? 0 : 1
+
+  const [ indexType, setIndexType ] = useState(indexTypeSelected)
+
+  const workSubmissions = issue.workSubmissions.filter(r => {
+    return (typesToShow[indexType] === 'Reviewed') ? 'review' in r : !('review' in r)
+  })
+
+  const newSubmissionIndex = workSubmissions.findIndex(
+    submission => submission.submitter === issue.workSubmissions[submissionIndex].submitter
+  )
+  const [ index, setIndex ] = useState(newSubmissionIndex)
 
   const buildReturnData = accepted => {
     const today = new Date()
@@ -58,6 +87,10 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
   const updateRating = (index) => setRating(index)
   const updateFeedback = e => setFeedback(e.target.value)
   const changeSubmission = (index) => setIndex(index)
+  const changeRequestType = (index) => {
+    setIndex(0)
+    setIndexType(index)
+  }
 
   const canSubmit = () => !(rating > 0)
 
@@ -86,24 +119,34 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
     ).toPromise()
   }
 
-  const work = issue.workSubmissions[index]
+  const work = workSubmissions[index]
   const submitter = issue.work.user
   const submissionDateDistance = formatDistance(new Date(work.submissionDate), new Date())
   const submitterName = submitter.name ? submitter.name : submitter.login
 
   return(
-    <div css={`margin: ${2 * GU}px 0`}>
+    <PanelContent>
       <IssueTitle issue={issue} />
 
-      <FieldTitle>Work Submissions</FieldTitle>
-      <DropDown
-        name="Submission"
-        items={issue.workSubmissions.map(submission => submission.user.login)}
-        onChange={changeSubmission}
-        selected={index}
-        wide
-        css={`margin-bottom: ${3 * GU}px`}
-      />
+      <TypeFilters>
+        <DropDown
+          name="Type"
+          items={typesToShow}
+          onChange={changeRequestType}
+          selected={indexType}
+          wide
+          css={`margin-right: ${0.5 * GU}px`}
+        />
+
+        <DropDown
+          name="Submission"
+          items={workSubmissions.map(submission => submission.user.login)}
+          onChange={changeSubmission}
+          selected={index}
+          wide
+          css={`margin-left: ${0.5 * GU}px`}
+        />
+      </TypeFilters>
 
       <SubmissionDetails background={`${theme.background}`} border={`${theme.border}`}>
         <UserLink>
@@ -147,7 +190,7 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
           </FieldText>
         </React.Fragment>
       )}
-      {!readOnly && !work.review && (
+      {canReview && !work.review && (
         <React.Fragment>
           <FormField
             label="Quality Rating"
@@ -183,10 +226,9 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
         </React.Fragment>
       )}
 
-    </div>
+    </PanelContent>
   )
 }
-
 ReviewWork.propTypes = {
   issue: issueShape,
   readOnly: PropTypes.bool.isRequired,

@@ -21,9 +21,11 @@ import {
   Avatar,
   FieldText,
   IssueTitle,
+  PanelContent,
   ReviewButtons,
   Status,
   SubmissionDetails,
+  TypeFilters,
   UserLink,
 } from '../PanelComponents'
 
@@ -34,12 +36,32 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
   } = useAragonApi()
   const { closePanel } = usePanelManagement()
   const theme = useTheme()
-
   const [ feedback, setFeedback ] = useState('')
-  const [ index, setIndex ] = useState(requestIndex)
+
+  const canReview = issue.workStatus !== 'fulfilled' && !readOnly
+
+  const typesToShow = []
+  if (issue.requestsData.findIndex(request => !('review' in request)) !== -1)
+    typesToShow.push(canReview ? 'Available for review' : 'Unreviewed')
+  if (issue.requestsData.findIndex(request => 'review' in request) !== -1)
+    typesToShow.push('Reviewed')
+
+  let indexTypeSelected = 0
+  if ('review' in issue.requestsData[requestIndex])
+    indexTypeSelected = (typesToShow[0] === 'Reviewed') ? 0 : 1
+
+  const [ indexType, setIndexType ] = useState(indexTypeSelected)
+
+  const requests = issue.requestsData.filter(r => {
+    return (typesToShow[indexType] === 'Reviewed') ? 'review' in r : !('review' in r)
+  })
+
+  const newRequestIndex = requests.findIndex(
+    request => request.contributorAddr === issue.requestsData[requestIndex].contributorAddr
+  )
+  const [ index, setIndex ] = useState(newRequestIndex)
 
   const updateFeedback = e => setFeedback(e.target.value)
-
   const buildReturnData = approved => {
     const today = new Date()
     return {
@@ -53,24 +75,27 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
   const onAccept = () => onReviewApplication(true)
   const onReject = () => onReviewApplication(false)
   const changeRequest = (index) => setIndex(index)
+  const changeRequestType = (index) => {
+    setIndex(0)
+    setIndexType(index)
+  }
 
   const onReviewApplication = async (approved) => {
     closePanel()
     const review = buildReturnData(approved)
     // new IPFS data is old data plus state returned from the panel
-    const ipfsData = issue.requestsData[index]
+    const ipfsData = requests[index]
     const requestIPFSHash = await ipfsAdd({ ...ipfsData, review })
-
     reviewApplication(
       toHex(issue.repoId),
       issue.number,
-      issue.requestsData[index].contributorAddr,
+      requests[index].contributorAddr,
       requestIPFSHash,
       approved
     ).toPromise()
   }
 
-  const request = issue.requestsData[index]
+  const request = requests[index]
   const application = {
     user: {
       login: request.user.login,
@@ -89,18 +114,28 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
   const applicationDateDistance = formatDistance(new Date(application.applicationDate), new Date())
 
   return (
-    <div css={`margin: ${2 * GU}px 0`}>
+    <PanelContent>
       <IssueTitle issue={issue} />
 
-      <FieldTitle>Applicant</FieldTitle>
-      <DropDown
-        name="Applicant"
-        items={issue.requestsData.map(request => request.user.login)}
-        onChange={changeRequest}
-        selected={index}
-        wide
-        css={`margin-bottom: ${3 * GU}px`}
-      />
+      <TypeFilters>
+        <DropDown
+          name="Type"
+          items={typesToShow}
+          onChange={changeRequestType}
+          selected={indexType}
+          wide
+          css={`margin-right: ${0.5 * GU}px`}
+        />
+
+        <DropDown
+          name="Applicant"
+          items={requests.map(request => request.user.login)}
+          onChange={changeRequest}
+          selected={index}
+          wide
+          css={`margin-left: ${0.5 * GU}px`}
+        />
+      </TypeFilters>
 
       <SubmissionDetails background={`${theme.background}`} border={`${theme.border}`}>
         <UserLink>
@@ -137,7 +172,7 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
           </Text.Block>
         </React.Fragment>
       )}
-      {!readOnly && !request.review && (
+      {canReview && !request.review && (
         <React.Fragment>
           <FormField
             label="Feedback"
@@ -159,7 +194,7 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
         </React.Fragment>
       )}
 
-    </div>
+    </PanelContent>
   )
 }
 ReviewApplication.propTypes = {
