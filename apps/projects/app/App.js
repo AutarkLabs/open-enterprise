@@ -16,12 +16,12 @@ import {
   REQUESTED_GITHUB_TOKEN_FAILURE,
 } from './store/eventTypes'
 
-import { initApolloClient } from './utils/apollo-client'
+import { useApolloClient } from './utils/apollo-client'
 import { getToken, githubPopup, STATUS } from './utils/github'
 import Unauthorized from './components/Content/Unauthorized'
 import { LoadingAnimation } from './components/Shared'
 import { EmptyWrapper } from './components/Shared'
-import { Error } from './components/Card'
+import { Error, Revoked } from './components/Card'
 import { DecoratedReposProvider } from './context/DecoratedRepos'
 import usePathSegments from './hooks/usePathSegments'
 
@@ -50,13 +50,12 @@ const App = () => {
   const [ githubLoading, setGithubLoading ] = useState(false)
   const [ panel, setPanel ] = useState(null)
   const [ panelProps, setPanelProps ] = useState(null)
+  const client = useApolloClient()
 
   const {
     github = { status : STATUS.INITIAL },
     isSyncing = true,
   } = appState
-
-  const client = github.token ? initApolloClient(github.token) : null
 
   const handlePopupMessage = useCallback(message => {
     if (!popupRef) return
@@ -134,6 +133,12 @@ const App = () => {
     return (
       <Main>
         <Error action={noop} />
+      </Main>
+    )
+  } else if (github.status === STATUS.REVOKED) {
+    return (
+      <Main>
+        <Revoked action={handleGithubSignIn} />
       </Main>
     )
   }

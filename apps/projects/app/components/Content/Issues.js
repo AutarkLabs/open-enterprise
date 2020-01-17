@@ -7,10 +7,9 @@ import { useAragonApi } from '../../api-react'
 import { Button, GU, Header, IconPlus, Text } from '@aragon/ui'
 import { compareAsc, compareDesc } from 'date-fns'
 
-import { initApolloClient } from '../../utils/apollo-client'
+import { useApolloClient } from '../../utils/apollo-client'
 import useShapedIssue from '../../hooks/useShapedIssue'
 import usePathSegments from '../../hooks/usePathSegments'
-import { STATUS } from '../../utils/github'
 import { getIssuesGQL } from '../../utils/gql-queries.js'
 import { Issue } from '../Card'
 import { EmptyWrapper, FilterBar, LoadingAnimation, Tabs } from '../Shared'
@@ -35,7 +34,7 @@ class Issues extends React.PureComponent {
     filters: PropTypes.object.isRequired,
     graphqlQuery: PropTypes.shape({
       data: PropTypes.object,
-      error: PropTypes.string,
+      error: PropTypes.object,
       loading: PropTypes.bool.isRequired,
       refetch: PropTypes.func,
     }).isRequired,
@@ -350,7 +349,7 @@ class Issues extends React.PureComponent {
 }
 
 const IssuesQuery = ({ client, query, ...props }) => {
-  const graphqlQuery = useQuery(query, { client, onError: console.error })
+  const graphqlQuery = useQuery(query, { client })
   return <Issues graphqlQuery={graphqlQuery} {...props} />
 }
 
@@ -360,16 +359,15 @@ IssuesQuery.propTypes = {
 }
 
 const IssuesWrap = props => {
+  const client = useApolloClient()
   const { appState } = useAragonApi()
   const {
     repos,
     issues = [],
-    github = { status : STATUS.INITIAL },
   } = appState
   const shapeIssue = useShapedIssue()
   const { query: { repoId }, selectIssue } = usePathSegments()
   const { setupNewIssue } = usePanelManagement()
-  const [ client, setClient ] = useState(null)
   const [ downloadedRepos, setDownloadedRepos ] = useState({})
   const [ query, setQuery ] = useState(null)
   const [ filters, setFilters ] = useState({
@@ -415,10 +413,6 @@ const IssuesWrap = props => {
 
     setQuery(getIssuesGQL(reposQueryParams))
   }, [ downloadedRepos, filters, repos ])
-
-  useEffect(() => {
-    setClient(github.token ? initApolloClient(github.token) : null)
-  }, [github.token])
 
   return (
     <>

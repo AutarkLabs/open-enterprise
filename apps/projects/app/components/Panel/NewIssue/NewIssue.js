@@ -110,7 +110,6 @@ class NewIssue extends React.PureComponent {
         <Mutation
           mutation={NEW_ISSUE}
           variables={{ title, description, id }}
-          onError={console.error}
         >
           {(newIssue, result) => {
             const { data, loading, error, called } = result

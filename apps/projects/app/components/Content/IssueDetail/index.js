@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
 import { useAragonApi } from '../../../api-react'
 import {
@@ -12,7 +12,7 @@ import {
 import { useQuery } from '@apollo/react-hooks'
 import useShapedIssue from '../../../hooks/useShapedIssue'
 import { GET_ISSUE } from '../../../utils/gql-queries.js'
-import { initApolloClient } from '../../../utils/apollo-client'
+import { useApolloClient } from '../../../utils/apollo-client'
 import EventsCard from './EventsCard'
 import DetailsCard from './DetailsCard'
 import BountyCard from './BountyCard'
@@ -44,13 +44,11 @@ Wrap.propTypes = {
 }
 
 const IssueDetail = ({ issueId }) => {
-  const { appState: { github } } = useAragonApi()
-  const client = useMemo(() => initApolloClient(github.token), [])
+  const client = useApolloClient()
   const { layoutName } = useLayout()
   const shapeIssue = useShapedIssue()
   const { loading, error, data } = useQuery(GET_ISSUE, {
     client,
-    onError: console.error,
     variables: { id: issueId },
   })
   if (loading) return <Wrap>Loading...</Wrap>
