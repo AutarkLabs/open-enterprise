@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Button, Card, GU, Text } from '@aragon/ui'
+import { Button, Card, GU, Text, textStyle } from '@aragon/ui'
 import { usePanelManagement } from '../Panel'
 
 import unauthorizedSvg from '../../assets/empty.svg'
@@ -19,11 +19,12 @@ const Empty = () => {
       `}
       >
         <img css={`margin-bottom: ${2 * GU}px`} src={unauthorizedSvg} alt="" height="160" />
-        <Text size="xlarge" css={`margin: ${2 * GU}px`}>
-            No projects found
-        </Text>
-        <Text css={`margin-bottom: ${3 * GU}px`}>
-            It seems that you have not set up a project yet
+        <h2 css={textStyle('title2')}>
+          No projects here
+        </h2>
+        <Text css={`margin-bottom: ${3 * GU}px; margin-top: ${GU}px`}>
+          Create a project to start funding,<br />
+          prioritizing and working on issues
         </Text>
         <Button mode="strong" onClick={setupNewProject}>New project</Button>
       </div>
