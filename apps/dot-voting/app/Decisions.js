@@ -31,7 +31,8 @@ const OUTCOME_FILTER_REJECTED = 2
 const OUTCOME_FILTER_ENACTED = 3
 const OUTCOME_FILTER_PENDING = 4
 const APP_FILTER_ALLOCATIONS = 1
-const APP_FILTER_PROJECTS = 2
+const APP_FILTER_DOT = 2
+const APP_FILTER_PROJECTS = 3
 
 const useFilterVotes = (votes, voteTime) => {
   const { appState: { globalMinQuorum = 0 } } = useAragonApi()
@@ -67,6 +68,9 @@ const useFilterVotes = (votes, voteTime) => {
       if (appFilter !== NULL_FILTER_STATE) {
         if (appFilter === APP_FILTER_ALLOCATIONS &&
           type !== 'allocation'
+        ) return false
+        if (appFilter === APP_FILTER_DOT &&
+          type !== 'information'
         ) return false
         if (appFilter === APP_FILTER_PROJECTS &&
           type !== 'curation'
@@ -217,7 +221,6 @@ const Decisions = () => {
                 'Open',
                 'Closed',
               ]}
-              width="128px"
             />
             {voteStatusFilter !== STATUS_FILTER_OPEN && (
               <DropDown
@@ -226,7 +229,6 @@ const Decisions = () => {
                 selected={voteOutcomeFilter}
                 onChange={handleVoteOutcomeFilterChange}
                 items={[ 'All', 'Passed', 'Rejected', 'Enacted', 'Pending' ]}
-                width="128px"
               />
             )}
             <DropDown
@@ -234,8 +236,7 @@ const Decisions = () => {
               placeholder="App"
               selected={voteAppFilter}
               onChange={handleVoteAppFilterChange}
-              items={[ 'All', 'Allocations', 'Projects' ]}
-              width="128px"
+              items={[ 'All', 'Allocations', 'Dot Voting', 'Projects' ]}
             />
           </div>
         </Bar>

@@ -63,7 +63,7 @@ const VotingOption = ({ valueSpring, label, percentage, allocation, color, thres
         )}
         <div>
           {percentage !== -1 &&
-              <Text size="xsmall" color={`${theme.contentSecondary}`}>
+              <Text size="xsmall" color={theme.contentSecondary.toString()}>
                 {Math.round(percentage)}%
               </Text>
           }

@@ -22,7 +22,7 @@ const VoteStatus = ({ vote }) => {
       color: theme.textSecondary,
     },
     [VOTE_STATUS_SUCCESSFUL]: {
-      label: 'Passed (pending)',
+      label: `Passed ${vote.data.executable ? '(pending)' : ''}`,
       Icon: IconCheck,
       color: theme.positive,
     },

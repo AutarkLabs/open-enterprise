@@ -2,7 +2,7 @@ import { combineLatest, from } from 'rxjs'
 import { first, map, mergeMap } from 'rxjs/operators'
 
 import { app } from './'
-import { EMPTY_CALLSCRIPT } from '../utils/vote-utils'
+import { EMPTY_CALLSCRIPT, FUNC_TYPES } from '../utils/vote-utils'
 import { ETHER_TOKEN_FAKE_ADDRESS, tokenAbi } from '../../../../shared/lib/token-utils'
 import { loadTokenSymbol } from '../../../../shared/store-utils/token'
 import { addressesEqual } from '../../../../shared/lib/web3-utils'
@@ -62,12 +62,13 @@ const loadVoteData = async (voteId, settings) => {
       .pipe(first())
       .subscribe(async voteData => {
         let funcSig = voteData.executionScript.slice(58, 66)
-        if (funcSig == 'b3670f9e') {
-          resolve(loadVoteDataProjects(voteData, voteId))
+        if (FUNC_TYPES[funcSig]) {
+          resolve(loadVoteDataInformative(voteData, voteId, FUNC_TYPES[funcSig]))
         } else {
           resolve(loadVoteDataAllocation(voteData, voteId, settings))
         }
       })
+
   })
 }
 
@@ -122,12 +123,13 @@ const loadVoteDataAllocation = async (vote, voteId, settings) => {
           tokenSymbol: symbol,
           metadata: vote.voteDescription,
           type: 'allocation',
+          executable: true,
         })
       })
   })
 }
 
-const loadVoteDataProjects = async (vote, voteId) => {
+const loadVoteDataInformative = async (vote, voteId, type) => {
   return new Promise(resolve => {
     combineLatest(
       app.call('getCandidateLength', voteId),
@@ -145,7 +147,8 @@ const loadVoteDataProjects = async (vote, voteId) => {
         resolve({
           ...marshallVote(decoratedVote),
           metadata: vote.voteDescription,
-          type: 'curation',
+          type,
+          executable: false,
           canExecute,
           options,
         })
