@@ -28,7 +28,7 @@ export default function usePathSegments() {
   }, [search])
 
   return {
-    selectedTab: selectedTab || 'overview',
+    selectedTab: selectedTab || 'general',
     selectedIssueId,
     selectIssue,
     query,

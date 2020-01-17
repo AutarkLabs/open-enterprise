@@ -29,7 +29,7 @@ Wrap.propTypes = {
   children: PropTypes.node.isRequired,
 }
 
-const Overview = () => {
+const General = () => {
   const { width } = useLayout()
   const repos = useDecoratedRepos()
 
@@ -67,4 +67,4 @@ const StyledProjects = styled.div`
     props.screenSize < CARD_STRETCH_BREAKPOINT ? 'column' : 'row'};
   flex-wrap: wrap;
 `
-export default Overview
+export default General

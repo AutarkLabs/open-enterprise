@@ -6,7 +6,7 @@ import { useAragonApi } from './api-react'
 import { Main } from '@aragon/ui'
 
 import ErrorBoundary from './components/App/ErrorBoundary'
-import { Issues, Overview, Settings } from './components/Content'
+import { Issues, General, Settings } from './components/Content'
 import IssueDetail from './components/Content/IssueDetail'
 import { PanelManager, PanelContext } from './components/Panel'
 
@@ -38,7 +38,7 @@ function Routes({ handleGithubSignIn }) {
     <Settings onLogin={handleGithubSignIn} />
   )
 
-  return <Overview />
+  return <General />
 }
 
 Routes.propTypes = {

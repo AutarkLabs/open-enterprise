@@ -8,7 +8,7 @@ export default function Tabs() {
   const { appState: { repos } } = useAragonApi()
   const [ , requestPath ] = usePath()
 
-  const tabs = ['Overview']
+  const tabs = ['General']
   if (repos.length) tabs.push('Issues')
   tabs.push('Settings')
 
