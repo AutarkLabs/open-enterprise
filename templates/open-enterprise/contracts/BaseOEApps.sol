@@ -26,7 +26,7 @@ contract BaseOEApps is BaseCache {
     string constant private ERROR_BOUNTIES_NOT_CONTRACT = "BOUNTIES_REGISTRY_NOT_CONTRACT";
     address constant internal ANY_ENTITY = address(-1);
     Bounties internal bountiesRegistry;
-    address[] private whiteListed = [address(0), address(0)];
+    address[] private whiteListed = [address(0), address(0), address(0)];
 
     /**
     * @dev Constructor for Open Enterprise Apps DAO
@@ -174,9 +174,10 @@ contract BaseOEApps is BaseCache {
 
 /* WHITELIST-ORACLE */
 
-    function _installWhitelistOracleApp(Kernel _dao, address _vault) internal returns (WhitelistOracle) {
+    function _initializeWhitelistOracleApp(WhitelistOracle _whitelist, address _vault, address _finance) internal {
         whiteListed[0] = _vault;
-        return _installWhitelistOracleApp(_dao, whiteListed);
+        whiteListed[2] = _finance;
+        _whitelist.initialize(whiteListed);
     }
 
 /* OPEN ENTERPRISE SPECIFIC VAULT PERMISSIONS */

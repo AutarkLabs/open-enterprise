@@ -72,7 +72,7 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         // Token 1 quasi-transferable
         if (!_tokenBools[1]) {
             if (address(whitelist) == address(0)) {
-                whitelist = _installWhitelistOracleApp(dao, agentOrVault);
+                whitelist = _installWhitelistOracleApp(dao);
                 _setOracle(acl, tokenManager1, whitelist);
             }
         }
@@ -83,7 +83,7 @@ contract OpenEnterpriseTemplate is BaseOEApps {
             _mintTokens(acl, tokenManager2, _members2, _stakes2);
             if (!_tokenBools[3]) {
                 if (address(whitelist) == address(0)) {
-                    whitelist = _installWhitelistOracleApp(dao, agentOrVault);
+                    whitelist = _installWhitelistOracleApp(dao);
                     _setOracle(acl, tokenManager2, whitelist);
                 }
             }
@@ -197,7 +197,7 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         Vault _agentOrVault
     ) internal
     {
-        _setupTokenPermissions(_acl, _dao);
+        _setupTokenPermissions(_acl, _dao, _finance, _agentOrVault);
         (DotVoting dotVoting, Voting voting, , ) = _popVotingAppsCache(msg.sender);
 
         if (address(_discussions) != address(0)) {
@@ -221,7 +221,9 @@ contract OpenEnterpriseTemplate is BaseOEApps {
 
     function _setupTokenPermissions(
         ACL _acl,
-        Kernel _dao
+        Kernel _dao,
+        Finance _finance,
+        Vault _vault
     ) internal
     {
         (DotVoting dotVoting, Voting voting, bool secondaryDot, bool secondaryVoting) = _popVotingAppsCache(msg.sender);
@@ -230,6 +232,7 @@ contract OpenEnterpriseTemplate is BaseOEApps {
             _createTokenManagerPermissions(_acl, tokenManager2, voting, voting);
         }
         if (address(whitelist) != address(0)) {
+            _initializeWhitelistOracleApp(whitelist, _vault, _finance);
             _createWhitelistPermissions(_acl, whitelist, voting, voting);
         }
         _createDotVotingPermissions(_acl, dotVoting, secondaryDot ? tokenManager2 : tokenManager1, voting);

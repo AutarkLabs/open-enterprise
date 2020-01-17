@@ -2,8 +2,9 @@
 /* global artifacts, before, context, contract, it */
 
 const { randomId } = require('@aragon/templates-shared/helpers/aragonId')
+const truffleAssert = require('truffle-assertions')
 
-const { APPS } = require('../temp/helpers/apps')
+const { APPS, APP_IDS } = require('../temp/helpers/apps')
 
 const namehash = require('eth-ens-namehash').hash
 const promisify = require('util').promisify
@@ -17,6 +18,11 @@ const getContract = name => artifacts.require(name)
 const getReceipt = (receipt, event, arg) => {
   const result = receipt.logs.filter(l => l.event === event)[0].args
   return arg ? result[arg] : result
+}
+
+const getReceipts = (receipt, event, arg) => {
+  const results = receipt.logs.filter(l => l.event === event)
+  return arg ? results.map(e => e.args[arg]) : results
 }
 
 /** Helper path functions to allow executing the script from relative or root location */
@@ -48,7 +54,7 @@ contract('OpenEnterpriseTemplate', ([ owner, member1, member2, member3 ]) => {
   const TOKENS_LIMIT = true
   const TOKEN_HOLDERS = [ member1, member2, member3 ]
   const TOKEN_STAKES = [ 100, 200, 500 ]
-  const TOKEN_BOOLS = [ TOKEN_TRANSFERABLE, TOKENS_LIMIT ]
+  const TOKEN_BOOLS = [ TOKENS_LIMIT, TOKEN_TRANSFERABLE, TOKENS_LIMIT, TOKEN_TRANSFERABLE ]
 
   const VOTE_DURATION = ONE_WEEK
   const SUPPORT_REQUIRED = 50e16
@@ -202,6 +208,7 @@ contract('OpenEnterpriseTemplate', ([ owner, member1, member2, member3 ]) => {
 
     context('when using just vault', () => {
       const USE_AGENT_AS_VAULT = false
+      let installedOracle
       it('should run newTokensAndInstance without error', async () => {
         await template.newTokensAndInstance(
           randomId(),
@@ -216,19 +223,33 @@ contract('OpenEnterpriseTemplate', ([ owner, member1, member2, member3 ]) => {
       })
   
       it('should run newTokenManagers without error', async () => {
-        await template.newTokenManagers(
+        const result = await template.newTokenManagers(
           TOKEN_HOLDERS,
           TOKEN_STAKES,
           TOKEN_HOLDERS,
           TOKEN_STAKES,
           TOKEN_BOOLS
         )
+        installedOracle = getReceipts(result, 'InstalledApp')
+          .reduce((appAddress, l) => {
+            return l.args.appId === APP_IDS['whitelist-oracle.hatch'] ?
+              l.args.appProxy : appAddress
+          }, null)
       })
   
       it('should run finalizeDao without error', async () => {
         await template.finalizeDao(
           [ FINANCE_PERIOD, FINANCE_PERIOD ],
           false
+        )
+      })
+
+      it('should have initialized Oracle', async () => {
+        await truffleAssert.reverts(
+          getContract('WhitelistOracle')
+            .at(installedOracle)
+            .initialize([]),
+          'INIT_ALREADY_INITIALIZED'
         )
       })
     })
