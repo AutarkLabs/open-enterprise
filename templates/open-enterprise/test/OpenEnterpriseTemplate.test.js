@@ -111,6 +111,11 @@ contract('OpenEnterpriseTemplate', ([ owner, member1, member2, member3 ]) => {
     const labelName = 'aragonpm'
     const tldHash = namehash(tldName)
     const labelHash = '0x'+keccak256(labelName)
+    // Deploy Hatch
+    const hatchTldName = 'aragonpm.eth'
+    const hatchTldHash = namehash(hatchTldName)
+    const hatchLabelName = 'hatch'
+    const hatchLabelHash = '0x'+keccak256(hatchLabelName)
     // const apmNode = namehash(`${labelName}.${tldName}`)
 
     const apmRegistryBase = await getContract('APMRegistry').new()
@@ -126,18 +131,31 @@ contract('OpenEnterpriseTemplate', ([ owner, member1, member2, member3 ]) => {
     )
     // Assign ENS name (${labelName}.${tldName}) to factory...
     // await ens.setOwner(apmNode, apmFactory.address)
-    // Create subdomain and assigning it to APMRegistryFactory
+    // Create subdomains and assigning it to APMRegistryFactory
+    // assign `aragonpm.eth` to ourselves first so we can assign `hatch.aragonpm.eth`
+    // This is a workaround to setting up a dao around the `aragonpm.eth` namespace
+    await ens.setSubnodeOwner(tldHash, labelHash, owner)
+    // assign `hatch.aragonpm.eth` to apmFactory
+    await ens.setSubnodeOwner(hatchTldHash, hatchLabelHash, apmFactory.address)
+    // transfer `aragonpm.eth` to apmFactory
     await ens.setSubnodeOwner(tldHash, labelHash, apmFactory.address)
     // TODO: Transferring name ownership from deployer to APMRegistryFactory
     const apmReceipt = await apmFactory.newAPM(tldHash, labelHash, owner)
+    const hatchApmReceipt = await apmFactory.newAPM(hatchTldHash, hatchLabelHash, owner)
     const apm = getContract('APMRegistry').at(getReceipt(apmReceipt, 'DeployAPM', 'apm'))
     console.log('       Deployed APM at', apm.address)
+    const hatchApm = getContract('APMRegistry').at(getReceipt(hatchApmReceipt, 'DeployAPM', 'apm'))
+    console.log('       Deployed Hatch APM at', hatchApm.address)
 
     // Register apps
     for (const { name, contractName } of APPS) {
       const appBase = await getContract(contractName).new()
       console.log(`       Registering package for ${appBase.constructor.contractName} as "${name}.aragonpm.eth"`)
-      await apm.newRepoWithVersion(name, owner, [ 1, 0, 0 ], appBase.address, '')
+      if (name.includes('hatch')) {
+        await hatchApm.newRepoWithVersion(name.replace('.hatch',''), owner, [ 1, 0, 0 ], appBase.address, '')
+      } else {
+        await apm.newRepoWithVersion(name, owner, [ 1, 0, 0 ], appBase.address, '')
+      }
     }
 
 
