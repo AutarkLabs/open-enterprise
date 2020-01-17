@@ -23,9 +23,9 @@
       "wsRPC": "wss://rinkeby.eth.aragon.network/ws"
     },
     "staging": {
-      "appName": "open-enterprise-template.open.aragonpm.eth",
+      "appName": "open-enterprise-template.hatch.aragonpm.eth",
       "network": "rinkeby",
-      "registry": "0x98df287b6c145399aaa709692c8d308357bc085d",
+      "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D",
       "wsRPC": "wss://rinkeby.eth.aragon.network/ws"
     }
   },
