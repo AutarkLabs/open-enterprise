@@ -1,10 +1,33 @@
 import React, { useCallback } from 'react'
+import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
 import { Project, Empty } from '../Card'
-import { useLayout } from '@aragon/ui'
+import { Button, IconPlus, Header, useLayout } from '@aragon/ui'
 import { CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
 import { useDecoratedRepos } from '../../context/DecoratedRepos'
+import { usePanelManagement } from '../Panel'
+import { Tabs } from '../Shared'
+
+function Wrap({ children }) {
+  const { setupNewProject } = usePanelManagement()
+  return (
+    <>
+      <Header
+        primary="Projects"
+        secondary={
+          <Button mode="strong" icon={<IconPlus />} onClick={setupNewProject} label="New project" />
+        }
+      />
+      <Tabs />
+      {children}
+    </>
+  )
+}
+
+Wrap.propTypes = {
+  children: PropTypes.node.isRequired,
+}
 
 const Overview = () => {
   const { width } = useLayout()
@@ -26,13 +49,15 @@ const Overview = () => {
   ))
 
   if (!repos.length) {
-    return <Empty />
+    return <Wrap><Empty /></Wrap>
   }
 
   return (
-    <StyledProjects screenSize={width}>
-      {projectsCards}
-    </StyledProjects>
+    <Wrap>
+      <StyledProjects screenSize={width}>
+        {projectsCards}
+      </StyledProjects>
+    </Wrap>
   )
 }
 

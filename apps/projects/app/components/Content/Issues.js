@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { useQuery } from '@apollo/react-hooks'
 
 import { useAragonApi } from '../../api-react'
-import { Button, GU, Text } from '@aragon/ui'
+import { Button, GU, Header, IconPlus, Text } from '@aragon/ui'
 import { compareAsc, compareDesc } from 'date-fns'
 
 import { initApolloClient } from '../../utils/apollo-client'
@@ -12,10 +12,9 @@ import useShapedIssue from '../../hooks/useShapedIssue'
 import usePathSegments from '../../hooks/usePathSegments'
 import { STATUS } from '../../utils/github'
 import { getIssuesGQL } from '../../utils/gql-queries.js'
-import { FilterBar } from '../Shared'
 import { Issue } from '../Card'
-import { LoadingAnimation } from '../Shared'
-import { EmptyWrapper } from '../Shared'
+import { EmptyWrapper, FilterBar, LoadingAnimation, Tabs } from '../Shared'
+import { usePanelManagement } from '../Panel'
 
 const sorters = {
   'Name ascending': (i1, i2) =>
@@ -33,19 +32,7 @@ const ISSUES_PER_CALL = 100
 class Issues extends React.PureComponent {
   static propTypes = {
     bountyIssues: PropTypes.array.isRequired,
-    bountySettings: PropTypes.shape({
-      expLvls: PropTypes.array.isRequired,
-    }).isRequired,
     filters: PropTypes.object.isRequired,
-    github: PropTypes.shape({
-      status: PropTypes.oneOf([
-        STATUS.AUTHENTICATED,
-        STATUS.FAILED,
-        STATUS.INITIAL,
-      ]).isRequired,
-      token: PropTypes.string,
-      event: PropTypes.string,
-    }),
     graphqlQuery: PropTypes.shape({
       data: PropTypes.object,
       error: PropTypes.string,
@@ -56,8 +43,6 @@ class Issues extends React.PureComponent {
     setFilters: PropTypes.func.isRequired,
     setSelectedIssue: PropTypes.func.isRequired,
     shapeIssue: PropTypes.func.isRequired,
-    status: PropTypes.string.isRequired,
-    tokens: PropTypes.array.isRequired,
   }
 
   state = {
@@ -375,9 +360,15 @@ IssuesQuery.propTypes = {
 }
 
 const IssuesWrap = props => {
-  const { appState: { github, repos } } = useAragonApi()
+  const { appState } = useAragonApi()
+  const {
+    repos,
+    issues = [],
+    github = { status : STATUS.INITIAL },
+  } = appState
   const shapeIssue = useShapedIssue()
-  const { query: { repoId } } = usePathSegments()
+  const { query: { repoId }, selectIssue } = usePathSegments()
+  const { setupNewIssue } = usePanelManagement()
   const [ client, setClient ] = useState(null)
   const [ downloadedRepos, setDownloadedRepos ] = useState({})
   const [ query, setQuery ] = useState(null)
@@ -393,6 +384,9 @@ const IssuesWrap = props => {
   // build params for GQL query, each repo to fetch has number of items to download,
   // and a cursor if there are 100+ issues and "Show More" was clicked.
   useEffect(() => {
+    // don't set invalid query during initial data sync
+    if (repos.length === 0) return
+
     let reposQueryParams = {}
 
     if (Object.keys(downloadedRepos).length > 0) {
@@ -426,20 +420,33 @@ const IssuesWrap = props => {
     setClient(github.token ? initApolloClient(github.token) : null)
   }, [github.token])
 
-  if (!query) return 'Loading...'
-
-  if (!client) return 'You must sign into GitHub to view issues.'
-
   return (
-    <IssuesQuery
-      client={client}
-      filters={filters}
-      query={query}
-      shapeIssue={shapeIssue}
-      setDownloadedRepos={setDownloadedRepos}
-      setFilters={setFilters}
-      {...props}
-    />
+    <>
+      <Header
+        primary="Projects"
+        secondary={
+          <Button mode="strong" icon={<IconPlus />} onClick={setupNewIssue} label="New issue" />
+        }
+      />
+      <Tabs />
+      {!query ? (
+        'Loading...'
+      ) : !client ? (
+        'You must sign into GitHub to view issues.'
+      ) : (
+        <IssuesQuery
+          bountyIssues={issues}
+          client={client}
+          filters={filters}
+          query={query}
+          setDownloadedRepos={setDownloadedRepos}
+          setFilters={setFilters}
+          setSelectedIssue={selectIssue}
+          shapeIssue={shapeIssue}
+          {...props}
+        />
+      )}
+    </>
   )
 }
 
