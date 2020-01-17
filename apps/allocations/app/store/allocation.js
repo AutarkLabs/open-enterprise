@@ -3,6 +3,8 @@ import { first, map, mergeMap, toArray } from 'rxjs/operators'
 
 import { app } from '../../../../shared/store-utils'
 
+import { STATUS_APPROVED, STATUS_ENACTED } from '../utils/constants'
+
 /// /////////////////////////////////////
 /*    Allocations event handlers      */
 /// /////////////////////////////////////
@@ -108,7 +110,9 @@ const getAllocation = async ({ accountId, payoutId }) => {
         token,
         date: new Date(startTime*1000),
         recipients,
-        status: recipients.every(r => r.executions === recurrences) ? 3 : 2, //Approved will be made dynamic once the execution handler is integrated
+        status: recipients.every(r => r.executions === recurrences)
+          ? STATUS_ENACTED
+          : STATUS_APPROVED, //Approved will be made dynamic once the execution handler is integrated
       }))
     )
     .toPromise()
