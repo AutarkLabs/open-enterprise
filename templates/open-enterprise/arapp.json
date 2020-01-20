@@ -27,6 +27,12 @@
       "network": "rinkeby",
       "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D",
       "wsRPC": "wss://rinkeby.eth.aragon.network/ws"
+    },
+    "hatch-rinkeby": {
+      "appName": "open-enterprise-template.hatch.aragonpm.eth",
+      "network": "rinkeby",
+      "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D",
+      "wsRPC": "wss://rinkeby.eth.aragon.network/ws"
     }
   },
   "roles": [],
