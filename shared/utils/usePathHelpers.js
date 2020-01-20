@@ -1,5 +1,5 @@
 import React from 'react'
-import { usePath } from '../api-react'
+import { usePath } from '@aragon/api-react'
 
 export default function usePathHelpers() {
   const [ path, requestPath ] = usePath()

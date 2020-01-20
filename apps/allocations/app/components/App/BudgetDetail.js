@@ -19,7 +19,7 @@ import {
 } from '@aragon/ui'
 
 import { usePanel } from '../../context/Panel'
-import usePathHelpers from '../../hooks/usePathHelpers'
+import usePathHelpers from '../../../../../shared/utils/usePathHelpers'
 import usePeriod from '../../hooks/usePeriod'
 import { AllocationsHistory } from '.'
 import InfoBlock from './InfoBlock'
