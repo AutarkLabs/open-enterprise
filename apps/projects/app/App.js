@@ -1,13 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import PropTypes from 'prop-types'
 import { ApolloProvider } from 'react-apollo'
 
 import { useAragonApi } from './api-react'
 import { Main } from '@aragon/ui'
 
 import ErrorBoundary from './components/App/ErrorBoundary'
-import { Issues, General, Settings } from './components/Content'
-import IssueDetail from './components/Content/IssueDetail'
 import { PanelManager, PanelContext } from './components/Panel'
 
 import { IdentityProvider } from '../../../shared/identity'
@@ -23,27 +20,9 @@ import { LoadingAnimation } from './components/Shared'
 import { EmptyWrapper } from './components/Shared'
 import { Error } from './components/Card'
 import { DecoratedReposProvider } from './context/DecoratedRepos'
-import usePathSegments from './hooks/usePathSegments'
+import Routes from './Routes'
 
 let popupRef = null
-
-function Routes({ handleGithubSignIn }) {
-  const { selectedIssueId, selectedTab } = usePathSegments()
-
-  if (selectedIssueId) return <IssueDetail issueId={selectedIssueId} />
-
-  if (selectedTab === 'issues') return <Issues />
-
-  if (selectedTab === 'settings') return (
-    <Settings onLogin={handleGithubSignIn} />
-  )
-
-  return <General />
-}
-
-Routes.propTypes = {
-  handleGithubSignIn: PropTypes.func.isRequired,
-}
 
 const App = () => {
   const { api, appState } = useAragonApi()

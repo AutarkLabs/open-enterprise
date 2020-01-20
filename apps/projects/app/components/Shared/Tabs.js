@@ -1,16 +1,17 @@
 import React from 'react'
-import usePathSegments from '../../hooks/usePathSegments'
+import usePathHelpers from '../../../../../shared/utils/usePathHelpers'
 import { Tabs as AragonTabs } from '@aragon/ui'
-import { useAragonApi, usePath } from '../../api-react'
+import { useAragonApi } from '../../api-react'
 
 export default function Tabs() {
-  const { selectedTab } = usePathSegments()
+  const { parsePath, requestPath } = usePathHelpers()
   const { appState: { repos } } = useAragonApi()
-  const [ , requestPath ] = usePath()
 
   const tabs = ['General']
   if (repos.length) tabs.push('Issues')
   tabs.push('Settings')
+
+  const { tab } = parsePath('^/:tab')
 
   return (
     <AragonTabs
@@ -19,7 +20,7 @@ export default function Tabs() {
         if (index === 0) requestPath('/')
         else requestPath('/' + tabs[index].toLowerCase())
       }}
-      selected={tabs.findIndex(t => t.toLowerCase() === selectedTab)}
+      selected={!tab ? 0 : tabs.findIndex(t => t.toLowerCase() === tab)}
     />
   )
 }
