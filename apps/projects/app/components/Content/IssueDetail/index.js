@@ -18,21 +18,24 @@ import DetailsCard from './DetailsCard'
 import BountyCard from './BountyCard'
 import { usePanelManagement } from '../../Panel'
 import usePathHelpers from '../../../../../../shared/utils/usePathHelpers'
+import { useDecoratedRepos } from '../../../context/DecoratedRepos'
 
-function Wrap({ children }) {
+function Wrap({ children, repo }) {
   const { requestPath } = usePathHelpers()
   const { setupNewIssue } = usePanelManagement()
 
   return (
     <>
       <Header
-        primary="Projects"
+        primary={repo && repo.metadata.name}
         secondary={
           <Button mode="strong" icon={<IconPlus />} onClick={setupNewIssue} label="New issue" />
         }
       />
       <Bar>
-        <BackButton onClick={() => requestPath('/issues')} />
+        <BackButton onClick={() => {
+          if (repo) requestPath('/projects/' + repo.data._repo)
+        }} />
       </Bar>
       {children}
     </>
@@ -41,6 +44,14 @@ function Wrap({ children }) {
 
 Wrap.propTypes = {
   children: PropTypes.node.isRequired,
+  repo: PropTypes.shape({
+    data: PropTypes.shape({
+      _repo: PropTypes.string.isRequired,
+    }).isRequired,
+    metadata: PropTypes.shape({
+      name: PropTypes.string.isRequired,
+    }).isRequired,
+  }),
 }
 
 const IssueDetail = ({ issueId }) => {
@@ -53,6 +64,13 @@ const IssueDetail = ({ issueId }) => {
     onError: console.error,
     variables: { id: issueId },
   })
+
+  const repos = useDecoratedRepos()
+  const repo = useMemo(() => {
+    if (!data || !data.node) return null
+    return repos.find(repo => repo.data._repo === data.node.repository.id)
+  }, [ data, repos ])
+
   if (loading) return <Wrap>Loading...</Wrap>
   if (error) return <Wrap>{JSON.stringify(error)}</Wrap>
 
@@ -60,7 +78,7 @@ const IssueDetail = ({ issueId }) => {
   const columnView = layoutName === 'small' || layoutName === 'medium'
 
   return (
-    <Wrap>
+    <Wrap repo={repo}>
       {columnView ? (
         <div css="display: flex; flex-direction: column">
           <div css={`

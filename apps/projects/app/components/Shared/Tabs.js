@@ -1,15 +1,11 @@
 import React from 'react'
 import usePathHelpers from '../../../../../shared/utils/usePathHelpers'
 import { Tabs as AragonTabs } from '@aragon/ui'
-import { useAragonApi } from '../../api-react'
+
+const tabs = [ 'General', 'Settings' ]
 
 export default function Tabs() {
   const { parsePath, requestPath } = usePathHelpers()
-  const { appState: { repos } } = useAragonApi()
-
-  const tabs = ['General']
-  if (repos.length) tabs.push('Issues')
-  tabs.push('Settings')
 
   const { tab } = parsePath('^/:tab')
 

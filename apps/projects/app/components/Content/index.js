@@ -1,6 +1,6 @@
-import Issues from './Issues'
+import ProjectDetail from './ProjectDetail'
 import General from './General'
 import Settings from './Settings'
 
-export { Issues, General, Settings }
+export { ProjectDetail, General, Settings }
 
