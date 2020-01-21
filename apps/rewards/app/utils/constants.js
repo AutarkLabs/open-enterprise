@@ -26,3 +26,6 @@ export const DISBURSEMENT_UNITS = [
   YEARS,
 ]
 export const OTHER = 'Other…'
+export const PENDING = Symbol('PENDING')
+export const READY = Symbol('READY')
+export const CLAIMED = Symbol('CLAIMED')

@@ -310,6 +310,7 @@ class App extends React.Component {
               isMyReward: true
             })}
             claimReward={this.claimReward}
+            claimHashes={this.props.claims.claimHashes}
           />
         ) : (
           <Overview
