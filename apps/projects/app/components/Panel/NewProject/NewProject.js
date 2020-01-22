@@ -1,22 +1,30 @@
 import React, { useEffect, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { Button, GU, IconSearch, Info, RadioList, Text, TextInput, theme } from '@aragon/ui'
+import { Button, GU, IconSearch, Info, RadioList, Text, TextInput, textStyle, useTheme } from '@aragon/ui'
 import { GET_REPOSITORIES } from '../../../utils/gql-queries.js'
-import { LoadingAnimation } from '../../Shared'
+import { IconGitHub, LoadingAnimation } from '../../Shared'
 import { Query } from 'react-apollo'
 import { useAragonApi } from '../../../api-react'
 import { usePanelManagement } from '../../Panel'
 import { toHex } from 'web3-utils'
 import noResultsSvg from '../../../assets/noResults.svg'
+import { FormField, FieldTitle } from '../../Form'
+import { STATUS } from '../../../utils/github'
 
-
-const NewProject = () => {
-  const { api, appState: { repos } } = useAragonApi()
+const GitHubRepoList = ({ handleGithubSignIn }) => {
+  const {
+    api,
+    appState: {
+      repos,
+      github = { status: STATUS.INITIAL },
+    },
+  } = useAragonApi()
   const { closePanel } = usePanelManagement()
   const [ filter, setFilter ] = useState('')
   const [ project, setProject ] = useState()
   const [ repoSelected, setRepoSelected ] = useState(-1)
+  const theme = useTheme()
 
   /*
     TODO: Review
@@ -113,110 +121,187 @@ const NewProject = () => {
     repoArray: PropTypes.array.isRequired,
   }
 
-  return (
-    <React.Fragment>
-      <div css={`margin-top: ${3 * GU}px`}>
-        <Text weight="bold">
-            Which repos do you want to add?
-        </Text>
-        <div>
-          <Query
-            fetchPolicy="cache-first"
-            query={GET_REPOSITORIES}
-            onError={console.error}
-          >
-            {({ data, loading, error, refetch }) => {
-              if (data && data.viewer) {
+  const RepoQuery = () => (
+    <Query
+      fetchPolicy="cache-first"
+      query={GET_REPOSITORIES}
+      onError={console.error}
+    >
+      {({ data, loading, error, refetch }) => {
+        if (data && data.viewer) {
+          const reposDownloaded = filterAlreadyAdded(data.viewer.repositories.edges)
+          const visibleRepos = filter ? filterByName(reposDownloaded) : reposDownloaded
+          // eslint-disable-next-line react/prop-types
+          const repoArray = visibleRepos.map(repo => ({
+            title: repo.node.nameWithOwner,
+            description: '',
+            node: repo.node,
+          }))
 
-                const reposDownloaded = filterAlreadyAdded(data.viewer.repositories.edges)
-
-                const visibleRepos = filter ? filterByName(reposDownloaded) : reposDownloaded
-
-
-                const repoArray = visibleRepos.map(repo => ({
-                  title: repo.node.nameWithOwner,
-                  description: '',
-                  node: repo.node,
-                }))
-
-                return (
-                  <div>
-                    <TextInput
-                      type="search"
-                      style={{ margin: '16px 0', flexShrink: '0' }}
-                      placeholder="Search"
-                      wide
-                      value={filter}
-                      onChange={updateFilter}
-                      adornment={
-                        filter === '' && (
-                          <IconSearch
-                            css={`
-                                color: ${theme.surfaceOpened};
-                                margin-right: 8px;
-                              `}
-                          />
-                        )
-                      }
-                      adornmentPosition="end"
-                      ref={searchRef}
-                      aria-label="Search"
+          return (
+            <div>
+              <FieldTitle>Repository</FieldTitle>
+              <TextInput
+                type="search"
+                placeholder="Search for a repository"
+                wide
+                value={filter}
+                onChange={updateFilter}
+                adornment={
+                  filter === '' && (
+                    <IconSearch
+                      css={`
+                        color: ${theme.surfaceOpened};
+                        margin-right: ${GU}px;
+                      `}
                     />
+                  )
+                }
+                adornmentPosition="end"
+                ref={searchRef}
+                aria-label="Search"
+              />
 
-                    <ScrollableList>
-                      <RepoList visibleRepos={visibleRepos} repoArray={repoArray} />
-                    </ScrollableList>
+              <ScrollableList>
+                <RepoList visibleRepos={visibleRepos} repoArray={repoArray} />
+              </ScrollableList>
 
-                    <Info css={`margin: ${3 * GU}px 0`}>
-                        Projects in Aragon are a one-to-one mapping to a GitHub repository.
-                        You’ll be able to prioritize your backlog, reach consensus on issue
-                        valuations, and allocate bounties to multiple issues.
-                    </Info>
+            </div>
+          )
+        }
 
-                    <Button
-                      mode="strong"
-                      wide
-                      onClick={handleNewProject}
-                      disabled={repoSelected < 0}
-                    >
-                      Submit
-                    </Button>
-                  </div>
-                )
-              }
+        if (loading) return (
+          <RepoInfo>
+            <LoadingAnimation />
+            <div>Loading repositories...</div>
+          </RepoInfo>
+        )
 
-              if (loading) return (
-                <RepoInfo>
-                  <LoadingAnimation />
-                  <div>Loading repositories...</div>
-                </RepoInfo>
-              )
+        if (error) return (
+          <RepoInfo>
+            <Text size="xsmall" style={{ margin: '20px 0' }}>
+              Error {JSON.stringify(error)}
+            </Text>
+            <Button wide mode="strong" onClick={() => refetch()}>
+              Try refetching?
+            </Button>
+          </RepoInfo>
+        )
+      }}
+    </Query>
+  )
 
-              if (error) return (
-                <RepoInfo>
-                  <Text size="xsmall" style={{ margin: '20px 0' }}>
-                      Error {JSON.stringify(error)}
-                  </Text>
-                  <Button wide mode="strong" onClick={() => refetch()}>
-                      Try refetching?
-                  </Button>
-                </RepoInfo>
-              )
-            }}
-          </Query>
+  return (
+    <>
+      {github.status !== 'authenticated' ? (
+        <div style={{ width: '100%', textAlign: 'center', marginBottom: (3 * GU) + 'px' }}>
+          <Button
+            mode="normal"
+            onClick={handleGithubSignIn}
+            icon={<IconGitHub
+              color={`${theme.surfaceContentSecondary}`}
+              width="16px"
+              height="16px"
+            />}
+            label="Select from GitHub"
+          />
         </div>
-      </div>
-    </React.Fragment>
+      ) : (
+        <RepoQuery />
+      )}
+      <Button
+        mode="strong"
+        wide
+        onClick={handleNewProject}
+        disabled={repoSelected < 0}
+      >
+        Submit
+      </Button>
+    </>
   )
 }
+GitHubRepoList.propTypes = PropTypes.func.isRequired
 
+const createProject = () => {
+  console.log('creating native project')
+}
+
+const NewProject = ({ handleGithubSignIn }) => {
+  const [ title, setTitle ] = useState('')
+  const [ description, setDescription ] = useState('')
+  const theme = useTheme()
+  const { appState: { github = { status: STATUS.INITIAL } } } = useAragonApi()
+
+  return (
+    <PanelContent>
+      <InfoBox>
+        Create a new project that belongs and operates entirely within this application, or synchronize one from GitHub.
+      </InfoBox>
+
+      <FormField
+        label="Title"
+        required={github.status !== 'authenticated' || title !== ''}
+        input={
+          <TextInput
+            wide
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+            aria-label="Title"
+          />
+        }
+      />
+
+      {title !== '' ? (
+        <>
+        <FormField
+          label="Feedback"
+          input={
+            <TextInput.Multiline
+              name="description"
+              rows="3"
+              onChange={e => setDescription(e.target.value)}
+              value={description}
+              wide
+              aria-label="Description"
+            />
+          }
+        />
+        <Button
+          mode="strong"
+          wide
+          onClick={createProject}
+          disabled={title === ''}
+        >
+          Submit
+        </Button>
+        </>
+      ) : (
+        <>
+        <ThematicBreak
+          color={`${theme.surfaceContentSecondary}`}
+          linecolor={`${theme.border}`}
+        >
+            OR
+        </ThematicBreak>
+        <GitHubRepoList handleGithubSignIn={handleGithubSignIn} />
+        </>
+      )}
+
+    </PanelContent>
+  )
+}
+NewProject.propTypes = PropTypes.func.isRequired
+
+const InfoBox = styled(Info)`
+  margin-bottom: ${2 * GU}px;
+`
 const ScrollableList = styled.div`
   flex-grow: 1;
   overflow-y: auto;
   padding-right: 10px;
   margin: 16px 0;
   /* Hack needed to make the scrollable list, since the whole SidePanel is a scrollable container */
-  height: calc(100vh - 428px);
+  height: calc(100vh - 470px);
 `
 const StyledRadioList = styled(RadioList)`
   > * {
@@ -230,6 +315,32 @@ const StyledRadioList = styled(RadioList)`
 const RepoInfo = styled.div`
   margin: 20px 0;
   text-align: center;
+`
+const PanelContent = styled.div`
+  margin-top: ${3 * GU}px;
+`
+const ThematicBreak = styled.div`
+  align-items: center;
+  display: flex;
+  margin: ${2 * GU}px 0;
+  text-align: center;
+  color: ${props => props.color};
+  ::before,
+  ::after {
+    flex: 1;
+    content: ' ';
+    display: block;
+    border-bottom: 1px solid ${props => props.linecolor};
+    height: 1px;
+  }
+  ::before {
+    margin-right: ${.5 * GU}px;
+  }
+  ::after {
+    margin-left: ${.5 * GU}px;
+  }
+
+  ${textStyle('label2')};
 `
 
 // TODO: Use nodes instead of edges (the app should be adapted at some places)

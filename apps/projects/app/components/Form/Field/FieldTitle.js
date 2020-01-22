@@ -2,12 +2,14 @@ import React from 'react'
 import styled from 'styled-components'
 import { GU, Text, useTheme, unselectable } from '@aragon/ui'
 import PropTypes from 'prop-types'
+import { Required } from '.'
 
-const FieldTitle = ({ children }) => {
+const FieldTitle = ({ children, required = false }) => {
   const theme = useTheme()
 
   return <Title color={`${theme.surfaceContentSecondary}`}>
     {children}
+    {required && <Required />}
   </Title>
 }
 
