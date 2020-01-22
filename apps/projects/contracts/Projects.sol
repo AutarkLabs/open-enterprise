@@ -14,27 +14,6 @@ import "@aragon/os/contracts/lib/math/SafeMath.sol";
   * @dev Defines a minimal interface blueprint for the StandardBounties contract
   */
 interface Bounties {
-    /**
-     * @notice Submit a fulfillment for issue #`_bountyId` with the following info: `_data`
-     */
-    function fulfillBounty(
-        address _sender,
-        uint _bountyId,
-        address[] _fulfillers,
-        string _data
-    ) external; //{}
-
-    /**
-     * @notice Update fulfillment for issue #`_bountyId` with the following info: `_data`
-     */
-    function updateFulfillment(
-        address _sender,
-        uint _bountyId,
-        uint _fulfillmentId,
-        address[] _fulfillers,
-        string _data
-    ) external; //{}
-
     function issueBounty(
         address sender,
         address[] _issuers,
@@ -586,6 +565,25 @@ contract Projects is AragonApp, DepositableStorage {
         for (uint8 i = 0; i < _issueNumbers.length; i++) {
             _removeBounty(_repoIds[i], _issueNumbers[i]);
         }
+    }
+
+    /**
+     * @notice Submit a fulfillment for bounty #`_bountyId` with the following info: `_data`
+     * @dev This is a noop function implemented so the client can display the radspec
+     *      for this external contract call
+     * @param _sender address of the user submitting the fulfillment
+     * @param _bountyId Standard Bounty Identifier
+     * @param _fulfillers array of users who contributed to the fulfillment of the bounty
+     * @param _data the provided proof of fulfillment
+     */
+    function fulfillBounty(
+        address _sender,
+        uint _bountyId,
+        address[] _fulfillers,
+        string _data
+    ) external
+    {
+        revert();
     }
 
 ///////////////////////
