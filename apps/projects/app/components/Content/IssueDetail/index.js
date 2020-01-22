@@ -17,10 +17,10 @@ import EventsCard from './EventsCard'
 import DetailsCard from './DetailsCard'
 import BountyCard from './BountyCard'
 import { usePanelManagement } from '../../Panel'
-import usePathSegments from '../../../hooks/usePathSegments'
+import usePathHelpers from '../../../../../../shared/utils/usePathHelpers'
 
 function Wrap({ children }) {
-  const { selectIssue } = usePathSegments()
+  const { requestPath } = usePathHelpers()
   const { setupNewIssue } = usePanelManagement()
 
   return (
@@ -32,7 +32,7 @@ function Wrap({ children }) {
         }
       />
       <Bar>
-        <BackButton onClick={() => selectIssue(null)} />
+        <BackButton onClick={() => requestPath('/issues')} />
       </Bar>
       {children}
     </>

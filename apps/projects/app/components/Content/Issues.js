@@ -9,8 +9,8 @@ import { compareAsc, compareDesc } from 'date-fns'
 
 import { initApolloClient } from '../../utils/apollo-client'
 import useShapedIssue from '../../hooks/useShapedIssue'
-import usePathSegments from '../../hooks/usePathSegments'
 import { STATUS } from '../../utils/github'
+import usePathHelpers from '../../../../../shared/utils/usePathHelpers'
 import { getIssuesGQL } from '../../utils/gql-queries.js'
 import { Issue } from '../Card'
 import { EmptyWrapper, FilterBar, LoadingAnimation, Tabs } from '../Shared'
@@ -41,7 +41,6 @@ class Issues extends React.PureComponent {
     }).isRequired,
     setDownloadedRepos: PropTypes.func.isRequired,
     setFilters: PropTypes.func.isRequired,
-    setSelectedIssue: PropTypes.func.isRequired,
     shapeIssue: PropTypes.func.isRequired,
   }
 
@@ -324,7 +323,6 @@ class Issues extends React.PureComponent {
                   isSelected={issue.id in this.state.selectedIssues}
                   key={issue.id}
                   {...issue}
-                  onClick={this.props.setSelectedIssue}
                   onSelect={this.handleIssueSelection}
                 />
               ))}
@@ -367,7 +365,7 @@ const IssuesWrap = props => {
     github = { status : STATUS.INITIAL },
   } = appState
   const shapeIssue = useShapedIssue()
-  const { query: { repoId }, selectIssue } = usePathSegments()
+  const { query: { repoId } } = usePathHelpers()
   const { setupNewIssue } = usePanelManagement()
   const [ client, setClient ] = useState(null)
   const [ downloadedRepos, setDownloadedRepos ] = useState({})
@@ -441,7 +439,6 @@ const IssuesWrap = props => {
           query={query}
           setDownloadedRepos={setDownloadedRepos}
           setFilters={setFilters}
-          setSelectedIssue={selectIssue}
           shapeIssue={shapeIssue}
           {...props}
         />

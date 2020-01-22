@@ -5,7 +5,7 @@ import { Main, SidePanel, SyncIndicator } from '@aragon/ui'
 import { IdentityProvider } from '../LocalIdentityBadge/IdentityManager'
 import { BudgetDetail, Overview } from '.'
 import { usePanel } from '../../context/Panel'
-import usePathHelpers from '../../hooks/usePathHelpers'
+import usePathHelpers from '../../../../../shared/utils/usePathHelpers'
 import { Empty } from '../Card'
 
 function Routes() {

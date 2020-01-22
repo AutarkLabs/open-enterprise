@@ -13,11 +13,12 @@ import {
   useLayout,
   useTheme,
 } from '@aragon/ui'
+import usePathHelpers from '../../../../../shared/utils/usePathHelpers'
 import {
   BASE_CARD_WIDTH,
   CARD_STRETCH_BREAKPOINT,
 } from '../../utils/responsive'
-import { useAragonApi, usePath } from '../../api-react'
+import { useAragonApi } from '../../api-react'
 import { toHex } from 'web3-utils'
 
 const Project = ({
@@ -30,7 +31,7 @@ const Project = ({
   const {
     api: { removeRepo },
   } = useAragonApi()
-  const [ , requestPath ] = usePath()
+  const { requestPath } = usePathHelpers()
 
   const theme = useTheme()
   const { width } = useLayout()
