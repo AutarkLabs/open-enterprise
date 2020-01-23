@@ -80,7 +80,7 @@ const NewVote = ({ onClose }) => {
       description,
       Object.values(options).filter(o => o !== '')
     )
-    api.newVote(callscript, '').toPromise()
+    api.newVote(callscript, description).toPromise()
     onClose()
   }
 
