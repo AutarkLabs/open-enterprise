@@ -1,13 +1,14 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { IconHistory, IconGitHub } from '../Shared'
+import { IconGitHub } from '../Shared'
 import {
   Card,
   Text,
   ContextMenu,
   ContextMenuItem,
   IconCross,
+  IconEdit,
   GU,
   Link,
   useLayout,
@@ -21,17 +22,22 @@ import {
 import { useAragonApi } from '../../api-react'
 import { toHex } from 'web3-utils'
 
+const pluralize = (word, number) => `${word}${number > 1 ? 's (' + number + ')' : ''}`
+
 const Project = ({
   repoId,
   label,
   description,
-  commits,
   url,
 }) => {
   const {
     api: { removeRepo },
+    appState: { issues }
   } = useAragonApi()
   const { requestPath } = usePathHelpers()
+  const bountiesCount = issues.filter(i =>
+    i.data.repoId === repoId && i.data.workStatus !== 'fulfilled'
+  ).length
 
   const theme = useTheme()
   const { width } = useLayout()
@@ -48,63 +54,67 @@ const Project = ({
     requestPath(`/projects/${repoId}`)
   }
 
+  const isGitHubProject = url.match('https://github.com')
+
   return (
     <StyledCard onClick={clickContext} screenSize={width}>
-      <MenuContainer onClick={clickMenu}>
-        <ContextMenu>
-          <div css={`padding: ${GU}px`}>
-            <ContextMenuItem style={{
-              display: 'flex',
-              alignItems: 'center',
-              padding: GU
-            }}>
-              <div css="width: 22px; margin: 4px 2px 0 6px">
-                <IconGitHub width="16px" height="16px" />
-              </div>
-              <ActionLabel>
-                <Link
-                  href={url}
-                  target="_blank"
-                  style={{ textDecoration: 'none', color: theme.surfaceContent }}
-                >
-                View on GitHub
-                </Link>
-              </ActionLabel>
-            </ContextMenuItem>
-            <ContextMenuItem onClick={removeProject}>
-              <div css="width: 22px; margin: 0 4px; margin-top: 4px">
-                <IconCross width="22px" height="22px" />
-              </div>
-              <ActionLabel>Remove project</ActionLabel>
-            </ContextMenuItem>
-          </div>
-        </ContextMenu>
-      </MenuContainer>
+
+      <div css="display: flex; width: 100%">
+
+        {isGitHubProject && <IconGitHub
+          color={`${theme.surfaceIcon}`}
+          width="18px"
+          height="18px"
+        />}
+
+        <MenuContainer onClick={clickMenu}>
+          <ContextMenu>
+            <div css={`padding: ${GU}px`}>
+              {isGitHubProject ? (
+                <ContextMenuItem>
+                  <div css="width: 22px; margin: 4px 2px 0 6px">
+                    <IconGitHub width="18px" height="18px" color={`${theme.surfaceIcon}`} />
+                  </div>
+                  <ActionLabel>
+                    <Link
+                      href={url}
+                      target="_blank"
+                      style={{ textDecoration: 'none', color: theme.surfaceContent }}
+                    >
+                    View on GitHub
+                    </Link>
+                  </ActionLabel>
+                </ContextMenuItem>
+              ) : (
+                <ContextMenuItem>
+                  <div css="width: 22px; margin: 4px 2px 0 6px">
+                    <IconEdit width="20px" height="20px" color={`${theme.surfaceIcon}`} />
+                  </div>
+                  <ActionLabel>Edit project</ActionLabel>
+                </ContextMenuItem>
+              )}
+              <ContextMenuItem onClick={removeProject}>
+                <div css="width: 22px; margin: 0 4px; margin-top: 4px">
+                  <IconCross width="22px" height="22px" color={`${theme.surfaceIcon}`} />
+                </div>
+                <ActionLabel>Remove project</ActionLabel>
+              </ContextMenuItem>
+            </div>
+          </ContextMenu>
+        </MenuContainer>
+      </div>
 
       <CardTitle>{label}</CardTitle>
       <CardDescription>
         <CardDescriptionText>{description}</CardDescriptionText>
       </CardDescription>
-      <StyledStats>
-        <StatsContainer>
-          <IconHistory />
-          <Text weight="bold">
-            {commits}{' '}
-            <Text weight="normal">
-              {parseInt(commits) === 1 ? 'commit' : 'commits'}
-            </Text>
+      {!!bountiesCount && (
+        <StyledStats>
+          <Text size="xsmall">
+            {bountiesCount} {pluralize('issue', bountiesCount)} with bounties available
           </Text>
-        </StatsContainer>
-        {/* <StatsContainer> */}
-        {/* <IconContributors /> */}
-        {/* <Text weight="bold">
-            {contributors}{' '}
-            <Text weight="normal" color={theme.textSecondary}>
-              {parseInt(contributors) === 1 ? 'contributor' : 'contributors'}
-            </Text>
-          </Text> */}
-        {/* </StatsContainer> */}
-      </StyledStats>
+        </StyledStats>
+      )}
     </StyledCard>
   )
 }
@@ -113,17 +123,16 @@ Project.propTypes = {
   repoId: PropTypes.string.isRequired,
   label: PropTypes.string.isRequired,
   description: PropTypes.string.isRequired,
-  commits: PropTypes.number.isRequired,
   url: PropTypes.string.isRequired,
   contributors: PropTypes.array,
 }
 
 const StyledCard = styled(Card)`
   display: flex;
-  margin-bottom: 2rem;
-  margin-right: ${props =>
-    props.screenSize < CARD_STRETCH_BREAKPOINT ? '0.6rem' : '2rem'};
   flex-direction: column;
+  margin-bottom: ${2 * GU}px;
+  margin-right: ${props =>
+    props.screenSize < CARD_STRETCH_BREAKPOINT ? GU : 3 * GU}px;
   justify-content: flex-start;
   padding: 12px;
   height: 240px;
@@ -139,7 +148,7 @@ const StyledCard = styled(Card)`
 `
 
 const MenuContainer = styled.div`
-  align-self: flex-end;
+  margin-left: auto;
   align-items: center;
 `
 
@@ -150,8 +159,8 @@ const ActionLabel = styled.span`
 const CardTitle = styled(Text.Block).attrs({
   size: 'xlarge',
 })`
-  margin-top: 10px;
-  margin-bottom: 5px;
+  margin-top: ${GU}px;
+  margin-bottom: ${.6 * GU}px;
   text-align: center;
   display: block;
   /* stylelint-disable-next-line */
@@ -171,7 +180,7 @@ const CardDescriptionText = styled(Text.Block).attrs({
   /* stylelint-disable-next-line */
   display: -webkit-box;
   /* stylelint-disable-next-line */
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 3;
   /* stylelint-disable-next-line */
   -webkit-box-orient: vertical;
   overflow: hidden;
@@ -184,15 +193,7 @@ const CardDescription = styled.div`
 `
 
 const StyledStats = styled.div`
-  display: flex;
-  justify-content: center;
-  align-content: stretch;
-`
-
-const StatsContainer = styled(Text).attrs({
-  size: 'small',
-})`
-  display: inline-block;
+  margin-bottom: ${3 * GU}px;
 `
 
 export default Project
