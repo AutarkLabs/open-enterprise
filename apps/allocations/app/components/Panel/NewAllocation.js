@@ -7,10 +7,9 @@ import {
   GU,
   Help,
   IconClose,
-  Text,
   TextInput,
-  font,
-  theme
+  textStyle,
+  useTheme,
 } from '@aragon/ui'
 import web3Utils from 'web3-utils'
 import styled from 'styled-components'
@@ -95,6 +94,7 @@ DescriptionField.propTypes = {
 }
 
 function AmountField({ budget, onChange, value, token }) {
+  const theme = useTheme()
   const { balances, period } = useAragonApi().appState
   const periodEndDate = formatDate({ date: period.endDate, short: true })
 
@@ -109,19 +109,21 @@ function AmountField({ budget, onChange, value, token }) {
         display: flex;
         flex-direction: column-reverse;
         align-items: flex-end;
-        color: ${theme.textSecondary};
-        ${font({ size: 'small' })}
+        color: ${theme.contentSecondary};
       `}>
         <div css={`
           display: flex;
           line-height: 18px;
           vertical-align: middle;
         `}>
-          <Text css='margin-right: 6px'>
+          <span css={`
+            ${textStyle('body3')}
+            margin-right: 6px
+          `}>
             Available funds:{' '}
             {displayCurrency(vaultLow ? inVault : remainingBudget)}{' '}
             {token.symbol}
-          </Text>
+          </span>
           <Help hint="Available funds">
             There’s {displayCurrency(remainingBudget)} {token.symbol}
             {' '}left in this budget until {periodEndDate}{vaultLow ? `, but
@@ -381,6 +383,7 @@ const NewAllocationWrap = props => {
 }
 
 const ErrorMessage = ({ hasError, type }) => {
+  const theme = useTheme()
   return hasError ? (
     <ErrorText>
       <IconClose

@@ -58,18 +58,16 @@ const MyRewards = ({
   )
 
   return (
-    <OverviewMain>
-      <RewardsWrap>
-        <Metrics content={myMetrics} />
-        <DataView
-          heading={<Text size="xlarge">My rewards dashboard</Text>}
-          fields={[ 'description', 'disbursement date', 'status', 'amount' ]}
-          entries={myRewards}
-          renderEntry={renderReward}
-          renderEntryActions={renderMenu}
-        />
-      </RewardsWrap>
-    </OverviewMain>
+    <RewardsWrap>
+      <Metrics content={myMetrics} />
+      <DataView
+        heading={<Text size="xlarge">My rewards dashboard</Text>}
+        fields={[ 'description', 'disbursement date', 'status', 'amount' ]}
+        entries={myRewards}
+        renderEntry={renderReward}
+        renderEntryActions={renderMenu}
+      />
+    </RewardsWrap>
   )
 }
 
@@ -143,9 +141,6 @@ MyRewards.propTypes = {
   myMetrics: PropTypes.arrayOf(PropTypes.object).isRequired,
 }
 
-const OverviewMain = styled.div`
-  background-color: #f8fcfd;
-`
 const RewardsWrap = styled.div`
   flex-grow: 1;
   > :not(:last-child) {

@@ -34,18 +34,16 @@ const Overview = ({
     return <Empty action={newReward} />
   }
   return (
-    <OverviewMain>
-      <RewardsWrap>
-        <Metrics content={metrics} />
-        <DataView
-          heading={<Text size="xlarge">All rewards</Text>}
-          fields={[ 'description', 'type', 'frequency', 'next payout', 'amount' ]}
-          entries={rewards}
-          renderEntry={renderReward}
-          renderEntryActions={(reward) => renderMenu(reward, viewReward)}
-        />
-      </RewardsWrap>
-    </OverviewMain>
+    <RewardsWrap>
+      <Metrics content={metrics} />
+      <DataView
+        heading={<Text size="xlarge">All rewards</Text>}
+        fields={[ 'description', 'type', 'frequency', 'next payout', 'amount' ]}
+        entries={rewards}
+        renderEntry={renderReward}
+        renderEntryActions={(reward) => renderMenu(reward, viewReward)}
+      />
+    </RewardsWrap>
   )
 }
 
@@ -135,9 +133,6 @@ Overview.propTypes = {
   metrics: PropTypes.arrayOf(PropTypes.object).isRequired,
 }
 
-const OverviewMain = styled.div`
-  background-color: #f8fcfd;
-`
 const RewardsWrap = styled.div`
   flex-grow: 1;
   > :not(:last-child) {

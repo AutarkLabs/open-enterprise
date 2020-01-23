@@ -10,6 +10,7 @@ import {
   GU,
   Header,
   Info,
+  IconPlus,
   IconRemove,
   Link,
   Text,
@@ -188,12 +189,17 @@ const ExperienceLevel = ({
       ))}
       <Button
         disabled={!canAdd}
-        compact
-        mode="secondary"
+        icon={
+          <IconPlus
+            css={`
+              color: ${theme.accent};
+            `}
+          />
+        }
+        label='Add more'
+        title='Click to add'
         onClick={onAddExpLevel}
-      >
-        + Add another
-      </Button>
+      />
     </React.Fragment>
   )
 }
