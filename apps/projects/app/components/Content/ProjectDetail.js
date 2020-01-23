@@ -15,6 +15,7 @@ import { Issue } from '../Card'
 import { EmptyWrapper, FilterBar, LoadingAnimation } from '../Shared'
 import { useDecoratedRepos } from '../../context/DecoratedRepos'
 import { usePanelManagement } from '../Panel'
+import usePathHelpers from '../../../../../shared/utils/usePathHelpers'
 
 const sorters = {
   'Name ascending': (i1, i2) =>
@@ -39,6 +40,7 @@ class ProjectDetail extends React.PureComponent {
       loading: PropTypes.bool.isRequired,
       refetch: PropTypes.func,
     }).isRequired,
+    viewIssue: PropTypes.func.isRequired,
     setQuery: PropTypes.func.isRequired,
     setFilters: PropTypes.func.isRequired,
     shapeIssue: PropTypes.func.isRequired,
@@ -247,6 +249,7 @@ class ProjectDetail extends React.PureComponent {
                   isSelected={issue.id in this.state.selectedIssues}
                   key={issue.id}
                   {...issue}
+                  onClick={this.props.viewIssue}
                   onSelect={this.handleIssueSelection}
                 />
               ))}
@@ -304,6 +307,10 @@ const ProjectDetailWrap = ({ repoId, ...props }) => {
     experiences: {},
     statuses: {},
   })
+  const { requestPath } = usePathHelpers()
+  const viewIssue = useCallback(id => {
+    requestPath('/issues/' + id)
+  })
 
   const repos = useDecoratedRepos()
   const repo = useMemo(() => {
@@ -336,6 +343,7 @@ const ProjectDetailWrap = ({ repoId, ...props }) => {
           client={client}
           filters={filters}
           query={query}
+          viewIssue={viewIssue}
           setQuery={setQuery}
           setFilters={setFilters}
           shapeIssue={shapeIssue}
