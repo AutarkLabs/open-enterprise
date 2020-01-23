@@ -45,7 +45,7 @@ const Project = ({
 
   const clickContext = e => {
     e.stopPropagation()
-    requestPath(`/issues?repoId=${repoId}`)
+    requestPath(`/projects/${repoId}`)
   }
 
   return (

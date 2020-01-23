@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import usePathHelpers from '../../../../../shared/utils/usePathHelpers'
 
 import {
   Checkbox,
@@ -99,10 +98,9 @@ const Bounty = ({ issue }) => {
 
 Bounty.propTypes = issueShape
 
-const Issue = ({ isSelected, onSelect, ...issue }) => {
+const Issue = ({ isSelected, onClick, onSelect, ...issue }) => {
   const theme = useTheme()
   const { layoutName } = useLayout()
-  const { requestPath } = usePathHelpers()
   const {
     workStatus,
     title,
@@ -128,7 +126,7 @@ const Issue = ({ isSelected, onSelect, ...issue }) => {
               css="text-decoration: none"
               onClick={e => {
                 e.preventDefault()
-                requestPath('/issues/' + issue.id)
+                onClick(issue.id)
               }}
             >
               <IssueTitle theme={theme}>{title}</IssueTitle>
@@ -184,6 +182,7 @@ Issue.propTypes = {
   repo: PropTypes.string.isRequired,
   number: PropTypes.number.isRequired,
   isSelected: PropTypes.bool,
+  onClick: PropTypes.func.isRequired,
   onSelect: PropTypes.func.isRequired,
   workStatus: PropTypes.oneOf([
     undefined,

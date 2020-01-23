@@ -33,16 +33,15 @@ const issueAttributes = `
   url
 `
 
-export const getIssuesGQL = repos => {
-  const queries = Object.keys(repos).map((repoId, i) => `
-    node${i}: node(id: "${repoId}") {
-      id
+export const getIssuesGQL = ({ repoId, count, after }) => gql`
+  query getIssuesForRepo {
+    repository: node(id: "${repoId}") {
       ... on Repository {
         issues(
           states:OPEN,
-          first: ${repos[repoId].fetch},
-          ${repos[repoId].showMore ? `after: "${repos[repoId].endCursor}",` : ''}
-         orderBy: {field: CREATED_AT, direction: DESC}
+          first: ${count},
+          ${after ? `after: "${after}",` : ''}
+          orderBy: {field: CREATED_AT, direction: DESC}
         ) {
           totalCount
           pageInfo {
@@ -52,12 +51,10 @@ export const getIssuesGQL = repos => {
           nodes { ${issueAttributes} }
         }
       }
-    }`
-  )
-  return gql`query getIssuesForRepos {
-    ${queries.join('')}
-  }`
-}
+    }
+  }
+`
+
 
 export const GET_ISSUE = gql`
   query GetIssue($id: ID!) {
