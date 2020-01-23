@@ -21,7 +21,9 @@ const Title = styled(Text.Block)`
   font-variant: small-caps;
   font-weight: bold;
   color: ${props => props.color};
-  margin-bottom: ${GU}px;
+  margin-bottom: ${.5 * GU}px;
+  line-height: ${2 * GU}px;
+  height: ${2 * GU}px;
 `
 
 export default FieldTitle

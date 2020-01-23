@@ -12,38 +12,76 @@ import noResultsSvg from '../../../assets/noResults.svg'
 import { FormField, FieldTitle } from '../../Form'
 import { STATUS } from '../../../utils/github'
 
-const GitHubRepoList = ({ handleGithubSignIn }) => {
-  const {
-    api,
-    appState: {
-      repos,
-      github = { status: STATUS.INITIAL },
-    },
-  } = useAragonApi()
-  const { closePanel } = usePanelManagement()
-  const [ filter, setFilter ] = useState('')
-  const [ project, setProject ] = useState()
-  const [ repoSelected, setRepoSelected ] = useState(-1)
+const RepoList = ({
+  filter,
+  handleClearSearch,
+  onRepoSelected,
+  repoArray,
+  repoSelected,
+  visibleRepos
+}) => {
   const theme = useTheme()
+
+  if (visibleRepos.length) return (
+    <StyledRadioList
+      items={repoArray}
+      selected={repoSelected}
+      onChange={onRepoSelected(repoArray)}
+    />
+  )
+
+  if (filter) return (
+    <RepoInfo>
+      <img css={`margin-bottom: ${2 * GU}px`} src={noResultsSvg} alt=""  />
+      <Text.Block style={{ fontSize: '28px', marginBottom: '8px' }}>
+        No results found.
+      </Text.Block>
+      <Text.Block>
+        We can&#39;t find any items mathing your search.
+      </Text.Block>
+      <Button
+        size="mini"
+        onClick={handleClearSearch}
+        css={`
+          margin-left: 8px;
+          border: 0;
+          box-shadow: unset;
+          padding: 4px;
+        `}
+      >
+        <Text size="small" color={`${theme.link}`}>
+          Clear Filters
+        </Text>
+      </Button>
+    </RepoInfo>
+  )
+
+  return (
+    <RepoInfo>
+      <Text>No more repositories to add...</Text>
+    </RepoInfo>
+  )
+}
+RepoList.propTypes = {
+  filter: PropTypes.string.isRequired,
+  handleClearSearch: PropTypes.func.isRequired,
+  onRepoSelected: PropTypes.func.isRequired,
+  repoArray: PropTypes.array.isRequired,
+  repoSelected: PropTypes.number.isRequired,
+  visibleRepos: PropTypes.array.isRequired,
+}
+
+const RepoQuery = ({ onRepoSelected, repoSelected, setRepoSelected }) => {
+  const theme = useTheme()
+  const [ filter, setFilter ] = useState('')
+  const searchRef = useRef(null)
+  const { appState: { repos } } = useAragonApi()
 
   /*
     TODO: Review
     This line below might be breaking RepoList loading sometimes preventing show repos after login
   */
-
   const reposAlreadyAdded = (repos || []).map(repo => repo.data._repo)
-  const searchRef = useRef(null)
-
-  /*
-  TODO: move Query out to the store, apply filters here
-  useEffect(
-    () => {
-      const notAddedRepos = repos.filter(repo => !reposAlreadyAdded.includes(repo.node.id))
-      const visibleRepos = notAddedRepos
-      setVisibleRepos
-    }, [filter, reposAlreadyAdded]
-  )
-*/
 
   useEffect(() => { searchRef.current && searchRef.current.focus()})
 
@@ -61,67 +99,7 @@ const GitHubRepoList = ({ handleGithubSignIn }) => {
 
   const handleClearSearch = () => setFilter('')
 
-  const handleNewProject = () => {
-    closePanel()
-    api.addRepo(toHex(project)).toPromise()
-  }
-
-  const onRepoSelected = repoArray => i => {
-    setProject(repoArray[i].node.id)
-    setRepoSelected(i)
-  }
-
-  // if there are visible (with or tiwhout filtration) repos, show them
-  // else if there are no repos to show but filtering is active - show "no match"
-  // else there are no repos to add (possibly all that could have been added
-  // already are
-  const RepoList = ({ visibleRepos, repoArray }) => {
-    if (visibleRepos.length) return (
-      <StyledRadioList
-        items={repoArray}
-        selected={repoSelected}
-        onChange={onRepoSelected(repoArray)}
-      />
-    )
-
-    if (filter) return (
-      <RepoInfo>
-        <img css={`margin-bottom: ${2 * GU}px`} src={noResultsSvg} alt=""  />
-        <Text.Block style={{ fontSize: '28px', marginBottom: '8px' }}>
-          No results found.
-        </Text.Block>
-        <Text.Block>
-          We can&#39;t find any items mathing your search.
-        </Text.Block>
-        <Button
-          size="mini"
-          onClick={handleClearSearch}
-          css={`
-            margin-left: 8px;
-            border: 0;
-            box-shadow: unset;
-            padding: 4px;
-          `}
-        >
-          <Text size="small" color={`${theme.link}`}>
-            Clear Filters
-          </Text>
-        </Button>
-      </RepoInfo>
-    )
-
-    return (
-      <RepoInfo>
-        <Text>No more repositories to add...</Text>
-      </RepoInfo>
-    )
-  }
-  RepoList.propTypes = {
-    visibleRepos: PropTypes.array.isRequired,
-    repoArray: PropTypes.array.isRequired,
-  }
-
-  const RepoQuery = () => (
+  return (
     <Query
       fetchPolicy="cache-first"
       query={GET_REPOSITORIES}
@@ -163,7 +141,14 @@ const GitHubRepoList = ({ handleGithubSignIn }) => {
               />
 
               <ScrollableList>
-                <RepoList visibleRepos={visibleRepos} repoArray={repoArray} />
+                <RepoList
+                  visibleRepos={visibleRepos}
+                  repoArray={repoArray}
+                  repoSelected={repoSelected}
+                  onRepoSelected={onRepoSelected}
+                  filter={filter}
+                  handleClearSearch={handleClearSearch}
+                />
               </ScrollableList>
 
             </div>
@@ -190,6 +175,34 @@ const GitHubRepoList = ({ handleGithubSignIn }) => {
       }}
     </Query>
   )
+}
+RepoQuery.propTypes = {
+  onRepoSelected: PropTypes.func.isRequired,
+  repoSelected: PropTypes.number.isRequired,
+  setRepoSelected: PropTypes.func.isRequired,
+}
+
+const GitHubRepoList = ({ handleGithubSignIn }) => {
+  const {
+    api,
+    appState: {
+      github = { status: STATUS.INITIAL },
+    },
+  } = useAragonApi()
+  const { closePanel } = usePanelManagement()
+  const [ project, setProject ] = useState()
+  const [ repoSelected, setRepoSelected ] = useState(-1)
+  const theme = useTheme()
+
+  const handleNewProject = () => {
+    closePanel()
+    api.addRepo(toHex(project)).toPromise()
+  }
+
+  const onRepoSelected = repoArray => i => {
+    setProject(repoArray[i].node.id)
+    setRepoSelected(i)
+  }
 
   return (
     <>
@@ -198,16 +211,21 @@ const GitHubRepoList = ({ handleGithubSignIn }) => {
           <Button
             mode="normal"
             onClick={handleGithubSignIn}
-            icon={<IconGitHub
-              color={`${theme.surfaceContentSecondary}`}
-              width="16px"
-              height="16px"
-            />}
-            label="Select from GitHub"
-          />
+          >
+            <IconGitHub
+              color={`${theme.surfaceIcon}`}
+              width="18px"
+              height="18px"
+            />
+            <span css="margin-top: 3px; margin-left: 8px">Select from GitHub</span>
+          </Button>
         </div>
       ) : (
-        <RepoQuery />
+        <RepoQuery
+          onRepoSelected={onRepoSelected}
+          repoSelected={repoSelected}
+          setRepoSelected={setRepoSelected}
+        />
       )}
       <Button
         mode="strong"
@@ -222,9 +240,7 @@ const GitHubRepoList = ({ handleGithubSignIn }) => {
 }
 GitHubRepoList.propTypes = PropTypes.func.isRequired
 
-const createProject = () => {
-  console.log('creating native project')
-}
+const createProject = () => {}
 
 const NewProject = ({ handleGithubSignIn }) => {
   const [ title, setTitle ] = useState('')
@@ -238,6 +254,12 @@ const NewProject = ({ handleGithubSignIn }) => {
         Create a new project that belongs and operates entirely within this application, or synchronize one from GitHub.
       </InfoBox>
 
+      {
+        // eslint-disable-next-line no-constant-condition
+        true ? (
+          <GitHubRepoList handleGithubSignIn={handleGithubSignIn} />
+        ) : (
+        <>
       <FormField
         label="Title"
         required={github.status !== 'authenticated' || title !== ''}
@@ -254,7 +276,7 @@ const NewProject = ({ handleGithubSignIn }) => {
       {title !== '' ? (
         <>
         <FormField
-          label="Feedback"
+          label="Description"
           input={
             <TextInput.Multiline
               name="description"
@@ -286,7 +308,8 @@ const NewProject = ({ handleGithubSignIn }) => {
         <GitHubRepoList handleGithubSignIn={handleGithubSignIn} />
         </>
       )}
-
+      </>
+        )}
     </PanelContent>
   )
 }
