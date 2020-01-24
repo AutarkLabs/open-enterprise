@@ -252,8 +252,8 @@ class App extends React.Component {
   }
 
   render() {
-    const Wrapper = ({ appearance, children }) => (
-      <Main theme={appearance}>
+    const Wrapper = ({ theme, children }) => (
+      <Main theme={theme}>
         <IdentityProvider
           onResolve={this.handleResolveLocalIdentity}
           onShowLocalIdentityModal={this.handleShowLocalIdentityModal}
@@ -271,12 +271,12 @@ class App extends React.Component {
       </Main>
     )
 
-    const { appearance, rewards, myRewards, isSyncing } = this.props
+    const { theme, rewards, myRewards, isSyncing } = this.props
 
     if (!rewards || !myRewards) return null
     else if (!rewards.length && !myRewards.length) {
       return (
-        <Wrapper appearance={appearance}>
+        <Wrapper theme={theme}>
           <EmptyContainer>
             <Empty action={this.newReward} isSyncing={isSyncing} />
           </EmptyContainer>
@@ -284,7 +284,7 @@ class App extends React.Component {
       )
     }
     return (
-      <Wrapper appearance={appearance}>
+      <Wrapper theme={theme}>
         <Header
           primary="Rewards"
           secondary={
@@ -337,12 +337,12 @@ const EmptyContainer = styled.div`
 // eslint-disable-next-line react/display-name
 export default () => {
   const { api, appState, connectedAccount, guiStyle } = useAragonApi()
-  const { appearance } = guiStyle
+  const { appearance, theme } = guiStyle
   const appLogic = useAppLogic()
   return (
     <App
       api={api}
-      appearance={appearance}
+      theme={theme || appearance}
       rewards={appState.rewards}
       myRewards={appState.myRewards}
       metrics={appState.metrics}

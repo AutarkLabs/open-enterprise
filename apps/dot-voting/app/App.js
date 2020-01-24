@@ -82,7 +82,7 @@ const App = () => {
   useVoteCloseWatcher()
 
   const { api, guiStyle } = useAragonApi()
-  const { appearance } = guiStyle
+  const { appearance, theme } = guiStyle
   const [ panelOpen, setPanelOpen ] = useState(false)
   const newVote = () => setPanelOpen(true)
   const closePanel = () => setPanelOpen(false)
@@ -100,7 +100,7 @@ const App = () => {
   const { isSyncing, votes, voteTime, pctBase } = useAppLogic()
 
   return (
-    <Main  assetsUrl={ASSETS_URL} theme={appearance}>
+    <Main  assetsUrl={ASSETS_URL} theme={theme || appearance}>
       <Discussions app={api}>
         {!votes.length ? (
           <Empty isSyncing={isSyncing} onClick={newVote}/>

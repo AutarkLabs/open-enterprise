@@ -1,13 +1,17 @@
 import React from 'react'
 import styled from 'styled-components'
+
+import { useAragonApi } from '@aragon/api-react'
 import { EmptyStateCard, GU, Header, Main, breakpoint } from '@aragon/ui'
 import nothingToSeeHere from './empty-state.png'
 
 const illustration = <img src={nothingToSeeHere} alt="" height="160" />
 
 function App() {
+  const { guiStyle } = useAragonApi()
+  const { appearance, theme } = guiStyle
   return (
-    <Main>
+    <Main theme={theme || appearance}>
       <Header primary="Discussions Proof-of-Concept" />
       <Content>
         Other apps used by your organization can embed on-chain discussions,

@@ -6,7 +6,7 @@ const issueShape = PropTypes.shape({
   deadline: PropTypes.string,
   exp: PropTypes.number,
   fundingHistory: PropTypes.arrayOf(PropTypes.object),
-  hours: PropTypes.string,
+  hours: PropTypes.number,
   id: PropTypes.string,
   labels: PropTypes.object,
   level: PropTypes.string,

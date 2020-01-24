@@ -24,7 +24,7 @@ function Routes() {
 const App = () => {
   const { api, appState, guiStyle } = useAragonApi()
   const { isSyncing = true } = appState
-  const { appearance } = guiStyle
+  const { appearance, theme } = guiStyle
 
   const { panel, panelOpen, setPanel } = usePanel()
 
@@ -43,7 +43,7 @@ const App = () => {
   const PanelContent = panel ? panel.content : null
 
   return (
-    <Main theme={appearance}>
+    <Main theme={theme || appearance}>
       <IdentityProvider
         onResolve={handleResolveLocalIdentity}
         onShowLocalIdentityModal={handleShowLocalIdentityModal}

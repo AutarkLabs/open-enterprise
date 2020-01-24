@@ -9,7 +9,7 @@
     "react-markdown": "^4.1.0"
   },
   "peerDependencies": {
-    "@aragon/api": "openworklabs/aragon-api",
+    "@aragon/api": "petermphillips/aragon-api",
     "@aragon/api-react": "2.0.0-beta.9",
     "@aragon/ui": "1.2.1",
     "react": "^16.8.6",
