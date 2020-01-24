@@ -22,7 +22,7 @@ import {
 import { useAragonApi } from '../../api-react'
 import { toHex } from 'web3-utils'
 
-const pluralize = (word, number) => `${word}${number > 1 ? 's (' + number + ')' : ''}`
+const pluralize = (word, number) => `${word}${number > 1 ? 's' : ''}`
 
 const Project = ({
   repoId,
@@ -36,7 +36,9 @@ const Project = ({
   } = useAragonApi()
   const { requestPath } = usePathHelpers()
   const bountiesCount = issues.filter(i =>
-    i.data.repoId === repoId && i.data.workStatus !== 'fulfilled'
+    i.data.repoId === repoId &&
+    i.data.workStatus !== 'fulfilled' &&
+    new Date() < new Date(i.data.deadline)
   ).length
 
   const theme = useTheme()
