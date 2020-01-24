@@ -33,14 +33,14 @@ export const issueAttributes = `
   url
 `
 
-export const getIssuesGQL = ({ repoId, count, after }) => gql`
-  query getIssuesForRepo {
-    repository: node(id: "${repoId}") {
+export const getIssuesGQL =  gql`
+  query GetIssuesForRepo($repoId: ID!, $count: Int, $after: String)  {
+    repository: node(id: $repoId) {
       ... on Repository {
         issues(
           states:OPEN,
-          first: ${count},
-          ${after ? `after: "${after}",` : ''}
+          first: $count,
+          after: $after,
           orderBy: {field: CREATED_AT, direction: DESC}
         ) {
           totalCount

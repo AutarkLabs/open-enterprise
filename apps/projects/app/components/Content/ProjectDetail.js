@@ -278,10 +278,11 @@ class ProjectDetail extends React.PureComponent {
 }
 
 const ProjectDetailQuery = ({ client, query, ...props }) => {
-  const graphqlQuery = useQuery(
-    getIssuesGQL(query),
-    { client, onError: console.error }
-  )
+  const graphqlQuery = useQuery(getIssuesGQL, {
+    client,
+    variables: query,
+    onError: console.error,
+  })
   return <ProjectDetail graphqlQuery={graphqlQuery} {...props} />
 }
 
