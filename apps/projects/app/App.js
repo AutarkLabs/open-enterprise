@@ -100,9 +100,11 @@ const App = () => {
   const noop = () => {}
   if (githubLoading) {
     return (
-      <EmptyWrapper>
-        <LoadingAnimation />
-      </EmptyWrapper>
+      <Main theme={appearance}>
+        <EmptyWrapper>
+          <LoadingAnimation />
+        </EmptyWrapper>
+      </Main>
     )
   } else if (github.status === STATUS.INITIAL) {
     return (
