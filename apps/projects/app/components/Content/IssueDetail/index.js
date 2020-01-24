@@ -21,7 +21,7 @@ import usePathHelpers from '../../../../../../shared/utils/usePathHelpers'
 import { useDecoratedRepos } from '../../../context/DecoratedRepos'
 
 function Wrap({ children, repo }) {
-  const { requestPath } = usePathHelpers()
+  const { goBack } = usePathHelpers()
   const { setupNewIssue } = usePanelManagement()
 
   return (
@@ -34,7 +34,7 @@ function Wrap({ children, repo }) {
       />
       <Bar>
         <BackButton onClick={() => {
-          if (repo) requestPath('/projects/' + repo.data._repo)
+          if (repo) goBack({ fallback: '/projects/' + repo.data._repo })
         }} />
       </Bar>
       {children}
