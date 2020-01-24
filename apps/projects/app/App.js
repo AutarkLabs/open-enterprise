@@ -20,6 +20,7 @@ import { LoadingAnimation } from './components/Shared'
 import { EmptyWrapper } from './components/Shared'
 import { Error } from './components/Card'
 import { DecoratedReposProvider } from './context/DecoratedRepos'
+import { BountyIssuesProvider } from './context/BountyIssues'
 import Routes from './Routes'
 
 let popupRef = null
@@ -127,11 +128,13 @@ const App = () => {
             onShowLocalIdentityModal={handleShowLocalIdentityModal}
           >
             <DecoratedReposProvider>
-              <main>
-                <ErrorBoundary>
-                  <Routes handleGithubSignIn={handleGithubSignIn} />
-                </ErrorBoundary>
-              </main>
+              <BountyIssuesProvider>
+                <main>
+                  <ErrorBoundary>
+                    <Routes handleGithubSignIn={handleGithubSignIn} />
+                  </ErrorBoundary>
+                </main>
+              </BountyIssuesProvider>
               <PanelManager
                 activePanel={panel}
                 onClose={closePanel}

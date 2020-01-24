@@ -1,6 +1,6 @@
 import { gql } from 'apollo-boost'
 
-const issueAttributes = `
+export const issueAttributes = `
   number
   id
   title
@@ -54,7 +54,6 @@ export const getIssuesGQL = ({ repoId, count, after }) => gql`
     }
   }
 `
-
 
 export const GET_ISSUE = gql`
   query GetIssue($id: ID!) {
