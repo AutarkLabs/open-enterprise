@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import React, { useEffect, useMemo, useState, useCallback } from 'react'
+import React, { useMemo, useState, useCallback } from 'react'
 import styled from 'styled-components'
 import { useQuery } from '@apollo/react-hooks'
 
@@ -7,12 +7,10 @@ import { useAragonApi } from '../../api-react'
 import { Button, GU, Header, IconPlus, Text } from '@aragon/ui'
 import { compareAsc, compareDesc } from 'date-fns'
 
-import { initApolloClient } from '../../utils/apollo-client'
 import useShapedIssue from '../../hooks/useShapedIssue'
-import { STATUS } from '../../utils/github'
 import { getIssuesGQL } from '../../utils/gql-queries.js'
 import { Issue } from '../Card'
-import { EmptyWrapper, FilterBar, LoadingAnimation } from '../Shared'
+import { FilterBar, LoadingAnimation } from '../Shared'
 import { useDecoratedRepos } from '../../context/DecoratedRepos'
 import { usePanelManagement } from '../Panel'
 import usePathHelpers from '../../../../../shared/utils/usePathHelpers'
@@ -28,8 +26,6 @@ const sorters = {
     compareAsc(new Date(i1.createdAt), new Date(i2.createdAt)),
 }
 
-const ISSUES_PER_CALL = 100
-
 class ProjectDetail extends React.PureComponent {
   static propTypes = {
     bountyIssues: PropTypes.array.isRequired,
@@ -39,9 +35,9 @@ class ProjectDetail extends React.PureComponent {
       error: PropTypes.string,
       loading: PropTypes.bool.isRequired,
       refetch: PropTypes.func,
+      fetchMore: PropTypes.func,
     }).isRequired,
     viewIssue: PropTypes.func.isRequired,
-    setQuery: PropTypes.func.isRequired,
     setFilters: PropTypes.func.isRequired,
     shapeIssue: PropTypes.func.isRequired,
   }
@@ -51,7 +47,6 @@ class ProjectDetail extends React.PureComponent {
     sortBy: 'Newest',
     textFilter: '',
     reload: false,
-    cachedIssues: [],
   }
 
   deselectAllIssues = () => {
@@ -198,18 +193,6 @@ class ProjectDetail extends React.PureComponent {
     )
   }
 
-  queryLoading = () => (
-    <StyledIssues>
-      {this.filterBar([], [])}
-      <EmptyWrapper>
-        <Text size="large" css={`margin-bottom: ${3 * GU}px`}>
-          Loading...
-        </Text>
-        <LoadingAnimation />
-      </EmptyWrapper>
-    </StyledIssues>
-  )
-
   queryError = (error, refetch) => (
     <StyledIssues>
       {this.filterBar([], [])}
@@ -227,13 +210,11 @@ class ProjectDetail extends React.PureComponent {
   )
 
   render() {
-    const { cachedIssues } = this.state
-    const { data, loading, error, refetch } = this.props.graphqlQuery
+    const { data, loading, error, refetch, fetchMore } = this.props.graphqlQuery
 
-    if (loading) return this.queryLoading()
     if (error) return this.queryError(error, refetch)
 
-    const allIssues = [ ...cachedIssues, ...data.repository.issues.nodes ]
+    const allIssues = data ? data.repository.issues.nodes : []
     const filteredIssues = this.applyFilters(allIssues)
 
     return (
@@ -256,14 +237,41 @@ class ProjectDetail extends React.PureComponent {
           </ScrollWrapper>
 
           <div style={{ textAlign: 'center' }}>
-            {data.repository.issues.pageInfo.hasNextPage && (
+            {loading ? (
+              <div css={`
+                align-items: center;
+                display: flex;
+                flex-direction: column;
+                margin: 25px;
+              `}>
+                <Text size="large" css={`margin-bottom: ${3 * GU}px`}>
+                  Loading...
+                </Text>
+                <LoadingAnimation />
+              </div>
+            ) : data.repository.issues.pageInfo.hasNextPage && (
               <Button
                 style={{ margin: '12px 0 30px 0' }}
                 mode="secondary"
                 onClick={() => {
-                  this.setState({ cachedIssues: allIssues })
-                  this.props.setQuery({
-                    after: data.repository.issues.pageInfo.endCursor,
+                  fetchMore({
+                    variables: { after: data.repository.issues.pageInfo.endCursor },
+                    updateQuery: (prev, { fetchMoreResult }) => {
+                      if (!fetchMoreResult) return prev
+                      return {
+                        ...fetchMoreResult,
+                        repository: {
+                          ...fetchMoreResult.repository,
+                          issues: {
+                            ...fetchMoreResult.repository.issues,
+                            nodes: [
+                              ...prev.repository.issues.nodes,
+                              ...fetchMoreResult.repository.issues.nodes,
+                            ]
+                          },
+                        },
+                      }
+                    },
                   })
                 }}
               >
@@ -277,30 +285,11 @@ class ProjectDetail extends React.PureComponent {
   }
 }
 
-const ProjectDetailQuery = ({ client, query, ...props }) => {
-  const graphqlQuery = useQuery(getIssuesGQL, {
-    client,
-    variables: query,
-    onError: console.error,
-  })
-  return <ProjectDetail graphqlQuery={graphqlQuery} {...props} />
-}
-
-ProjectDetailQuery.propTypes = {
-  client: PropTypes.object.isRequired,
-  query: PropTypes.object.isRequired,
-}
-
 const ProjectDetailWrap = ({ repoId, ...props }) => {
   const { appState } = useAragonApi()
-  const {
-    issues = [],
-    github = { status : STATUS.INITIAL },
-  } = appState
+  const { issues = [] } = appState
   const shapeIssue = useShapedIssue()
   const { setupNewIssue } = usePanelManagement()
-  const [ client, setClient ] = useState(null)
-  const [ query, setQueryRaw ] = useState({ repoId, count: ISSUES_PER_CALL })
   const [ filters, setFilters ] = useState({
     labels: {},
     milestones: {},
@@ -318,13 +307,11 @@ const ProjectDetailWrap = ({ repoId, ...props }) => {
     return repos.find(({ data }) => data._repo === repoId)
   }, [repos])
 
-  const setQuery = useCallback(({ after }) => {
-    setQueryRaw({ ...query, after })
-  }, [])
-
-  useEffect(() => {
-    setClient(github.token ? initApolloClient(github.token) : null)
-  }, [github.token])
+  const graphqlQuery = useQuery(getIssuesGQL, {
+    notifyOnNetworkStatusChange: true,
+    onError: console.error,
+    variables: { repoId },
+  })
 
   return (
     <>
@@ -334,23 +321,15 @@ const ProjectDetailWrap = ({ repoId, ...props }) => {
           <Button mode="strong" icon={<IconPlus />} onClick={setupNewIssue} label="New issue" />
         }
       />
-      {!query ? (
-        'Loading...'
-      ) : !client ? (
-        'You must sign into GitHub to view issues.'
-      ) : (
-        <ProjectDetailQuery
-          bountyIssues={issues}
-          client={client}
-          filters={filters}
-          query={query}
-          viewIssue={viewIssue}
-          setQuery={setQuery}
-          setFilters={setFilters}
-          shapeIssue={shapeIssue}
-          {...props}
-        />
-      )}
+      <ProjectDetail
+        bountyIssues={issues}
+        filters={filters}
+        graphqlQuery={graphqlQuery}
+        viewIssue={viewIssue}
+        setFilters={setFilters}
+        shapeIssue={shapeIssue}
+        {...props}
+      />
     </>
   )
 }

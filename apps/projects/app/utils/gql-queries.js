@@ -34,12 +34,12 @@ export const issueAttributes = `
 `
 
 export const getIssuesGQL =  gql`
-  query GetIssuesForRepo($repoId: ID!, $count: Int, $after: String)  {
+  query GetIssuesForRepo($repoId: ID!, $after: String)  {
     repository: node(id: $repoId) {
       ... on Repository {
         issues(
           states:OPEN,
-          first: $count,
+          first: 25,
           after: $after,
           orderBy: {field: CREATED_AT, direction: DESC}
         ) {
