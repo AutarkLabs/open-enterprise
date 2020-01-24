@@ -1,6 +1,9 @@
 import React from 'react'
 import { usePath } from '@aragon/api-react'
 
+const SEARCH_REGEX = /\?(.+)($|#)/ // everything between ? and end-of-line or a hash sign
+const SEARCH_PARAM_REGEX = /([a-zA-Z0-9]+)=([a-zA-Z0-9=]+)/
+
 export default function usePathHelpers() {
   const [ path, requestPath ] = usePath()
 
@@ -30,6 +33,24 @@ export default function usePathHelpers() {
     return groups
   }, [ path, requestPath ])
 
-  return { parsePath, requestPath }
+  const search = React.useMemo(() => {
+    return (path.match(SEARCH_REGEX) || [])[1]
+  }, [path])
+
+  const query = React.useMemo(() => {
+    if (!search) return {}
+
+    return search.split('&').reduce(
+      (acc, param) => {
+        const [ , key, value ] = param.match(SEARCH_PARAM_REGEX)
+        acc[key] = value
+        return acc
+      },
+      {}
+    )
+  }, [search])
+
+
+  return { parsePath, requestPath, query }
 }
 
