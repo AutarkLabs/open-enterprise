@@ -2,7 +2,7 @@ import React from 'react'
 import usePathHelpers from '../../../../../shared/utils/usePathHelpers'
 import { Tabs as AragonTabs } from '@aragon/ui'
 
-const tabs = [ 'General', 'Settings' ]
+const tabs = [ 'General', 'Bounties', 'Settings' ]
 
 export default function Tabs() {
   const { parsePath, requestPath } = usePathHelpers()
