@@ -1,8 +1,26 @@
 import React from 'react'
 import { usePath } from '@aragon/api-react'
 
+const history = []
+
 export default function usePathHelpers() {
   const [ path, requestPath ] = usePath()
+
+  React.useEffect(() => {
+    if (path !== history[history.length - 1]) {
+      history.push(path)
+    }
+  }, [path])
+
+  // Since goBack is not supported in aragonAPI, we do not have access to
+  // actual browser history. If the user refreshes their page then fires a
+  // `goBack` action, we will have nothing in our custom `history` array.
+  // The `fallback` option allows us to work around this.
+  const goBack = React.useCallback(({ fallback = '/' }) => {
+    history.pop() // remove current page, forget about it (goForward not supported)
+    const prev = history.pop()
+    requestPath(prev || fallback)
+  }, [requestPath])
 
   // accepts a pattern like '/budgets/:id', where ':id' is a named parameter
   // redirects to '/' if the current path doesn't match at all
@@ -30,6 +48,6 @@ export default function usePathHelpers() {
     return groups
   }, [ path, requestPath ])
 
-  return { parsePath, requestPath }
+  return { goBack, parsePath, requestPath }
 }
 
