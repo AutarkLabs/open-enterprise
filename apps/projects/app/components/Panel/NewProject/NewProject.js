@@ -12,6 +12,8 @@ import noResultsSvg from '../../../assets/noResults.svg'
 import { FormField, FieldTitle } from '../../Form'
 import { STATUS } from '../../../utils/github'
 
+const disableDecoupledProjects = true
+
 const RepoList = ({
   filter,
   handleClearSearch,
@@ -74,7 +76,7 @@ RepoList.propTypes = {
 const RepoQuery = ({ onRepoSelected, repoSelected, setRepoSelected }) => {
   const theme = useTheme()
   const [ filter, setFilter ] = useState('')
-  const searchRef = useRef(null)
+  const searchRef = useRef()
   const { appState: { repos } } = useAragonApi()
 
   /*
@@ -250,66 +252,66 @@ const NewProject = ({ handleGithubSignIn }) => {
 
   return (
     <PanelContent>
-      <InfoBox>
-        Create a new project that belongs and operates entirely within this application, or synchronize one from GitHub.
-      </InfoBox>
-
       {
-        // eslint-disable-next-line no-constant-condition
-        true ? (
+        disableDecoupledProjects ? (
           <GitHubRepoList handleGithubSignIn={handleGithubSignIn} />
         ) : (
-        <>
-      <FormField
-        label="Title"
-        required={github.status !== 'authenticated' || title !== ''}
-        input={
-          <TextInput
-            wide
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-            aria-label="Title"
-          />
-        }
-      />
+          <React.Fragment>
+            <InfoBox>
+              Create a new project that belongs and operates entirely within this application, or synchronize one from GitHub.
+            </InfoBox>
 
-      {title !== '' ? (
-        <>
-        <FormField
-          label="Description"
-          input={
-            <TextInput.Multiline
-              name="description"
-              rows="3"
-              onChange={e => setDescription(e.target.value)}
-              value={description}
-              wide
-              aria-label="Description"
+            <FormField
+              label="Title"
+              required={github.status !== 'authenticated' || title !== ''}
+              input={
+                <TextInput
+                  wide
+                  value={title}
+                  onChange={e => setTitle(e.target.value)}
+                  aria-label="Title"
+                />
+              }
             />
-          }
-        />
-        <Button
-          mode="strong"
-          wide
-          onClick={createProject}
-          disabled={title === ''}
-        >
-          Submit
-        </Button>
-        </>
-      ) : (
-        <>
-        <ThematicBreak
-          color={`${theme.surfaceContentSecondary}`}
-          linecolor={`${theme.border}`}
-        >
-            OR
-        </ThematicBreak>
-        <GitHubRepoList handleGithubSignIn={handleGithubSignIn} />
-        </>
-      )}
-      </>
-        )}
+
+            {title !== '' ? (
+              <>
+              <FormField
+                label="Description"
+                input={
+                  <TextInput.Multiline
+                    name="description"
+                    rows="3"
+                    onChange={e => setDescription(e.target.value)}
+                    value={description}
+                    wide
+                    aria-label="Description"
+                  />
+                }
+              />
+              <Button
+                mode="strong"
+                wide
+                onClick={createProject}
+                disabled={title === ''}
+              >
+                Submit
+              </Button>
+              </>
+            ) : (
+              <>
+              <ThematicBreak
+                color={`${theme.surfaceContentSecondary}`}
+                linecolor={`${theme.border}`}
+              >
+                  OR
+              </ThematicBreak>
+              <GitHubRepoList handleGithubSignIn={handleGithubSignIn} />
+              </>
+            )}
+          </React.Fragment>
+        )
+      }
     </PanelContent>
   )
 }
@@ -324,7 +326,7 @@ const ScrollableList = styled.div`
   padding-right: 10px;
   margin: 16px 0;
   /* Hack needed to make the scrollable list, since the whole SidePanel is a scrollable container */
-  height: calc(100vh - 470px);
+  height: calc(100vh - 242px);
 `
 const StyledRadioList = styled(RadioList)`
   > * {
