@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { Button, GU, IconSearch, Info, RadioList, Text, TextInput, theme } from '@aragon/ui'
 import { GET_REPOSITORIES } from '../../../utils/gql-queries.js'
 import { LoadingAnimation } from '../../Shared'
-import { Query } from 'react-apollo'
+import { useQuery } from '@apollo/react-hooks'
 import { useAragonApi } from '../../../api-react'
 import { usePanelManagement } from '../../Panel'
 import { toHex } from 'web3-utils'
@@ -113,100 +113,84 @@ const NewProject = () => {
     repoArray: PropTypes.array.isRequired,
   }
 
+  const { data, loading, error, refetch } = useQuery(GET_REPOSITORIES, {
+    fetchPolicy: 'cache-first',
+    onError: console.error,
+  })
+
+  if (loading) return (
+    <RepoInfo>
+      <LoadingAnimation />
+      <div>Loading repositories...</div>
+    </RepoInfo>
+  )
+
+  if (error) return (
+    <RepoInfo>
+      <Text size="xsmall" style={{ margin: '20px 0' }}>
+        Error: {JSON.stringify(error)}
+      </Text>
+      <Button wide mode="strong" onClick={refetch}>
+        Try refetching?
+      </Button>
+    </RepoInfo>
+  )
+
+  const reposDownloaded = filterAlreadyAdded(data.viewer.repositories.edges)
+
+  const visibleRepos = filter ? filterByName(reposDownloaded) : reposDownloaded
+
+  const repoArray = visibleRepos.map(repo => ({
+    title: repo.node.nameWithOwner,
+    description: '',
+    node: repo.node,
+  }))
+
   return (
-    <React.Fragment>
-      <div css={`margin-top: ${3 * GU}px`}>
-        <Text weight="bold">
-            Which repos do you want to add?
-        </Text>
-        <div>
-          <Query
-            fetchPolicy="cache-first"
-            query={GET_REPOSITORIES}
-            onError={console.error}
-          >
-            {({ data, loading, error, refetch }) => {
-              if (data && data.viewer) {
+    <div css={`margin-top: ${3 * GU}px`}>
+      <Text weight="bold">
+        Which repos do you want to add?
+      </Text>
+      <div>
+        <TextInput
+          type="search"
+          style={{ margin: '16px 0', flexShrink: '0' }}
+          placeholder="Search"
+          wide
+          value={filter}
+          onChange={updateFilter}
+          adornment={
+            filter === '' && (
+              <IconSearch
+                css={`color: ${theme.surfaceOpened}; margin-right: 8px;`}
+              />
+            )
+          }
+          adornmentPosition="end"
+          ref={searchRef}
+          aria-label="Search"
+        />
 
-                const reposDownloaded = filterAlreadyAdded(data.viewer.repositories.edges)
+        <ScrollableList>
+          <RepoList visibleRepos={visibleRepos} repoArray={repoArray} />
+        </ScrollableList>
 
-                const visibleRepos = filter ? filterByName(reposDownloaded) : reposDownloaded
+        <Info css={`margin: ${3 * GU}px 0`}>
+            Projects in Aragon are a one-to-one mapping to a GitHub repository.
+            You’ll be able to prioritize your backlog, reach consensus on issue
+            valuations, and allocate bounties to multiple issues.
+        </Info>
 
-
-                const repoArray = visibleRepos.map(repo => ({
-                  title: repo.node.nameWithOwner,
-                  description: '',
-                  node: repo.node,
-                }))
-
-                return (
-                  <div>
-                    <TextInput
-                      type="search"
-                      style={{ margin: '16px 0', flexShrink: '0' }}
-                      placeholder="Search"
-                      wide
-                      value={filter}
-                      onChange={updateFilter}
-                      adornment={
-                        filter === '' && (
-                          <IconSearch
-                            css={`
-                                color: ${theme.surfaceOpened};
-                                margin-right: 8px;
-                              `}
-                          />
-                        )
-                      }
-                      adornmentPosition="end"
-                      ref={searchRef}
-                      aria-label="Search"
-                    />
-
-                    <ScrollableList>
-                      <RepoList visibleRepos={visibleRepos} repoArray={repoArray} />
-                    </ScrollableList>
-
-                    <Info css={`margin: ${3 * GU}px 0`}>
-                        Projects in Aragon are a one-to-one mapping to a GitHub repository.
-                        You’ll be able to prioritize your backlog, reach consensus on issue
-                        valuations, and allocate bounties to multiple issues.
-                    </Info>
-
-                    <Button
-                      mode="strong"
-                      wide
-                      onClick={handleNewProject}
-                      disabled={repoSelected < 0}
-                    >
-                      Submit
-                    </Button>
-                  </div>
-                )
-              }
-
-              if (loading) return (
-                <RepoInfo>
-                  <LoadingAnimation />
-                  <div>Loading repositories...</div>
-                </RepoInfo>
-              )
-
-              if (error) return (
-                <RepoInfo>
-                  <Text size="xsmall" style={{ margin: '20px 0' }}>
-                      Error {JSON.stringify(error)}
-                  </Text>
-                  <Button wide mode="strong" onClick={() => refetch()}>
-                      Try refetching?
-                  </Button>
-                </RepoInfo>
-              )
-            }}
-          </Query>
-        </div>
+        <Button
+          mode="strong"
+          wide
+          onClick={handleNewProject}
+          disabled={repoSelected < 0}
+        >
+          Submit
+        </Button>
       </div>
-    </React.Fragment>
+    </div>
   )
 }
 
@@ -232,5 +216,4 @@ const RepoInfo = styled.div`
   text-align: center;
 `
 
-// TODO: Use nodes instead of edges (the app should be adapted at some places)
 export default NewProject
