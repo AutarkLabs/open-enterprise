@@ -105,8 +105,6 @@ Filters.propTypes = {
   filters: PropTypes.shape({
     labels: PropTypes.object.isRequired,
     milestones: PropTypes.object.isRequired,
-    deadlines: PropTypes.object.isRequired,
-    experiences: PropTypes.object.isRequired,
     statuses: PropTypes.object.isRequired,
   }),
   issues: PropTypes.arrayOf(issueShape).isRequired,
@@ -120,8 +118,6 @@ Filters.defaultProps = {
   filters: {
     labels: {},
     milestones: {},
-    deadlines: {},
-    experiences: {},
     statuses: {},
   },
   issues: [],

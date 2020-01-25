@@ -151,8 +151,6 @@ class ProjectDetail extends React.PureComponent {
     this.props.setFilters({
       labels: {},
       milestones: {},
-      deadlines: {},
-      experiences: {},
       statuses: {},
     })
   }
@@ -282,8 +280,6 @@ const ProjectDetailWrap = ({ repo, ...props }) => {
   const [ filters, setFilters ] = useState({
     labels: {},
     milestones: {},
-    deadlines: {},
-    experiences: {},
     statuses: {},
   })
   const { requestPath } = usePathHelpers()
