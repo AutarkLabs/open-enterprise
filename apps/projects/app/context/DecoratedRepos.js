@@ -8,6 +8,7 @@ const repoQuery = repoId => `{
       name
       url
       description
+      owner { login }
       defaultBranchRef {
         target {
           ...on Commit {
@@ -57,6 +58,7 @@ export function DecoratedReposProvider(props) {
             data: { _repo: repo.data._repo },
             metadata: {
               name: node.name,
+              owner: node.owner.login,
               url: node.url,
               description: node.description
                 ? node.description

@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types'
-import React, { useMemo, useState, useCallback } from 'react'
+import React, { useState, useCallback } from 'react'
 import styled from 'styled-components'
 import { useQuery } from '@apollo/react-hooks'
 
@@ -7,10 +7,9 @@ import { useAragonApi } from '../../api-react'
 import { Button, GU, Header, IconPlus, Text } from '@aragon/ui'
 
 import useShapedIssue from '../../hooks/useShapedIssue'
-import { getIssuesGQL } from '../../utils/gql-queries.js'
+import { SEARCH_ISSUES } from '../../utils/gql-queries.js'
 import { Issue } from '../Card'
 import { FilterBar, LoadingAnimation } from '../Shared'
-import { useDecoratedRepos } from '../../context/DecoratedRepos'
 import { usePanelManagement } from '../Panel'
 import usePathHelpers from '../../../../../shared/utils/usePathHelpers'
 
@@ -49,11 +48,8 @@ class ProjectDetail extends React.PureComponent {
     }))
   }
 
-  handleSorting = sortBy => {
-    const [ field, order ] = sortBy.split(' ')
-    const sortField = { Created: 'CREATED_AT', Updated: 'UPDATED_AT' }[field]
-    const sortOrder = { ascending: 'ASC', descending: 'DESC' }[order]
-    this.props.setQuery({ sortField, sortOrder })
+  handleSorting = sort => {
+    this.props.setQuery({ sort })
   }
 
   applyFilters = allIssues => {
@@ -203,7 +199,7 @@ class ProjectDetail extends React.PureComponent {
 
     if (error) return this.queryError(error, refetch)
 
-    const allIssues = data ? data.repository.issues.nodes : []
+    const allIssues = data ? data.search.issues : []
     const filteredIssues = this.applyFilters(allIssues)
 
     return (
@@ -237,26 +233,23 @@ class ProjectDetail extends React.PureComponent {
                 </Text>
                 <LoadingAnimation />
               </div>
-            ) : data.repository.issues.pageInfo.hasNextPage && (
+            ) : data && data.search.pageInfo.hasNextPage && (
               <Button
                 style={{ margin: '12px 0 30px 0' }}
                 mode="secondary"
                 onClick={() => {
                   fetchMore({
-                    variables: { after: data.repository.issues.pageInfo.endCursor },
+                    variables: { after: data.search.pageInfo.endCursor },
                     updateQuery: (prev, { fetchMoreResult }) => {
                       if (!fetchMoreResult) return prev
                       return {
                         ...fetchMoreResult,
-                        repository: {
-                          ...fetchMoreResult.repository,
-                          issues: {
-                            ...fetchMoreResult.repository.issues,
-                            nodes: [
-                              ...prev.repository.issues.nodes,
-                              ...fetchMoreResult.repository.issues.nodes,
-                            ]
-                          },
+                        search: {
+                          ...fetchMoreResult.search,
+                          issues: [
+                            ...prev.search.issues,
+                            ...fetchMoreResult.search.issues,
+                          ],
                         },
                       }
                     },
@@ -273,15 +266,15 @@ class ProjectDetail extends React.PureComponent {
   }
 }
 
-const ProjectDetailWrap = ({ repoId, ...props }) => {
+const ProjectDetailWrap = ({ repo, ...props }) => {
   const { appState } = useAragonApi()
   const { issues = [] } = appState
   const shapeIssue = useShapedIssue()
   const { setupNewIssue } = usePanelManagement()
   const [ query, setQueryRaw ] = useState({
-    repoId,
-    sortField: 'CREATED_AT',
-    sortOrder: 'DESC',
+    repo: `${repo.metadata.owner}/${repo.metadata.name}`,
+    search: '',
+    sort: 'updated-desc',
   })
   const setQuery = useCallback(params => {
     setQueryRaw({ ...query, ...params })
@@ -298,15 +291,16 @@ const ProjectDetailWrap = ({ repoId, ...props }) => {
     requestPath('/issues/' + id)
   })
 
-  const repos = useDecoratedRepos()
-  const repo = useMemo(() => {
-    return repos.find(({ data }) => data._repo === repoId)
-  }, [repos])
-
-  const graphqlQuery = useQuery(getIssuesGQL, {
+  const graphqlQuery = useQuery(SEARCH_ISSUES, {
     notifyOnNetworkStatusChange: true,
     onError: console.error,
-    variables: query,
+    variables: {
+      after: query.after,
+      query: 'is:issue state:open ' +
+        `repo:${query.repo} ` +
+        `sort:${query.sort} ` +
+        `${query.search}`,
+    },
   })
 
   return (
@@ -332,7 +326,12 @@ const ProjectDetailWrap = ({ repoId, ...props }) => {
 }
 
 ProjectDetailWrap.propTypes = {
-  repoId: PropTypes.string.isRequired,
+  repo: PropTypes.shape({
+    metadata: PropTypes.shape({
+      name: PropTypes.string,
+      owner: PropTypes.string,
+    })
+  }).isRequired,
 }
 
 const StyledIssues = styled.div`

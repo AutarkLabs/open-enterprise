@@ -33,28 +33,20 @@ export const issueAttributes = `
   url
 `
 
-export const getIssuesGQL =  gql`
-  query GetIssuesForRepo(
-    $repoId: ID!,
-    $after: String,
-    $sortField: String!,
-    $sortOrder: String!
-  )  {
-    repository: node(id: $repoId) {
-      ... on Repository {
-        issues(
-          states:OPEN,
-          first: 25,
-          after: $after,
-          orderBy: { field: $sortField, direction: $sortOrder }
-        ) {
-          totalCount
-          pageInfo {
-            endCursor
-            hasNextPage
-          }
-          nodes { ${issueAttributes} }
-        }
+export const SEARCH_ISSUES =  gql`
+  query SearchIssues($after: String, $query: String!) {
+    search(
+      after:$after,
+      first:25,
+      query:$query,
+      type:ISSUE,
+    ) {
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+      issues:nodes {
+        ... on Issue { ${ issueAttributes } }
       }
     }
   }

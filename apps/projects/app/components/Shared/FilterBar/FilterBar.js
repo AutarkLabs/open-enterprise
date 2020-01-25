@@ -27,12 +27,10 @@ import { usePanelManagement } from '../../Panel'
 import Label from '../../Content/IssueDetail/Label'
 import { issueShape } from '../../../utils/shapes.js'
 
-const sorters = [
-  'Created descending',
-  'Created ascending',
-  'Updated descending',
-  'Updated ascending',
-]
+const sorters = {
+  'updated-desc': 'Recently updated',
+  'updated-asc': 'Least recently updated',
+}
 
 const TextFilterInput = ({ textFilter, updateTextFilter }) => {
   const theme = useTheme()
@@ -127,7 +125,7 @@ const SortPopover = ({ visible, opener, setVisible, sortBy, updateSortBy }) => {
       placement="bottom-end"
     >
       <Label text="Sort by" />
-      {sorters.map(way => (
+      {Object.keys(sorters).map(way => (
         <FilterMenuItem
           key={way}
           onClick={updateSortBy(way)}
@@ -135,7 +133,7 @@ const SortPopover = ({ visible, opener, setVisible, sortBy, updateSortBy }) => {
           <div css={`width: ${3 * GU}px`}>
             {way === sortBy && <IconCheck color={`${theme.accent}`} />}
           </div>
-          <ActionLabel>{way}</ActionLabel>
+          <ActionLabel>{sorters[way]}</ActionLabel>
         </FilterMenuItem>
       ))}
     </Popover>
@@ -272,9 +270,7 @@ const FilterBar = ({
   selectedIssues,
   onSearchChange,
 }) => {
-
-  // Complete list of sorters for DropDown. Parent has only one item, to perform actual sorting.
-  const [ sortBy, setSortBy ] = useState(sorters[0])
+  const [ sortBy, setSortBy ] = useState(Object.keys(sorters)[0])
   const [ textFilter, setTextFilter ] = useState('')
   const [ sortMenuVisible, setSortMenuVisible ] = useState(false)
   const [ actionsMenuVisible, setActionsMenuVisible ] = useState(false)
