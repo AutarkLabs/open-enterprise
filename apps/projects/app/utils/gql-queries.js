@@ -34,14 +34,19 @@ export const issueAttributes = `
 `
 
 export const getIssuesGQL =  gql`
-  query GetIssuesForRepo($repoId: ID!, $after: String)  {
+  query GetIssuesForRepo(
+    $repoId: ID!,
+    $after: String,
+    $sortField: String!,
+    $sortOrder: String!
+  )  {
     repository: node(id: $repoId) {
       ... on Repository {
         issues(
           states:OPEN,
           first: 25,
           after: $after,
-          orderBy: {field: CREATED_AT, direction: DESC}
+          orderBy: { field: $sortField, direction: $sortOrder }
         ) {
           totalCount
           pageInfo {

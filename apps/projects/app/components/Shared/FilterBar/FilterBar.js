@@ -28,10 +28,10 @@ import Label from '../../Content/IssueDetail/Label'
 import { issueShape } from '../../../utils/shapes.js'
 
 const sorters = [
-  'Name ascending',
-  'Name descending',
-  'Newest',
-  'Oldest',
+  'Created descending',
+  'Created ascending',
+  'Updated descending',
+  'Updated ascending',
 ]
 
 const TextFilterInput = ({ textFilter, updateTextFilter }) => {
@@ -274,7 +274,7 @@ const FilterBar = ({
 }) => {
 
   // Complete list of sorters for DropDown. Parent has only one item, to perform actual sorting.
-  const [ sortBy, setSortBy ] = useState('Newest')
+  const [ sortBy, setSortBy ] = useState(sorters[0])
   const [ textFilter, setTextFilter ] = useState('')
   const [ sortMenuVisible, setSortMenuVisible ] = useState(false)
   const [ actionsMenuVisible, setActionsMenuVisible ] = useState(false)
@@ -574,7 +574,6 @@ FilterBar.propTypes = {
   bountyIssues: PropTypes.arrayOf(issueShape).isRequired,
   issues: PropTypes.arrayOf(issueShape).isRequired,
   issuesFiltered: PropTypes.arrayOf(issueShape).isRequired,
-  sortBy: PropTypes.string.isRequired,
   handleFiltering: PropTypes.func.isRequired,
   handleSorting: PropTypes.func.isRequired,
   setParentFilters: PropTypes.func.isRequired,

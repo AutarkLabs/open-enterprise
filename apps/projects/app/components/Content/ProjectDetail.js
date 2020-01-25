@@ -5,7 +5,6 @@ import { useQuery } from '@apollo/react-hooks'
 
 import { useAragonApi } from '../../api-react'
 import { Button, GU, Header, IconPlus, Text } from '@aragon/ui'
-import { compareAsc, compareDesc } from 'date-fns'
 
 import useShapedIssue from '../../hooks/useShapedIssue'
 import { getIssuesGQL } from '../../utils/gql-queries.js'
@@ -14,17 +13,6 @@ import { FilterBar, LoadingAnimation } from '../Shared'
 import { useDecoratedRepos } from '../../context/DecoratedRepos'
 import { usePanelManagement } from '../Panel'
 import usePathHelpers from '../../../../../shared/utils/usePathHelpers'
-
-const sorters = {
-  'Name ascending': (i1, i2) =>
-    i1.title.toUpperCase() > i2.title.toUpperCase() ? 1 : -1,
-  'Name descending': (i1, i2) =>
-    i1.title.toUpperCase() > i2.title.toUpperCase() ? -1 : 1,
-  'Newest': (i1, i2) =>
-    compareDesc(new Date(i1.createdAt), new Date(i2.createdAt)),
-  'Oldest': (i1, i2) =>
-    compareAsc(new Date(i1.createdAt), new Date(i2.createdAt)),
-}
 
 class ProjectDetail extends React.PureComponent {
   static propTypes = {
@@ -39,12 +27,12 @@ class ProjectDetail extends React.PureComponent {
     }).isRequired,
     viewIssue: PropTypes.func.isRequired,
     setFilters: PropTypes.func.isRequired,
+    setQuery: PropTypes.func.isRequired,
     shapeIssue: PropTypes.func.isRequired,
   }
 
   state = {
     selectedIssues: {},
-    sortBy: 'Newest',
     textFilter: '',
     reload: false,
   }
@@ -62,8 +50,10 @@ class ProjectDetail extends React.PureComponent {
   }
 
   handleSorting = sortBy => {
-    // TODO: why is reload necessary?
-    this.setState(prevState => ({ sortBy, reload: !prevState.reload }))
+    const [ field, order ] = sortBy.split(' ')
+    const sortField = { Created: 'CREATED_AT', Updated: 'UPDATED_AT' }[field]
+    const sortOrder = { ascending: 'ASC', descending: 'DESC' }[order]
+    this.props.setQuery({ sortField, sortOrder })
   }
 
   applyFilters = allIssues => {
@@ -176,7 +166,6 @@ class ProjectDetail extends React.PureComponent {
       <FilterBar
         setParentFilters={this.props.setFilters}
         filters={this.props.filters}
-        sortBy={this.state.sortBy}
         issues={allIssues}
         issuesFiltered={filteredIssues}
         handleFiltering={this.handleFiltering}
@@ -224,7 +213,6 @@ class ProjectDetail extends React.PureComponent {
         <IssuesScrollView>
           <ScrollWrapper>
             {filteredIssues.map(this.props.shapeIssue)
-              .sort(sorters[this.state.sortBy])
               .map(issue => (
                 <Issue
                   isSelected={issue.id in this.state.selectedIssues}
@@ -290,6 +278,14 @@ const ProjectDetailWrap = ({ repoId, ...props }) => {
   const { issues = [] } = appState
   const shapeIssue = useShapedIssue()
   const { setupNewIssue } = usePanelManagement()
+  const [ query, setQueryRaw ] = useState({
+    repoId,
+    sortField: 'CREATED_AT',
+    sortOrder: 'DESC',
+  })
+  const setQuery = useCallback(params => {
+    setQueryRaw({ ...query, ...params })
+  }, [])
   const [ filters, setFilters ] = useState({
     labels: {},
     milestones: {},
@@ -310,7 +306,7 @@ const ProjectDetailWrap = ({ repoId, ...props }) => {
   const graphqlQuery = useQuery(getIssuesGQL, {
     notifyOnNetworkStatusChange: true,
     onError: console.error,
-    variables: { repoId },
+    variables: query,
   })
 
   return (
@@ -327,6 +323,7 @@ const ProjectDetailWrap = ({ repoId, ...props }) => {
         graphqlQuery={graphqlQuery}
         viewIssue={viewIssue}
         setFilters={setFilters}
+        setQuery={setQuery}
         shapeIssue={shapeIssue}
         {...props}
       />
