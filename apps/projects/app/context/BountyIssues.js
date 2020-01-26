@@ -35,20 +35,7 @@ export function BountyIssuesProvider(props) {
     })
 
     client.request(getIssues(issues.map(i => i.data.issueId)))
-      .then(({ nodes }) => {
-        const now = new Date()
-        setBountyIssues(nodes.map(shapeIssue).sort((a, b) => {
-          //If a deadline has expired, most recent deadline first
-          //If a deadline upcoming, closest to the deadline first
-          let aDate = new Date(a.deadline)
-          let bDate = new Date(b.deadline)
-          if (aDate < now || bDate < now) {
-            aDate = now - aDate
-            bDate = now - bDate
-          }
-          return aDate - bDate
-        }))
-      })
+      .then(data => setBountyIssues(data.nodes.map(shapeIssue)))
       .catch(console.error)
   }, [ github.token, issues ])
 

@@ -3,10 +3,10 @@ import React, { useState, useCallback } from 'react'
 import styled from 'styled-components'
 import { useQuery } from '@apollo/react-hooks'
 
-import { useAragonApi } from '../../api-react'
 import { Button, GU, Header, IconPlus, Text } from '@aragon/ui'
 
 import useShapedIssue from '../../hooks/useShapedIssue'
+import { useBountyIssues } from '../../context/BountyIssues'
 import { SEARCH_ISSUES } from '../../utils/gql-queries.js'
 import { Issue } from '../Card'
 import { FilterBar, LoadingAnimation } from '../Shared'
@@ -265,8 +265,9 @@ class ProjectDetail extends React.PureComponent {
 }
 
 const ProjectDetailWrap = ({ repo, ...props }) => {
-  const { appState } = useAragonApi()
-  const { issues = [] } = appState
+  const bountyIssues = useBountyIssues().filter(issue =>
+    issue.repoId === repo.data._repo
+  )
   const shapeIssue = useShapedIssue()
   const { setupNewIssue } = usePanelManagement()
   const [ query, setQueryRaw ] = useState({
@@ -308,7 +309,7 @@ const ProjectDetailWrap = ({ repo, ...props }) => {
         }
       />
       <ProjectDetail
-        bountyIssues={issues}
+        bountyIssues={bountyIssues}
         filters={filters}
         graphqlQuery={graphqlQuery}
         viewIssue={viewIssue}
@@ -323,6 +324,9 @@ const ProjectDetailWrap = ({ repo, ...props }) => {
 
 ProjectDetailWrap.propTypes = {
   repo: PropTypes.shape({
+    data: PropTypes.shape({
+      _repo: PropTypes.string,
+    }),
     metadata: PropTypes.shape({
       name: PropTypes.string,
       owner: PropTypes.string,
