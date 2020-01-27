@@ -242,76 +242,100 @@ const GitHubRepoList = ({ handleGithubSignIn }) => {
 }
 GitHubRepoList.propTypes = PropTypes.func.isRequired
 
+const ThematicBreak = () => {
+  const theme = useTheme()
+
+  return (
+    <div css={`
+      align-items: center;
+      display: flex;
+      margin: ${2 * GU}px 0;
+      text-align: center;
+      color: ${theme.surfaceContentSecondary};
+      ::before,
+      ::after {
+        flex: 1;
+        content: ' ';
+        display: block;
+        border-bottom: 1px solid ${theme.border};
+        height: 1px;
+      }
+      ::before {
+        margin-right: ${.5 * GU}px;
+      }
+      ::after {
+        margin-left: ${.5 * GU}px;
+      }
+
+      ${textStyle('label2')};
+    `}>
+      or
+    </div>
+  )
+}
+
 const createProject = () => {}
 
 const NewProject = ({ handleGithubSignIn }) => {
   const [ title, setTitle ] = useState('')
   const [ description, setDescription ] = useState('')
-  const theme = useTheme()
   const { appState: { github = { status: STATUS.INITIAL } } } = useAragonApi()
+
+  if (disableDecoupledProjects) return (
+    <PanelContent>
+      <GitHubRepoList handleGithubSignIn={handleGithubSignIn} />
+    </PanelContent>
+  )
 
   return (
     <PanelContent>
-      {
-        disableDecoupledProjects ? (
-          <GitHubRepoList handleGithubSignIn={handleGithubSignIn} />
-        ) : (
-          <React.Fragment>
-            <InfoBox>
-              Create a new project that belongs and operates entirely within this application, or synchronize one from GitHub.
-            </InfoBox>
-
-            <FormField
-              label="Title"
-              required={github.status !== 'authenticated' || title !== ''}
-              input={
-                <TextInput
-                  wide
-                  value={title}
-                  onChange={e => setTitle(e.target.value)}
-                  aria-label="Title"
-                />
-              }
+      <React.Fragment>
+        <InfoBox>
+          Create a new project that belongs and operates entirely within this application, or synchronize one from GitHub.
+        </InfoBox>
+        <FormField
+          label="Title"
+          required={github.status !== 'authenticated' || title !== ''}
+          input={
+            <TextInput
+              wide
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              aria-label="Title"
             />
-
-            {title !== '' ? (
-              <>
-              <FormField
-                label="Description"
-                input={
-                  <TextInput.Multiline
-                    name="description"
-                    rows="3"
-                    onChange={e => setDescription(e.target.value)}
-                    value={description}
-                    wide
-                    aria-label="Description"
-                  />
-                }
-              />
-              <Button
-                mode="strong"
+          }
+        />
+        {title !== '' ? (
+          <>
+          <FormField
+            label="Description"
+            input={
+              <TextInput.Multiline
+                name="description"
+                rows="3"
+                onChange={e => setDescription(e.target.value)}
+                value={description}
                 wide
-                onClick={createProject}
-                disabled={title === ''}
-              >
-                Submit
-              </Button>
-              </>
-            ) : (
-              <>
-              <ThematicBreak
-                color={`${theme.surfaceContentSecondary}`}
-                linecolor={`${theme.border}`}
-              >
-                  OR
-              </ThematicBreak>
-              <GitHubRepoList handleGithubSignIn={handleGithubSignIn} />
-              </>
-            )}
-          </React.Fragment>
-        )
-      }
+                aria-label="Description"
+              />
+            }
+          />
+          <Button
+            mode="strong"
+            wide
+            onClick={createProject}
+            disabled={title === ''}
+          >
+            Submit
+          </Button>
+          </>
+        ) : (
+          <>
+          <ThematicBreak />
+          <GitHubRepoList handleGithubSignIn={handleGithubSignIn} />
+          </>
+        )}
+      </React.Fragment>
     </PanelContent>
   )
 }
@@ -343,29 +367,6 @@ const RepoInfo = styled.div`
 `
 const PanelContent = styled.div`
   margin-top: ${3 * GU}px;
-`
-const ThematicBreak = styled.div`
-  align-items: center;
-  display: flex;
-  margin: ${2 * GU}px 0;
-  text-align: center;
-  color: ${props => props.color};
-  ::before,
-  ::after {
-    flex: 1;
-    content: ' ';
-    display: block;
-    border-bottom: 1px solid ${props => props.linecolor};
-    height: 1px;
-  }
-  ::before {
-    margin-right: ${.5 * GU}px;
-  }
-  ::after {
-    margin-left: ${.5 * GU}px;
-  }
-
-  ${textStyle('label2')};
 `
 
 // TODO: Use nodes instead of edges (the app should be adapted at some places)
