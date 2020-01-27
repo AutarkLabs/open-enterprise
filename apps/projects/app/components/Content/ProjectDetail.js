@@ -4,6 +4,7 @@ import styled from 'styled-components'
 import { useQuery } from '@apollo/react-hooks'
 
 import { Button, GU, Header, IconPlus, Text } from '@aragon/ui'
+import { compareAsc, compareDesc } from 'date-fns'
 
 import useShapedIssue from '../../hooks/useShapedIssue'
 import { useBountyIssues } from '../../context/BountyIssues'
@@ -12,6 +13,17 @@ import { Issue } from '../Card'
 import { FilterBar, LoadingAnimation } from '../Shared'
 import { usePanelManagement } from '../Panel'
 import usePathHelpers from '../../../../../shared/utils/usePathHelpers'
+
+const sortOptions = {
+  'updated-desc': {
+    name: 'Recently updated',
+    func: (a, b) => compareDesc(new Date(a.updatedAt), new Date(b.updatedAt))
+  },
+  'updated-asc': {
+    name: 'Least recently updated',
+    func: (a, b) => compareAsc(new Date(a.updatedAt), new Date(b.updatedAt))
+  },
+}
 
 class ProjectDetail extends React.PureComponent {
   static propTypes = {
@@ -27,7 +39,9 @@ class ProjectDetail extends React.PureComponent {
     viewIssue: PropTypes.func.isRequired,
     setFilters: PropTypes.func.isRequired,
     setQuery: PropTypes.func.isRequired,
+    setSortBy: PropTypes.func.isRequired,
     shapeIssue: PropTypes.func.isRequired,
+    sortBy: PropTypes.string.isRequired,
   }
 
   state = {
@@ -48,20 +62,47 @@ class ProjectDetail extends React.PureComponent {
     }))
   }
 
-  handleSorting = sort => {
-    this.props.setQuery({ sort })
-  }
-
   applyFilters = allIssues => {
     const { textFilter } = this.state
     const { filters, bountyIssues } = this.props
 
+    // only filter locally if filtering by bounty status
+    if (Object.keys(filters.statuses).length === 0) {
+      return allIssues
+    }
+
+    // no issue can be "not funded" and have some other funding state
+    if (filters.statuses['not-funded'] && Object.keys(filters.statuses).length > 1) {
+      return []
+    }
+
     const bountyIssueObj = {}
     bountyIssues.forEach(issue => {
-      bountyIssueObj[issue.issueNumber] = issue.data.workStatus
+      bountyIssueObj[issue.issueId] = issue.data.workStatus
     })
 
-    const issuesByLabel = allIssues.filter(issue => {
+    // if not funded, filter allIssues for those that have no bounty
+    // other filtering happens via GitHub query
+    if (filters.statuses['not-funded']) {
+      return allIssues.filter(i => !bountyIssueObj[i.issueId])
+    }
+
+    // otherwise, we want some subset of bountyIssues
+    // now we need to filter locally
+    let issuesByStatus
+
+    // if only 'all-funded' checked, we want all bountyIssues
+    if (filters.statuses['all-funded'] && Object.keys(filters.statuses).length === 1) {
+      issuesByStatus = bountyIssues
+    }
+    // otherwise, check if issue's status is in selected filters
+    else {
+      issuesByStatus = bountyIssues.filter(issue =>
+        bountyIssueObj[issue.issueId] in filters.statuses
+      )
+    }
+
+    const issuesByLabel = issuesByStatus.filter(issue => {
       // if there are no labels to filter by, pass all
       if (Object.keys(filters.labels).length === 0) return true
       // if labelless issues are allowed, let them pass
@@ -93,33 +134,19 @@ class ProjectDetail extends React.PureComponent {
       return false
     })
 
-    const issuesByStatus = issuesByMilestone.filter(issue => {
-      // if there are no Status filters, all issues pass
-      if (Object.keys(filters.statuses).length === 0) return true
-      // should bountyless issues pass?
-      const status = bountyIssueObj[issue.number]
-        ? bountyIssueObj[issue.number]
-        : 'not-funded'
-      // if we look for all funded issues, regardless of stage...
-      let filterPass =
-        status in filters.statuses ||
-        ('all-funded' in filters.statuses && status !== 'not-funded')
-          ? true
-          : false
-      // ...or at specific stages
-      return filterPass
-    })
+    let issuesFiltered
 
-    // last but not least, if there is any text in textFilter...
-    if (textFilter) {
-      return issuesByStatus.filter(
+    if (!textFilter) {
+      issuesFiltered = issuesByMilestone
+    } else {
+      issuesFiltered = issuesByMilestone.filter(
         issue =>
           issue.title.toUpperCase().indexOf(textFilter) !== -1 ||
           String(issue.number).indexOf(textFilter) !== -1
       )
     }
 
-    return issuesByStatus
+    return issuesFiltered.sort(sortOptions[this.props.sortBy].func)
   }
 
   handleIssueSelection = issue => {
@@ -163,7 +190,7 @@ class ProjectDetail extends React.PureComponent {
         issues={allIssues}
         issuesFiltered={filteredIssues}
         handleFiltering={this.handleFiltering}
-        handleSorting={this.handleSorting}
+        handleSorting={this.props.setSortBy}
         bountyIssues={this.props.bountyIssues}
         disableFilter={this.disableFilter}
         disableAllFilters={this.disableAllFilters}
@@ -172,6 +199,8 @@ class ProjectDetail extends React.PureComponent {
         selectedIssues={Object.keys(this.state.selectedIssues).map(
           id => this.state.selectedIssues[id]
         )}
+        sortBy={this.props.sortBy}
+        sortOptions={sortOptions}
       />
     )
   }
@@ -197,7 +226,7 @@ class ProjectDetail extends React.PureComponent {
 
     if (error) return this.queryError(error, refetch)
 
-    const allIssues = data ? data.search.issues : []
+    const allIssues = data ? data.search.issues.map(this.props.shapeIssue) : []
     const filteredIssues = this.applyFilters(allIssues)
 
     return (
@@ -206,16 +235,15 @@ class ProjectDetail extends React.PureComponent {
 
         <IssuesScrollView>
           <ScrollWrapper>
-            {filteredIssues.map(this.props.shapeIssue)
-              .map(issue => (
-                <Issue
-                  isSelected={issue.id in this.state.selectedIssues}
-                  key={issue.id}
-                  {...issue}
-                  onClick={this.props.viewIssue}
-                  onSelect={this.handleIssueSelection}
-                />
-              ))}
+            {filteredIssues.map(issue => (
+              <Issue
+                isSelected={issue.id in this.state.selectedIssues}
+                key={issue.id}
+                {...issue}
+                onClick={this.props.viewIssue}
+                onSelect={this.handleIssueSelection}
+              />
+            ))}
           </ScrollWrapper>
 
           <div style={{ textAlign: 'center' }}>
@@ -300,6 +328,13 @@ const ProjectDetailWrap = ({ repo, ...props }) => {
     },
   })
 
+  const [ sortBy, setSortByRaw ] = useState(Object.keys(sortOptions)[0])
+
+  const setSortBy = useCallback(sort => {
+    setSortByRaw(sort)
+    setQuery({ sort })
+  }, [])
+
   return (
     <>
       <Header
@@ -316,6 +351,8 @@ const ProjectDetailWrap = ({ repo, ...props }) => {
         setFilters={setFilters}
         setQuery={setQuery}
         shapeIssue={shapeIssue}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
         {...props}
       />
     </>

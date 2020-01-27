@@ -11,6 +11,7 @@ export const issueAttributes = `
     url
   }
   createdAt
+  updatedAt
   repository {
     id
     name

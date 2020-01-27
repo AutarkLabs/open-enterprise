@@ -27,11 +27,6 @@ import { usePanelManagement } from '../../Panel'
 import Label from '../../Content/IssueDetail/Label'
 import { issueShape } from '../../../utils/shapes.js'
 
-const sorters = {
-  'updated-desc': 'Recently updated',
-  'updated-asc': 'Least recently updated',
-}
-
 const TextFilterInput = ({ textFilter, updateTextFilter }) => {
   const theme = useTheme()
 
@@ -113,7 +108,14 @@ TextFilter.propTypes = {
   updateTextFilter: PropTypes.func.isRequired,
 }
 
-const SortPopover = ({ visible, opener, setVisible, sortBy, updateSortBy }) => {
+const SortPopover = ({
+  visible,
+  opener,
+  setVisible,
+  sortBy,
+  sortOptions,
+  updateSortBy,
+}) => {
   const theme = useTheme()
 
   return (
@@ -125,7 +127,7 @@ const SortPopover = ({ visible, opener, setVisible, sortBy, updateSortBy }) => {
       placement="bottom-end"
     >
       <Label text="Sort by" />
-      {Object.keys(sorters).map(way => (
+      {Object.keys(sortOptions).map(way => (
         <FilterMenuItem
           key={way}
           onClick={updateSortBy(way)}
@@ -133,7 +135,7 @@ const SortPopover = ({ visible, opener, setVisible, sortBy, updateSortBy }) => {
           <div css={`width: ${3 * GU}px`}>
             {way === sortBy && <IconCheck color={`${theme.accent}`} />}
           </div>
-          <ActionLabel>{sorters[way]}</ActionLabel>
+          <ActionLabel>{sortOptions[way].name}</ActionLabel>
         </FilterMenuItem>
       ))}
     </Popover>
@@ -144,6 +146,7 @@ SortPopover.propTypes = {
   opener: PropTypes.object,
   setVisible: PropTypes.func.isRequired,
   sortBy: PropTypes.string.isRequired,
+  sortOptions: PropTypes.object.isRequired,
   updateSortBy: PropTypes.func.isRequired,
 }
 
@@ -269,8 +272,9 @@ const FilterBar = ({
   deselectAllIssues,
   selectedIssues,
   onSearchChange,
+  sortOptions,
+  sortBy,
 }) => {
-  const [ sortBy, setSortBy ] = useState(Object.keys(sorters)[0])
   const [ textFilter, setTextFilter ] = useState('')
   const [ sortMenuVisible, setSortMenuVisible ] = useState(false)
   const [ actionsMenuVisible, setActionsMenuVisible ] = useState(false)
@@ -336,7 +340,6 @@ const FilterBar = ({
 
   const updateSortBy = way => () => {
     handleSorting(way)
-    setSortBy(way)
     setSortMenuVisible(false)
   }
 
@@ -533,6 +536,7 @@ const FilterBar = ({
               opener={sortersOpener.current}
               setVisible={setSortMenuVisible}
               sortBy={sortBy}
+              sortOptions={sortOptions}
               updateSortBy={updateSortBy}
             />
 
@@ -578,6 +582,8 @@ FilterBar.propTypes = {
   selectedIssues: PropTypes.arrayOf(issueShape).isRequired,
   onSearchChange: PropTypes.func.isRequired,
   deselectAllIssues: PropTypes.func.isRequired,
+  sortBy: PropTypes.string.isRequired,
+  sortOptions: PropTypes.object.isRequired,
 }
 
 const FilterMenuItem = styled(ContextMenuItem)`
