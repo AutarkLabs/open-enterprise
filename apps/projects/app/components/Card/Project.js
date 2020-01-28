@@ -21,13 +21,15 @@ import {
 } from '../../utils/responsive'
 import { useAragonApi } from '../../api-react'
 import { toHex } from 'web3-utils'
+import { usePanelManagement } from '../Panel'
 
 const pluralize = (word, number) => `${word}${number > 1 ? 's' : ''}`
 
 const Project = ({
-  repoId,
-  label,
+  decoupled,
   description,
+  label,
+  repoId,
   url,
 }) => {
   const {
@@ -40,14 +42,16 @@ const Project = ({
     i.data.workStatus !== 'fulfilled' &&
     new Date() < new Date(i.data.deadline)
   ).length
-
   const theme = useTheme()
   const { width } = useLayout()
+  const { editProject } = usePanelManagement()
 
   const removeProject = () => {
     removeRepo(toHex(repoId)).toPromise()
     // TODO: Toast feedback here maybe
   }
+
+  const handleEditProject = () => editProject(repoId, label, description)
 
   const clickMenu = e => e.stopPropagation()
 
@@ -56,14 +60,12 @@ const Project = ({
     requestPath(`/projects/${repoId}`)
   }
 
-  const isGitHubProject = url.match('https://github.com')
-
   return (
     <StyledCard onClick={clickContext} screenSize={width}>
 
       <div css="display: flex; width: 100%">
 
-        {isGitHubProject && <IconGitHub
+        {decoupled || <IconGitHub
           color={`${theme.surfaceIcon}`}
           width="18px"
           height="18px"
@@ -72,7 +74,14 @@ const Project = ({
         <MenuContainer onClick={clickMenu}>
           <ContextMenu>
             <div css={`padding: ${GU}px`}>
-              {isGitHubProject ? (
+              {decoupled ? (
+                <ContextMenuItem onClick={handleEditProject}>
+                  <div css="width: 22px; margin: 4px 2px 0 6px">
+                    <IconEdit width="20px" height="20px" color={`${theme.surfaceIcon}`} />
+                  </div>
+                  <ActionLabel>Edit project</ActionLabel>
+                </ContextMenuItem>
+              ) : (
                 <ContextMenuItem>
                   <div css="width: 22px; margin: 4px 2px 0 6px">
                     <IconGitHub width="18px" height="18px" color={`${theme.surfaceIcon}`} />
@@ -83,16 +92,9 @@ const Project = ({
                       target="_blank"
                       style={{ textDecoration: 'none', color: theme.surfaceContent }}
                     >
-                    View on GitHub
+                      View on GitHub
                     </Link>
                   </ActionLabel>
-                </ContextMenuItem>
-              ) : (
-                <ContextMenuItem>
-                  <div css="width: 22px; margin: 4px 2px 0 6px">
-                    <IconEdit width="20px" height="20px" color={`${theme.surfaceIcon}`} />
-                  </div>
-                  <ActionLabel>Edit project</ActionLabel>
                 </ContextMenuItem>
               )}
               <ContextMenuItem onClick={removeProject}>
@@ -122,11 +124,11 @@ const Project = ({
 }
 
 Project.propTypes = {
-  repoId: PropTypes.string.isRequired,
-  label: PropTypes.string.isRequired,
+  decoupled: PropTypes.bool.isRequired,
   description: PropTypes.string.isRequired,
+  label: PropTypes.string.isRequired,
+  repoId: PropTypes.string.isRequired,
   url: PropTypes.string.isRequired,
-  contributors: PropTypes.array,
 }
 
 const StyledCard = styled(Card)`

@@ -11,6 +11,7 @@ import { toHex } from 'web3-utils'
 import noResultsSvg from '../../../assets/noResults.svg'
 import { FormField, FieldTitle } from '../../Form'
 import { STATUS } from '../../../utils/github'
+import { ipfsAdd } from '../../../utils/ipfs-helpers'
 
 const disableDecoupledProjects = true
 
@@ -274,12 +275,20 @@ const ThematicBreak = () => {
   )
 }
 
-const createProject = () => {}
-
 const NewProject = ({ handleGithubSignIn }) => {
   const [ title, setTitle ] = useState('')
   const [ description, setDescription ] = useState('')
-  const { appState: { github = { status: STATUS.INITIAL } } } = useAragonApi()
+  const theme = useTheme()
+  const { api, appState: { github = { status: STATUS.INITIAL } } } = useAragonApi()
+
+  const createProject = async () => {
+    const id = 'oe-' + Math.random().toString(36).substring(2, 15)
+    const hash = await ipfsAdd(
+      { id, title, description }
+    )
+
+    api.addProject(toHex(id), hash).toPromise()
+  }
 
   if (disableDecoupledProjects) return (
     <PanelContent>

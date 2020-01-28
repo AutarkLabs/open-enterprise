@@ -27,7 +27,7 @@ let popupRef = null
 
 const App = () => {
   const { api, appState, guiStyle } = useAragonApi()
-  const { appearance } = guiStyle
+  const { appearance } = 'dark'
   const [ githubLoading, setGithubLoading ] = useState(false)
   const [ panel, setPanel ] = useState(null)
   const [ panelProps, setPanelProps ] = useState(null)
