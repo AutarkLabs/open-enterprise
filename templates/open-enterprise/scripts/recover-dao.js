@@ -96,8 +96,8 @@ const getQuorum = (minSupport) => {
 const getAllocationsPeriod = () => {
   return new Promise((resolve) => {
     rl.question('enter the allocations period duration, in days > ', async (answer) => {
-      if (answer <= 0) {
-        rl.write('Error: Allocations budgeting period must be greater than zero\n')
+      if (answer < 1) {
+        rl.write('Error: Allocations budgeting period must be one day or longer\n')
         resolve(await getAllocationsPeriod())
       }
       resolve(answer * 24 * 60 * 60)
