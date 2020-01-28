@@ -382,8 +382,7 @@ const FilterBar = ({
                   uppercase={false}
                 >
                   {filtersData.labels[id].name}
-                </Tag>{' '}
-              ({filtersData.labels[id].count})
+                </Tag>
               </ActionLabel>
             </FilterMenuItem>
           )}
@@ -421,8 +420,7 @@ const FilterBar = ({
               />
             </div>
             <ActionLabel>
-              {filtersData.milestones[id].title} (
-              {filtersData.milestones[id].count})
+              {filtersData.milestones[id].title}
             </ActionLabel>
           </FilterMenuItem>
         ))}
@@ -450,8 +448,7 @@ const FilterBar = ({
             />
           </div>
           <ActionLabel>
-            {filtersData.statuses[status].name} (
-            {filtersData.statuses[status].count})
+            {filtersData.statuses[status].name}
           </ActionLabel>
         </FilterMenuItem>
       ))}
@@ -473,8 +470,7 @@ const FilterBar = ({
             />
           </div>
           <ActionLabel>
-            {filtersData.statuses[status].name} (
-            {filtersData.statuses[status].count})
+            {filtersData.statuses[status].name}
           </ActionLabel>
         </FilterMenuItem>
       ))}
