@@ -140,6 +140,7 @@ const App = () => {
               <PanelManager
                 activePanel={panel}
                 onClose={closePanel}
+                handleGithubSignIn={handleGithubSignIn}
                 {...panelProps}
               />
             </DecoratedReposProvider>

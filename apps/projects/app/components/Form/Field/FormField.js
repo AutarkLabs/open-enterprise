@@ -1,8 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { GU, Text, useTheme, SidePanelSeparator } from '@aragon/ui'
-
-import { FieldTitle } from '.'
+import { FieldTitle, Required } from '.'
 
 const FormField = ({ input, label, required, separator }) => {
   const theme = useTheme()
@@ -15,16 +14,7 @@ const FormField = ({ input, label, required, separator }) => {
     <div css={`margin-bottom: ${2 * GU}px`}>
       <FieldTitle>
         {label && <Text color={`${theme.surfaceContentSecondary}`}>{label}</Text>}
-        {required && (
-          <Text
-            size="xsmall"
-            color={`${theme.accent}`}
-            title="Required"
-            css={`margin-left: ${GU}px}`}
-          >
-            *
-          </Text>
-        )}
+        {required && <Required />}
       </FieldTitle>
       {input}
       {separator && <SidePanelSeparator css="margin-top: 1rem" />}

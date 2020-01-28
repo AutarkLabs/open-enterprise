@@ -144,3 +144,8 @@ export const SubmissionDetails = styled.div`
   margin-bottom: ${2 * GU}px;
   border-radius: 3px;
 `
+export const SwitchRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin: ${GU}px 0 ${2 * GU}px 0;
+`
