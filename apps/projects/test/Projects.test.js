@@ -1170,7 +1170,7 @@ contract('Projects App', accounts => {
       })
     })
 
-    context('decoupled project', () => {
+    context.only('decoupled project', () => {
       let repoId
       beforeEach(async () => {
         await app.setRepo('1', true, 'abc')
