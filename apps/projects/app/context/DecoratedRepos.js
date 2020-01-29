@@ -9,6 +9,24 @@ const repoQuery = repoId => `{
       url
       description
       owner { login }
+      labels(first: 100) {
+        totalCount
+        edges {
+          node {
+            id
+            name
+            color
+          }
+        }
+      }
+      milestones(first: 100) {
+        edges {
+          node {
+            id
+            title
+          }
+        }
+      }
       defaultBranchRef {
         target {
           ...on Commit {
@@ -68,6 +86,14 @@ export function DecoratedReposProvider(props) {
               commits: node.defaultBranchRef
                 ? node.defaultBranchRef.target.history.totalCount
                 : 0,
+              labels: node.labels.edges.reduce((map, label) => {
+                map[label.node.id] = label.node
+                return map
+              }, {}),
+              milestones: node.milestones.edges.reduce((map, milestone) => {
+                map[milestone.node.id] = milestone.node
+                return map
+              }, {}),
             },
           }))
           .catch(err => ({
