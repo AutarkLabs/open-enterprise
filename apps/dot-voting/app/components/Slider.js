@@ -15,6 +15,7 @@ class Slider extends React.Component {
     value: PropTypes.number,
     onUpdate: PropTypes.func,
     width: PropTypes.string,
+    theme: PropTypes.object,
   }
   static defaultProps = {
     value: 0,
@@ -127,7 +128,7 @@ class Slider extends React.Component {
               onTouchStart={this.dragStart}
             >
               <Bars>
-                <BaseBar />
+                <BaseBar theme={this.props.theme} />
                 <ActiveBar
                   pressed={Number(pressed)}
                   style={this.getActiveBarStyles(value, pressProgress)}
@@ -186,7 +187,7 @@ const Bar = styled(animated.div)`
 `
 
 const BaseBar = styled(Bar)`
-  background: #edf3f6;
+  background: ${({ theme }) => theme.surfaceUnder};
 `
 
 const ActiveBar = styled(Bar)`
