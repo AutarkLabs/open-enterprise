@@ -297,7 +297,7 @@ const NewProject = ({ handleGithubSignIn }) => {
     closePanel()
     const content = { title, description }
     ipfsAdd(content).then( cId => {
-      api.setRepo(toHex(sha3(title + repoIndex)), false, cId).toPromise()
+      api.setRepo(toHex(sha3(title + repoIndex)), true, cId).toPromise()
     })
   }
   
