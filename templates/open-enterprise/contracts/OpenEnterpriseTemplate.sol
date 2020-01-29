@@ -70,7 +70,7 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         );
 
         // Token 1 quasi-transferable
-        if (!_tokenBools[1]) {
+        if (!_tokenBools[1]) { // token1 transferable?
             if (address(whitelist) == address(0)) {
                 whitelist = _installWhitelistOracleApp(dao);
                 _setOracle(acl, tokenManager1, whitelist);
@@ -81,11 +81,9 @@ contract OpenEnterpriseTemplate is BaseOEApps {
         if (address(token2) != address(0)) {
             tokenManager2 = _installTokenManagerApp(dao, token2, true, _tokenBools[2] ? ONE_TOKEN : UNLIMITED_TOKENS);
             _mintTokens(acl, tokenManager2, _members2, _stakes2);
-            if (!_tokenBools[3]) {
-                if (address(whitelist) == address(0)) {
-                    whitelist = _installWhitelistOracleApp(dao);
-                    _setOracle(acl, tokenManager2, whitelist);
-                }
+            if (!_tokenBools[3]) { // token2 transferable?
+                whitelist = _installWhitelistOracleApp(dao);
+                _setOracle(acl, tokenManager2, whitelist);
             }
         }
 

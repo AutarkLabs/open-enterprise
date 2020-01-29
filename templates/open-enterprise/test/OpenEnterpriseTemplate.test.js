@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-/* global artifacts, before, context, contract, it */
+/* global artifacts, assert, before, context, contract, it */
 
 const { randomId } = require('@aragon/templates-shared/helpers/aragonId')
 const truffleAssert = require('truffle-assertions')
@@ -25,6 +25,20 @@ const getReceipts = (receipt, event, arg) => {
   return arg ? results.map(e => e.args[arg]) : results
 }
 
+const getTokenManagers = receipt => {
+  const tokenManagerAppId = namehash('token-manager.hatch.aragonpm.eth')
+  return receipt.logs
+    .filter(e => e.event === 'InstalledApp' && e.args.appId === tokenManagerAppId)
+    .map(e => e.args.appProxy)
+}
+
+const getTokenFromTokenManager = async tokenManagerAddr => {
+  const tokenManager =  getContract('TokenManager').at(tokenManagerAddr)
+  const tokenAddr = await tokenManager.token()
+  const token = getContract('MiniMeToken').at(tokenAddr)
+  return token
+}
+
 /** Helper path functions to allow executing the script from relative or root location */
 const parentDir = () => {
   const pwd = process.cwd().split('/')
@@ -33,7 +47,7 @@ const parentDir = () => {
 
 const bountiesPath = `${
   process.env.SOLIDITY_COVERAGE
-    ? '../../../' 
+    ? '../../../'
     : parentDir() === 'templates'
       ? '../../'
       : ''
@@ -65,10 +79,10 @@ contract('OpenEnterpriseTemplate', ([ owner, member1, member2, member3 ]) => {
   const FINANCE_PERIOD = THIRTY_DAYS
 
   let template
-  
+
   before('deploy required contract dependencies', async () => {
     // TODO: Make verbosity optional
-    const bountiesAddress = 
+    const bountiesAddress =
       (await exec(
         `cd ${bountiesPath} && npm run migrate${
           process.env.SOLIDITY_COVERAGE ? ':coverage' : ''
@@ -107,7 +121,7 @@ contract('OpenEnterpriseTemplate', ([ owner, member1, member2, member3 ]) => {
     const node = namehash('aragonid.eth')
     const aragonID = await getContract('FIFSResolvingRegistrar').new(ens.address, publicResolver, node)
     console.log('       Deployed AragonID at', aragonID.address)
-    // Configure AragonID
+    // TODO: Configure AragonID
     // await ens.setOwner(node, aragonID.address)
     await ens.setSubnodeOwner(tld, label, aragonID.address)
     // await aragonID.register('0x'+keccak256('owner'), owner)
@@ -169,7 +183,7 @@ contract('OpenEnterpriseTemplate', ([ owner, member1, member2, member3 ]) => {
     const baseContracts = [ daoFactBase.address, ens.address, miniMeFactoryBase.address, aragonID.address, bountiesAddress ]
     template = await getContract('OpenEnterpriseTemplate').new(baseContracts)
     console.log('       Deployed OpenEnterpriseTemplate at', template.address)
-    console.log('\n       ===== Deployments completed =====\n')
+    console.log('\n       ===== Deployments completed =====\n\n')
   })
 
   context('dao instantiation', () => {
@@ -187,7 +201,7 @@ contract('OpenEnterpriseTemplate', ([ owner, member1, member2, member3 ]) => {
           USE_AGENT_AS_VAULT
         )
       })
-  
+
       it('should run newTokenManagers without error', async () => {
         await template.newTokenManagers(
           TOKEN_HOLDERS,
@@ -197,7 +211,7 @@ contract('OpenEnterpriseTemplate', ([ owner, member1, member2, member3 ]) => {
           TOKEN_BOOLS
         )
       })
-  
+
       it('should run finalizeDao without error', async () => {
         await template.finalizeDao(
           [ FINANCE_PERIOD, FINANCE_PERIOD ],
@@ -221,7 +235,7 @@ contract('OpenEnterpriseTemplate', ([ owner, member1, member2, member3 ]) => {
           USE_AGENT_AS_VAULT
         )
       })
-  
+
       it('should run newTokenManagers without error', async () => {
         const result = await template.newTokenManagers(
           TOKEN_HOLDERS,
@@ -236,7 +250,7 @@ contract('OpenEnterpriseTemplate', ([ owner, member1, member2, member3 ]) => {
               l.args.appProxy : appAddress
           }, null)
       })
-  
+
       it('should run finalizeDao without error', async () => {
         await template.finalizeDao(
           [ FINANCE_PERIOD, FINANCE_PERIOD ],
@@ -250,6 +264,57 @@ contract('OpenEnterpriseTemplate', ([ owner, member1, member2, member3 ]) => {
             .at(installedOracle)
             .initialize([]),
           'INIT_ALREADY_INITIALIZED'
+        )
+      })
+    })
+
+    context('special cases', () => {
+      let installReceipt
+
+      before('reproduce 2 non-transferable tokens scenario', async () => {
+        /* Create DAO to reproduce */
+        await template.newTokensAndInstance(
+          randomId(),
+          TOKEN1_NAME,
+          TOKEN1_SYMBOL,
+          TOKEN2_NAME,
+          TOKEN2_SYMBOL,
+          VOTING_SETTINGS,
+          VOTING_BOOLS,
+          false // use agent as vault ?
+        )
+
+        installReceipt = await template.newTokenManagers(
+          [owner],  // first token holders
+          [200],    // first token holders stakes
+          [owner],  // second token holders
+          [200],    // second token holders stakes
+          [ false, false, false, false ] // [Token1Limit, Token1Transferable, Token2Limit, Token2Transferable]
+        )
+
+        await template.finalizeDao(
+          [ FINANCE_PERIOD, FINANCE_PERIOD ],
+          false
+        )
+      })
+
+      it('should not allow token-transfers', async () => {
+        // get TokenManager apps and their  tokens
+        const [ firstTokenManager, secondTokenManager ] = getTokenManagers(installReceipt)
+        const firstToken = await getTokenFromTokenManager(firstTokenManager)
+        const secondToken = await getTokenFromTokenManager(secondTokenManager)
+        console.log('              Tokens found:', await firstToken.name(), await secondToken.name())
+
+        // assert non-transferability of both tokens
+        await truffleAssert.reverts(
+          firstToken.transfer(member1, 100, { from: owner }),
+          '', // there is no reason for in the contract require
+          'first token should be non-transferable'
+        )
+        await truffleAssert.reverts(
+          secondToken.transfer(member1, 100, { from: owner }),
+          '',
+          'second token should be non-transferable'
         )
       })
     })
