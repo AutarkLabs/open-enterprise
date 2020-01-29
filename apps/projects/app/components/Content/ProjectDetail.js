@@ -2,17 +2,19 @@ import PropTypes from 'prop-types'
 import React, { useState, useCallback } from 'react'
 import styled from 'styled-components'
 import { useQuery } from '@apollo/react-hooks'
+import { gql } from 'apollo-boost'
 
 import { Button, GU, Header, IconPlus, Text } from '@aragon/ui'
 import { compareAsc, compareDesc } from 'date-fns'
 
 import useShapedIssue from '../../hooks/useShapedIssue'
 import { useBountyIssues } from '../../context/BountyIssues'
-import { SEARCH_ISSUES } from '../../utils/gql-queries.js'
+import { issueAttributes } from '../../utils/gql-queries.js'
 import { Issue } from '../Card'
 import { FilterBar, LoadingAnimation } from '../Shared'
 import { usePanelManagement } from '../Panel'
 import usePathHelpers from '../../../../../shared/utils/usePathHelpers'
+import { repoShape } from '../../utils/shapes.js'
 
 const sortOptions = {
   'updated-desc': {
@@ -42,6 +44,7 @@ class ProjectDetail extends React.PureComponent {
     setSortBy: PropTypes.func.isRequired,
     shapeIssue: PropTypes.func.isRequired,
     sortBy: PropTypes.string.isRequired,
+    repo: repoShape,
   }
 
   state = {
@@ -54,8 +57,18 @@ class ProjectDetail extends React.PureComponent {
     this.setState({ selectedIssues: {} })
   }
 
-  handleFiltering = filters => {
+  updateQuery = (filters, filtersData) => {
+    const queryFilters = {
+      labels: Object.keys(filters.labels).map(labelId => filtersData.labels[labelId].name),
+      milestones: Object.keys(filters.milestones).map(milestoneId => filtersData.milestones[milestoneId].name),
+    }
+    this.props.setQuery(queryFilters)
+  }
+
+
+  handleFiltering = (filters, filtersData) => {
     this.props.setFilters(filters)
+    this.updateQuery(filters, filtersData)
     // TODO: why is reload necessary?
     this.setState(prevState => ({
       reload: !prevState.reload,
@@ -168,10 +181,11 @@ class ProjectDetail extends React.PureComponent {
     })
   }
 
-  disableFilter = pathToFilter => {
+  disableFilter = (pathToFilter, filtersData) => {
     let newFilters = { ...this.props.filters }
     recursiveDeletePathFromObject(pathToFilter, newFilters)
     this.props.setFilters(newFilters)
+    this.updateQuery(newFilters, filtersData)
   }
 
   disableAllFilters = () => {
@@ -179,6 +193,10 @@ class ProjectDetail extends React.PureComponent {
       labels: {},
       milestones: {},
       statuses: {},
+    })
+    this.props.setQuery({
+      labels: [],
+      milestones: [],
     })
   }
 
@@ -201,6 +219,7 @@ class ProjectDetail extends React.PureComponent {
         )}
         sortBy={this.props.sortBy}
         sortOptions={sortOptions}
+        repo={this.props.repo}
       />
     )
   }
@@ -226,7 +245,7 @@ class ProjectDetail extends React.PureComponent {
 
     if (error) return this.queryError(error, refetch)
 
-    const allIssues = data ? data.search.issues.map(this.props.shapeIssue) : []
+    const allIssues = data ? data.repository.issues.nodes.map(this.props.shapeIssue) : []
     const filteredIssues = this.applyFilters(allIssues)
 
     return (
@@ -259,25 +278,21 @@ class ProjectDetail extends React.PureComponent {
                 </Text>
                 <LoadingAnimation />
               </div>
-            ) : data && data.search.pageInfo.hasNextPage && (
+            ) : data && data.repository.issues.pageInfo.hasNextPage && (
               <Button
                 style={{ margin: '12px 0 30px 0' }}
                 mode="secondary"
                 onClick={() => {
                   fetchMore({
-                    variables: { after: data.search.pageInfo.endCursor },
+                    variables: { after: data.repository.issues.pageInfo.endCursor },
                     updateQuery: (prev, { fetchMoreResult }) => {
+
                       if (!fetchMoreResult) return prev
-                      return {
-                        ...fetchMoreResult,
-                        search: {
-                          ...fetchMoreResult.search,
-                          issues: [
-                            ...prev.search.issues,
-                            ...fetchMoreResult.search.issues,
-                          ],
-                        },
-                      }
+
+                      return Object.assign({}, prev, {
+                        repository: { ...prev.repository, ...fetchMoreResult.repository }
+                      })
+
                     },
                   })
                 }}
@@ -302,10 +317,16 @@ const ProjectDetailWrap = ({ repo, ...props }) => {
     repo: `${repo.metadata.owner}/${repo.metadata.name}`,
     search: '',
     sort: 'updated-desc',
+    owner: repo.metadata.owner,
+    name: repo.metadata.name,
+    labels: [],
+    milestones: [],
   })
-  const setQuery = useCallback(params => {
+
+  const setQuery = params => {
     setQueryRaw({ ...query, ...params })
-  }, [])
+  }
+
   const [ filters, setFilters ] = useState({
     labels: {},
     milestones: {},
@@ -316,24 +337,65 @@ const ProjectDetailWrap = ({ repo, ...props }) => {
     requestPath('/issues/' + id)
   })
 
-  const graphqlQuery = useQuery(SEARCH_ISSUES, {
+  const SEARCH_ISSUES_2 = gql`
+  query SearchIssues($after: String, $owner: String!, $name: String!) {
+    repository(owner: $owner, name: $name) {
+      issues(
+        first: 5,
+        after: $after,
+        filterBy: {
+          ${query.labels.length ? 'labels: [' + query.labels.map(l => `"${l}"`) + '],' : ''}
+          ${query.milestones.length ? 'milestones: [' + query.milestones.map(l => `"${l}"`) + '],' : ''}
+          states: [OPEN]
+        },
+        orderBy: {
+          field: UPDATED_AT, direction: ${query.sort === 'updated-desc' ? 'DESC' : 'ASC'}
+        }) {
+          totalCount
+          pageInfo {
+            startCursor
+            hasNextPage
+            endCursor
+          }
+
+        nodes {
+          ${ issueAttributes }
+        }
+      }
+    }
+  }
+  `
+
+  /*
+  notifyOnNetworkStatusChange: true,
+  onError: console.error,
+  variables: {
+    after: query.after,
+    query: 'is:issue state:open ' +
+      `repo:${query.repo} ` +
+      `sort:${query.sort} ` +
+      `${query.search}`,
+  },
+})
+*/
+
+  const graphqlQuery = useQuery(SEARCH_ISSUES_2, {
     notifyOnNetworkStatusChange: true,
     onError: console.error,
     variables: {
       after: query.after,
-      query: 'is:issue state:open ' +
-        `repo:${query.repo} ` +
-        `sort:${query.sort} ` +
-        `${query.search}`,
+      owner: query.owner,
+      name: query.name,
+      labels: query.labels,
     },
   })
 
   const [ sortBy, setSortByRaw ] = useState(Object.keys(sortOptions)[0])
 
-  const setSortBy = useCallback(sort => {
+  const setSortBy = sort => {
     setSortByRaw(sort)
     setQuery({ sort })
-  }, [])
+  }
 
   return (
     <>
@@ -353,23 +415,14 @@ const ProjectDetailWrap = ({ repo, ...props }) => {
         shapeIssue={shapeIssue}
         sortBy={sortBy}
         setSortBy={setSortBy}
+        repo={repo}
         {...props}
       />
     </>
   )
 }
 
-ProjectDetailWrap.propTypes = {
-  repo: PropTypes.shape({
-    data: PropTypes.shape({
-      _repo: PropTypes.string,
-    }),
-    metadata: PropTypes.shape({
-      name: PropTypes.string,
-      owner: PropTypes.string,
-    })
-  }).isRequired,
-}
+ProjectDetailWrap.propTypes = repoShape
 
 const StyledIssues = styled.div`
   display: flex;

@@ -34,7 +34,7 @@ export const issueAttributes = `
   url
 `
 
-export const SEARCH_ISSUES =  gql`
+export const SEARCH_ISSUES = gql`
   query SearchIssues($after: String, $query: String!) {
     search(
       after:$after,

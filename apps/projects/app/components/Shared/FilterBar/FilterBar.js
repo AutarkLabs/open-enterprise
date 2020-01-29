@@ -25,7 +25,7 @@ import { IconArrow as IconArrowDown } from '../../../../../../shared/ui'
 import { IconSort, IconGrid, IconCoins, IconFilter } from '../../../assets'
 import { usePanelManagement } from '../../Panel'
 import Label from '../../Content/IssueDetail/Label'
-import { issueShape } from '../../../utils/shapes.js'
+import { issueShape, repoShape } from '../../../utils/shapes.js'
 
 const TextFilterInput = ({ textFilter, updateTextFilter }) => {
   const theme = useTheme()
@@ -274,6 +274,7 @@ const FilterBar = ({
   onSearchChange,
   sortOptions,
   sortBy,
+  repo,
 }) => {
   const [ textFilter, setTextFilter ] = useState('')
   const [ sortMenuVisible, setSortMenuVisible ] = useState(false)
@@ -335,7 +336,7 @@ const FilterBar = ({
     // filters are in local state because of checkboxes
     // and sent to the parent (Issues) for actual display change
     setParentFilters({ filters })
-    handleFiltering(filters)
+    handleFiltering(filters, filtersData)
   }
 
   const updateSortBy = way => () => {
@@ -487,7 +488,7 @@ const FilterBar = ({
   // filtersData is about displayed checkboxes
   const allFundedIssues = [ 'funded', 'review-applicants', 'in-progress', 'review-work', 'fulfilled' ]
   const allIssues = [ 'all-funded', 'not-funded' ]
-  const filtersData = prepareFilters(issues, bountyIssues)
+  const filtersData = prepareFilters(issues, bountyIssues, repo)
 
   const actionsClickHandler = () =>
     selectedIssues.length && setActionsMenuVisible(true)
@@ -558,6 +559,7 @@ const FilterBar = ({
             filters={filters}
             disableFilter={disableFilter}
             disableAllFilters={disableAllFilters}
+            repo={repo}
           />
         </FilterBarActives>
       )}
@@ -580,6 +582,7 @@ FilterBar.propTypes = {
   deselectAllIssues: PropTypes.func.isRequired,
   sortBy: PropTypes.string.isRequired,
   sortOptions: PropTypes.object.isRequired,
+  repo: repoShape,
 }
 
 const FilterMenuItem = styled(ContextMenuItem)`

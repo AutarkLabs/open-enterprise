@@ -4,7 +4,7 @@ import { BOUNTY_STATUS } from '../../../utils/bounty-status'
   prepareFilters builds data structure for displaying filterbar dropdowns
   data comes from complete issues array, issuesFiltered is used for counters
 */
-const prepareFilters = (issues, bountyIssues) => {
+const prepareFilters = (issues, bountyIssues, repo) => {
   let filters = {
     projects: {},
     labels: {},
@@ -26,41 +26,9 @@ const prepareFilters = (issues, bountyIssues) => {
     name: BOUNTY_STATUS['not-funded'],
   }
 
-  issues.map(issue => {
-    if (issue.milestone) {
-      if (!(issue.milestone.id in filters.milestones)) {
-        filters.milestones[issue.milestone.id] = issue.milestone
-      }
-    } else {
-      if (!('milestoneless' in filters.milestones)) {
-        filters.milestones['milestoneless'] = {
-          title: 'Issues without milestones',
-          id: 'milestoneless',
-        }
-      }
-    }
+  filters.milestones = repo.metadata.milestones
+  filters.labels = repo.metadata.labels
 
-    if (issue.labels.totalCount) {
-      issue.labels.edges.map(label => {
-        if (!(label.node.id in filters.labels)) {
-          filters.labels[label.node.id] = label.node
-        }
-      })
-    } else {
-      if (!('labelless' in filters.labels)) {
-        filters.labels['labelless'] = {
-          name: 'Issues without labels',
-          id: 'labelless',
-        }
-      }
-    }
-    // TODO: shouldn't it be reporitory.id?
-    if (!(issue.repository.id in filters.projects)) {
-      filters.projects[issue.repository.id] = {
-        name: issue.repository.name,
-      }
-    }
-  })
   return filters
 }
 

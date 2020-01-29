@@ -5,10 +5,11 @@ import { Button, Text, useTheme } from '@aragon/ui'
 
 import FilterTile from './FilterTile'
 import { prepareFilters } from '../Shared/FilterBar'
-import { issueShape } from '../../utils/shapes.js'
+import { issueShape, repoShape } from '../../utils/shapes.js'
 
-const Filters = ({ filters, issues, bountyIssues, disableFilter, disableAllFilters, style }) => {
+const Filters = ({ filters, issues, bountyIssues, disableFilter, disableAllFilters, repo, style }) => {
   const theme = useTheme()
+  const filterInformation = prepareFilters(issues, bountyIssues, repo)
 
   const generateFilterNamesAndPaths = (filterInformation, type, textFieldToUse) => {
     const appliedFilters = {}
@@ -32,8 +33,6 @@ const Filters = ({ filters, issues, bountyIssues, disableFilter, disableAllFilte
     to make it easier to deselect filters from this view without multiple state objects
   */
   const calculateFilters = () => {
-    const filterInformation = prepareFilters(issues, bountyIssues)
-
     const labelBasedFilters = generateFilterNamesAndPaths(
       filterInformation,
       'labels',
@@ -70,7 +69,7 @@ const Filters = ({ filters, issues, bountyIssues, disableFilter, disableAllFilte
             key={pathToDisableFilter.join('')}
             text={alias}
             disableFilter={() =>
-              disableFilter(pathToDisableFilter)
+              disableFilter(pathToDisableFilter, filterInformation)
             }
           />
         )
@@ -112,6 +111,7 @@ Filters.propTypes = {
   disableFilter: PropTypes.func.isRequired,
   disableAllFilters: PropTypes.func.isRequired,
   style: PropTypes.object,
+  repo: repoShape,
 }
 
 Filters.defaultProps = {
