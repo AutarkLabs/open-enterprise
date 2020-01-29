@@ -289,10 +289,19 @@ class ProjectDetail extends React.PureComponent {
 
                       if (!fetchMoreResult) return prev
 
-                      return Object.assign({}, prev, {
-                        repository: { ...prev.repository, ...fetchMoreResult.repository }
-                      })
-
+                      return {
+                        ...fetchMoreResult,
+                        repository: {
+                          ...fetchMoreResult.repository,
+                          issues: {
+                            ...fetchMoreResult.repository.issues,
+                            nodes: [
+                              ...prev.repository.issues.nodes,
+                              ...fetchMoreResult.repository.issues.nodes,
+                            ]
+                          },
+                        }
+                      }
                     },
                   })
                 }}
@@ -365,7 +374,6 @@ const ProjectDetailWrap = ({ repo, ...props }) => {
     }
   }
   `
-
   /*
   notifyOnNetworkStatusChange: true,
   onError: console.error,
