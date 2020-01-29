@@ -7,13 +7,15 @@ import { IconGitHub, LoadingAnimation } from '../../Shared'
 import { Query } from 'react-apollo'
 import { useAragonApi } from '../../../api-react'
 import { usePanelManagement } from '../../Panel'
-import { toHex } from 'web3-utils'
+import { toHex, sha3 } from 'web3-utils'
 import noResultsSvg from '../../../assets/noResults.svg'
 import { FormField, FieldTitle } from '../../Form'
 import { STATUS } from '../../../utils/github'
-import { ipfsAdd } from '../../../utils/ipfs-helpers'
+import { useDecoratedRepos } from '../../../context/DecoratedRepos'
+import { ipfsAdd } from '../../../../../../shared/utils/ipfs'
 
-const disableDecoupledProjects = true
+
+const disableDecoupledProjects = false
 
 const RepoList = ({
   filter,
@@ -199,7 +201,7 @@ const GitHubRepoList = ({ handleGithubSignIn }) => {
 
   const handleNewProject = () => {
     closePanel()
-    api.addRepo(toHex(project)).toPromise()
+    api.setRepo(toHex(project), false, '').toPromise()
   }
 
   const onRepoSelected = repoArray => i => {
@@ -276,19 +278,29 @@ const ThematicBreak = () => {
 }
 
 const NewProject = ({ handleGithubSignIn }) => {
+  const {
+    api,
+    appState: {
+      github = { status: STATUS.INITIAL },
+    },
+  } = useAragonApi()
+  const { closePanel } = usePanelManagement()
   const [ title, setTitle ] = useState('')
+  const repos = useDecoratedRepos()
   const [ description, setDescription ] = useState('')
-  const theme = useTheme()
-  const { api, appState: { github = { status: STATUS.INITIAL } } } = useAragonApi()
 
-  const createProject = async () => {
-    const id = 'oe-' + Math.random().toString(36).substring(2, 15)
-    const hash = await ipfsAdd(
-      { id, title, description }
-    )
+  const repoIndex = repos.reduce((repoIndex, repo) => { 
+    return repoIndex > parseInt(repo.index) ?  repoIndex : parseInt(repo.index)
+  }, 0)
 
-    api.addProject(toHex(id), hash).toPromise()
+  const createProject = () => {
+    closePanel()
+    const content = { title, description }
+    ipfsAdd(content).then( cId => {
+      api.setRepo(toHex(sha3(title + repoIndex)), false, cId).toPromise()
+    })
   }
+  
 
   if (disableDecoupledProjects) return (
     <PanelContent>

@@ -61,6 +61,7 @@ export function DecoratedReposProvider(props) {
                 id: repo.id,
                 decoupled: repo.data.decoupled,
                 data: { _repo: repo.data._repo },
+                index: repo.data.index,
                 metadata: {
                   name: node.title,
                   url: '/projects/' + repo.id,
@@ -73,6 +74,7 @@ export function DecoratedReposProvider(props) {
                 id: repo.id,
                 decoupled: repo.data.decoupled,
                 data: { _repo: repo.data._repo },
+                index: repo.data.index,
                 metadata: {
                   name: '-',
                   url: '',
@@ -100,6 +102,7 @@ export function DecoratedReposProvider(props) {
                 id: repo.id,
                 decoupled: repo.data.decoupled,
                 data: { _repo: repo.data._repo },
+                index: repo.data.index,
                 metadata: {
                   name: node.name,
                   url: node.url,
@@ -112,6 +115,7 @@ export function DecoratedReposProvider(props) {
                 id: repo.id,
                 decoupled: repo.data.decoupled,
                 data: { _repo: repo.data._repo },
+                index: repo.data.index,
                 metadata: {
                   name: '-',
                   url: '',
