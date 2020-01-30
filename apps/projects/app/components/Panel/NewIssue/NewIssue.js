@@ -1,5 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { useMutation } from '@apollo/react-hooks'
 import { Mutation } from 'react-apollo'
 import { useAragonApi } from '../../../api-react'
 import { Field, GU, TextInput, DropDown } from '@aragon/ui'
@@ -22,6 +23,7 @@ const Creating = () => (
       alignItems: 'center',
       height: '100%',
       flexDirection: 'column',
+      marginTop: 3 * GU,
     }}
   >
     <LoadingAnimation style={{ marginBottom: '32px' }} />
@@ -34,6 +36,7 @@ class NewIssue extends React.PureComponent {
   static propTypes = {
     account: PropTypes.string,
     closePanel: PropTypes.func.isRequired,
+    graphqlMutation: PropTypes.array,
     reposManaged: PropTypes.oneOfType([
       PropTypes.string,
       PropTypes.arrayOf(
@@ -126,9 +129,22 @@ class NewIssue extends React.PureComponent {
     }
 
     // TODO: refetch Issues list after mutation
+    const [ newIssue, { loading, error }] = this.props.graphqlMutation
+
+    if (loading) return <Creating />
+
+    if (error) return <div css={`margin-top: ${3 * GU}px`}>Error</div>
 
     return (
-      <div css={`margin: ${2 * GU}px 0`}>
+      <Form
+        css={`margin-top: ${3 * GU}px`}
+        onSubmit={async () => {
+          await newIssue({ variables: { title, description, id } })
+          this.props.closePanel()
+        }}
+        submitText="Submit Issue"
+        submitDisabled={this.canSubmit()}
+      >
         <Field label="Project">
           <DropDown
             items={items}
@@ -212,7 +228,7 @@ class NewIssue extends React.PureComponent {
             }}
           </Mutation>
         ))}
-      </div>
+      </Form>
     )
   }
 }
@@ -223,6 +239,12 @@ const NewIssueWrap = () => {
   const { closePanel } = usePanelManagement()
   const repos = useDecoratedRepos()
   const { appState: { github, issues }, api, connectedAccount } = useAragonApi()
+
+  const graphqlMutation = useMutation(NEW_ISSUE, {
+    onError: console.error,
+    refetchQueries: ['SearchIssues'], // TODO: doesn't work; needs delay before refetch
+  })
+
   if (!github.scope) return <AuthorizeGitHub />
 
   const repoNames = repos
@@ -242,6 +264,7 @@ const NewIssueWrap = () => {
       account={connectedAccount}
       issues={issues}
       closePanel={closePanel}
+      graphqlMutation={graphqlMutation}
       reposManaged={repoNames}
       reposIds={reposIds}
       repoHexIds={repoHexIds}

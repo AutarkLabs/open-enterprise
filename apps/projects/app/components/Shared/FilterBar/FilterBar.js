@@ -25,14 +25,7 @@ import { IconArrow as IconArrowDown } from '../../../../../../shared/ui'
 import { IconSort, IconGrid, IconCoins, IconFilter } from '../../../assets'
 import { usePanelManagement } from '../../Panel'
 import Label from '../../Content/IssueDetail/Label'
-import { issueShape } from '../../../utils/shapes.js'
-
-const sorters = [
-  'Name ascending',
-  'Name descending',
-  'Newest',
-  'Oldest',
-]
+import { issueShape, repoShape } from '../../../utils/shapes.js'
 
 const TextFilterInput = ({ textFilter, updateTextFilter }) => {
   const theme = useTheme()
@@ -115,7 +108,14 @@ TextFilter.propTypes = {
   updateTextFilter: PropTypes.func.isRequired,
 }
 
-const SortPopover = ({ visible, opener, setVisible, sortBy, updateSortBy }) => {
+const SortPopover = ({
+  visible,
+  opener,
+  setVisible,
+  sortBy,
+  sortOptions,
+  updateSortBy,
+}) => {
   const theme = useTheme()
 
   return (
@@ -127,7 +127,7 @@ const SortPopover = ({ visible, opener, setVisible, sortBy, updateSortBy }) => {
       placement="bottom-end"
     >
       <Label text="Sort by" />
-      {sorters.map(way => (
+      {Object.keys(sortOptions).map(way => (
         <FilterMenuItem
           key={way}
           onClick={updateSortBy(way)}
@@ -135,7 +135,7 @@ const SortPopover = ({ visible, opener, setVisible, sortBy, updateSortBy }) => {
           <div css={`width: ${3 * GU}px`}>
             {way === sortBy && <IconCheck color={`${theme.accent}`} />}
           </div>
-          <ActionLabel>{way}</ActionLabel>
+          <ActionLabel>{sortOptions[way].name}</ActionLabel>
         </FilterMenuItem>
       ))}
     </Popover>
@@ -146,6 +146,7 @@ SortPopover.propTypes = {
   opener: PropTypes.object,
   setVisible: PropTypes.func.isRequired,
   sortBy: PropTypes.string.isRequired,
+  sortOptions: PropTypes.object.isRequired,
   updateSortBy: PropTypes.func.isRequired,
 }
 
@@ -271,10 +272,10 @@ const FilterBar = ({
   deselectAllIssues,
   selectedIssues,
   onSearchChange,
+  sortOptions,
+  sortBy,
+  repo,
 }) => {
-
-  // Complete list of sorters for DropDown. Parent has only one item, to perform actual sorting.
-  const [ sortBy, setSortBy ] = useState('Newest')
   const [ textFilter, setTextFilter ] = useState('')
   const [ sortMenuVisible, setSortMenuVisible ] = useState(false)
   const [ actionsMenuVisible, setActionsMenuVisible ] = useState(false)
@@ -288,7 +289,7 @@ const FilterBar = ({
   const rightFBRef = useRef(null)
   const activeFilters = () => {
     let count = 0
-    const types = [ 'labels', 'milestones', 'statuses' ]
+    const types = [ 'labels', 'statuses' ]
     types.forEach(t => count += Object.keys(filters[t]).length)
     return count
   }
@@ -335,12 +336,11 @@ const FilterBar = ({
     // filters are in local state because of checkboxes
     // and sent to the parent (Issues) for actual display change
     setParentFilters({ filters })
-    handleFiltering(filters)
+    handleFiltering(filters, filtersData)
   }
 
   const updateSortBy = way => () => {
     handleSorting(way)
-    setSortBy(way)
     setSortMenuVisible(false)
   }
 
@@ -383,8 +383,7 @@ const FilterBar = ({
                   uppercase={false}
                 >
                   {filtersData.labels[id].name}
-                </Tag>{' '}
-              ({filtersData.labels[id].count})
+                </Tag>
               </ActionLabel>
             </FilterMenuItem>
           )}
@@ -392,44 +391,6 @@ const FilterBar = ({
     </FilterDropDown>
   )
   FilterByLabel.propTypes = {
-    filters: PropTypes.object.isRequired,
-    filtersData: PropTypes.object.isRequired,
-  }
-
-  const FilterByMilestone = ({ filters, filtersData }) => (
-    <FilterDropDown
-      caption="Milestones"
-      enabled={Object.keys(filtersData.milestones).length > 0}
-    >
-      {Object.keys(filtersData.milestones)
-        .sort((m1, m2) => {
-          if (m1 === 'milestoneless') return -1
-          if (m2 === 'milestoneless') return 1
-          return filtersData.milestones[m1].title <
-        filtersData.milestones[m2].title
-            ? -1
-            : 1
-        })
-        .map(id => (
-          <FilterMenuItem
-            key={id}
-            onClick={filter('milestones', id)}
-          >
-            <div>
-              <Checkbox
-                onChange={noop}
-                checked={id in filters.milestones}
-              />
-            </div>
-            <ActionLabel>
-              {filtersData.milestones[id].title} (
-              {filtersData.milestones[id].count})
-            </ActionLabel>
-          </FilterMenuItem>
-        ))}
-    </FilterDropDown>
-  )
-  FilterByMilestone.propTypes = {
     filters: PropTypes.object.isRequired,
     filtersData: PropTypes.object.isRequired,
   }
@@ -451,8 +412,7 @@ const FilterBar = ({
             />
           </div>
           <ActionLabel>
-            {filtersData.statuses[status].name} (
-            {filtersData.statuses[status].count})
+            {filtersData.statuses[status].name}
           </ActionLabel>
         </FilterMenuItem>
       ))}
@@ -474,8 +434,7 @@ const FilterBar = ({
             />
           </div>
           <ActionLabel>
-            {filtersData.statuses[status].name} (
-            {filtersData.statuses[status].count})
+            {filtersData.statuses[status].name}
           </ActionLabel>
         </FilterMenuItem>
       ))}
@@ -492,7 +451,7 @@ const FilterBar = ({
   // filtersData is about displayed checkboxes
   const allFundedIssues = [ 'funded', 'review-applicants', 'in-progress', 'review-work', 'fulfilled' ]
   const allIssues = [ 'all-funded', 'not-funded' ]
-  const filtersData = prepareFilters(issues, bountyIssues)
+  const filtersData = prepareFilters(issues, bountyIssues, repo)
 
   const actionsClickHandler = () =>
     selectedIssues.length && setActionsMenuVisible(true)
@@ -515,7 +474,6 @@ const FilterBar = ({
                   allIssues={allIssues}
                 />
                 <FilterByLabel filters={filters} filtersData={filtersData} />
-                <FilterByMilestone filters={filters} filtersData={filtersData} />
               </Overflow>
             </FilterBarMainLeft>
           </>
@@ -537,6 +495,7 @@ const FilterBar = ({
               opener={sortersOpener.current}
               setVisible={setSortMenuVisible}
               sortBy={sortBy}
+              sortOptions={sortOptions}
               updateSortBy={updateSortBy}
             />
 
@@ -562,6 +521,7 @@ const FilterBar = ({
             filters={filters}
             disableFilter={disableFilter}
             disableAllFilters={disableAllFilters}
+            repo={repo}
           />
         </FilterBarActives>
       )}
@@ -574,7 +534,6 @@ FilterBar.propTypes = {
   bountyIssues: PropTypes.arrayOf(issueShape).isRequired,
   issues: PropTypes.arrayOf(issueShape).isRequired,
   issuesFiltered: PropTypes.arrayOf(issueShape).isRequired,
-  sortBy: PropTypes.string.isRequired,
   handleFiltering: PropTypes.func.isRequired,
   handleSorting: PropTypes.func.isRequired,
   setParentFilters: PropTypes.func.isRequired,
@@ -583,6 +542,9 @@ FilterBar.propTypes = {
   selectedIssues: PropTypes.arrayOf(issueShape).isRequired,
   onSearchChange: PropTypes.func.isRequired,
   deselectAllIssues: PropTypes.func.isRequired,
+  sortBy: PropTypes.string.isRequired,
+  sortOptions: PropTypes.object.isRequired,
+  repo: repoShape,
 }
 
 const FilterMenuItem = styled(ContextMenuItem)`

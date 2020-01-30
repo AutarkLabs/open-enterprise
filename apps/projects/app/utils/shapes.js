@@ -35,4 +35,15 @@ const userGitHubShape = PropTypes.shape({
   login: PropTypes.string.isRequired,
 }).isRequired
 
-export { issueShape, userGitHubShape }
+const repoShape = PropTypes.shape({
+  data: PropTypes.shape({
+    _repo: PropTypes.string,
+  }),
+  metadata: PropTypes.shape({
+    name: PropTypes.string,
+    owner: PropTypes.string,
+    labels: PropTypes.object.isRequired,
+  })
+}).isRequired
+
+export { issueShape, repoShape, userGitHubShape }

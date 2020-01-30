@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { ApolloProvider } from 'react-apollo'
+import { ApolloProvider } from '@apollo/react-hooks'
 
 import { useAragonApi } from './api-react'
 import { Main } from '@aragon/ui'
@@ -26,7 +26,7 @@ import Routes from './Routes'
 let popupRef = null
 
 const App = () => {
-  const { api, appState, guiStyle } = useAragonApi()
+  const { api, appState } = useAragonApi()
   const { appearance } = 'dark'
   const [ githubLoading, setGithubLoading ] = useState(false)
   const [ panel, setPanel ] = useState(null)

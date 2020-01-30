@@ -3,8 +3,8 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { Button, GU, IconSearch, Info, RadioList, Text, TextInput, textStyle, useTheme } from '@aragon/ui'
 import { GET_REPOSITORIES } from '../../../utils/gql-queries.js'
+import { useQuery } from '@apollo/react-hooks'
 import { IconGitHub, LoadingAnimation } from '../../Shared'
-import { Query } from 'react-apollo'
 import { useAragonApi } from '../../../api-react'
 import { usePanelManagement } from '../../Panel'
 import { toHex, sha3 } from 'web3-utils'
@@ -103,84 +103,76 @@ const RepoQuery = ({ onRepoSelected, repoSelected, setRepoSelected }) => {
   }
 
   const handleClearSearch = () => setFilter('')
+  const { data, loading, error, refetch } = useQuery(GET_REPOSITORIES, {
+    fetchPolicy: 'cache-first',
+    onError: console.error,
+  })
+  if (loading) return (
+    <RepoInfo>
+      <LoadingAnimation />
+      <div>Loading repositories...</div>
+    </RepoInfo>
+  )
 
+  if (error) return (
+    <RepoInfo>
+      <Text size="xsmall" style={{ margin: '20px 0' }}>
+        Error: {JSON.stringify(error)}
+      </Text>
+      <Button wide mode="strong" onClick={refetch}>
+        Try refetching?
+      </Button>
+    </RepoInfo>
+  )
+
+  const reposDownloaded = filterAlreadyAdded(data.viewer.repositories.edges)
+
+  const visibleRepos = filter ? filterByName(reposDownloaded) : reposDownloaded
+
+  const repoArray = visibleRepos.map(repo => ({
+    title: repo.node.nameWithOwner,
+    description: '',
+    node: repo.node,
+  }))
   return (
-    <Query
-      fetchPolicy="cache-first"
-      query={GET_REPOSITORIES}
-      onError={console.error}
-    >
-      {({ data, loading, error, refetch }) => {
-        if (data && data.viewer) {
-          const reposDownloaded = filterAlreadyAdded(data.viewer.repositories.edges)
-          const visibleRepos = filter ? filterByName(reposDownloaded) : reposDownloaded
-          // eslint-disable-next-line react/prop-types
-          const repoArray = visibleRepos.map(repo => ({
-            title: repo.node.nameWithOwner,
-            description: '',
-            node: repo.node,
-          }))
-
-          return (
-            <div>
-              <FieldTitle>Repository</FieldTitle>
-              <TextInput
-                type="search"
-                placeholder="Search for a repository"
-                wide
-                value={filter}
-                onChange={updateFilter}
-                adornment={
-                  filter === '' && (
-                    <IconSearch
-                      css={`
-                        color: ${theme.surfaceOpened};
-                        margin-right: ${GU}px;
-                      `}
-                    />
-                  )
-                }
-                adornmentPosition="end"
-                ref={searchRef}
-                aria-label="Search"
-              />
-
-              <ScrollableList>
-                <RepoList
-                  visibleRepos={visibleRepos}
-                  repoArray={repoArray}
-                  repoSelected={repoSelected}
-                  onRepoSelected={onRepoSelected}
-                  filter={filter}
-                  handleClearSearch={handleClearSearch}
-                />
-              </ScrollableList>
-
-            </div>
+    <div>
+      <FieldTitle>Repository</FieldTitle>
+      <TextInput
+        type="search"
+        placeholder="Search for a repository"
+        wide
+        value={filter}
+        onChange={updateFilter}
+        adornment={
+          filter === '' && (
+            <IconSearch
+              css={`
+                color: ${theme.surfaceOpened};
+                margin-right: ${GU}px;
+              `}
+            />
           )
         }
+        adornmentPosition="end"
+        ref={searchRef}
+        aria-label="Search"
+      />
 
-        if (loading) return (
-          <RepoInfo>
-            <LoadingAnimation />
-            <div>Loading repositories...</div>
-          </RepoInfo>
-        )
+      <ScrollableList>
+        <RepoList
+          visibleRepos={visibleRepos}
+          repoArray={repoArray}
+          repoSelected={repoSelected}
+          onRepoSelected={onRepoSelected}
+          filter={filter}
+          handleClearSearch={handleClearSearch}
+        />
+      </ScrollableList>
 
-        if (error) return (
-          <RepoInfo>
-            <Text size="xsmall" style={{ margin: '20px 0' }}>
-              Error {JSON.stringify(error)}
-            </Text>
-            <Button wide mode="strong" onClick={() => refetch()}>
-              Try refetching?
-            </Button>
-          </RepoInfo>
-        )
-      }}
-    </Query>
+    </div>
   )
 }
+ 
 RepoQuery.propTypes = {
   onRepoSelected: PropTypes.func.isRequired,
   repoSelected: PropTypes.number.isRequired,
@@ -390,5 +382,4 @@ const PanelContent = styled.div`
   margin-top: ${3 * GU}px;
 `
 
-// TODO: Use nodes instead of edges (the app should be adapted at some places)
 export default NewProject

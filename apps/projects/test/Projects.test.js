@@ -1,4 +1,4 @@
-/* global artifacts, assert, before, beforeEach, contract, context, expect, it, web3, xit */
+/* global artifacts, assert, before, beforeEach, contract, context, expect, it, web3 */
 
 const { assertRevert } = require('@aragon/test-helpers/assertThrow')
 const truffleAssert = require('truffle-assertions')
@@ -1170,7 +1170,7 @@ contract('Projects App', accounts => {
       })
     })
 
-    context.only('decoupled project', () => {
+    context('decoupled project', () => {
       let repoId
       beforeEach(async () => {
         await app.setRepo('1', true, 'abc')
