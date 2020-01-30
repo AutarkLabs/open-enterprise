@@ -88,7 +88,7 @@
     "test:projects": "cd apps/projects && npm test",
     "test:rewards": "cd apps/rewards && npm test",
     "test:tps": "lerna run --scope=@tps/kits-planning-suite --stream test",
-    "test": "lerna run test --no-bail"
+    "test": "lerna run test --no-bail --concurrency=1"
   },
   "dependencies": {
     "ipfs-http-client": "29.1.0",

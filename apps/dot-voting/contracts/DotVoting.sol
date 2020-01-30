@@ -112,7 +112,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
 
 
     /**
-    * @notice Create a new dot vote about "`_metadata`."
+    * @notice Create a new dot vote for "`_metadata`". 
     * @param _executionScript EVM script to be executed on approval
     * @param _metadata Vote metadata
     * @return voteId Id for newly created vote

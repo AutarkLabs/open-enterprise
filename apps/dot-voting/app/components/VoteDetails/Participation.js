@@ -8,7 +8,7 @@ import VotingOption from '../VotingOption'
 const Participation = ({ vote }) => {
   const theme = useTheme()
   const { appState: { globalMinQuorum = 0 } } = useAragonApi()
-  const minQuorum = globalMinQuorum / 10 ** 16
+  const minQuorum = parseInt((globalMinQuorum / 10 ** 16).toFixed(4))
   return (
     <Box heading="Participation" padding={0}>
       <div css={`padding: ${2 * GU}px ${3 * GU}px ${3 * GU}px ${3 * GU}px`}>
