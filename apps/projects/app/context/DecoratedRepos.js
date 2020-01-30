@@ -8,6 +8,17 @@ const repoQuery = repoId => `{
       name
       url
       description
+      owner { login }
+      labels(first: 100) {
+        totalCount
+        edges {
+          node {
+            id
+            name
+            color
+          }
+        }
+      }
       defaultBranchRef {
         target {
           ...on Commit {
@@ -57,6 +68,7 @@ export function DecoratedReposProvider(props) {
             data: { _repo: repo.data._repo },
             metadata: {
               name: node.name,
+              owner: node.owner.login,
               url: node.url,
               description: node.description
                 ? node.description
@@ -66,6 +78,10 @@ export function DecoratedReposProvider(props) {
               commits: node.defaultBranchRef
                 ? node.defaultBranchRef.target.history.totalCount
                 : 0,
+              labels: node.labels.edges.reduce((map, label) => {
+                map[label.node.id] = label.node
+                return map
+              }, {}),
             },
           }))
           .catch(err => ({

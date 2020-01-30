@@ -1,6 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Mutation } from 'react-apollo'
+import { useMutation } from '@apollo/react-hooks'
 import { useAragonApi } from '../../../api-react'
 import { Field, GU, TextInput, DropDown } from '@aragon/ui'
 import { NEW_ISSUE } from '../../../utils/gql-queries.js'
@@ -21,6 +21,7 @@ const Creating = () => (
       alignItems: 'center',
       height: '100%',
       flexDirection: 'column',
+      marginTop: 3 * GU,
     }}
   >
     <LoadingAnimation style={{ marginBottom: '32px' }} />
@@ -32,6 +33,7 @@ class NewIssue extends React.PureComponent {
   state = NewIssue.initialState
   static propTypes = {
     closePanel: PropTypes.func.isRequired,
+    graphqlMutation: PropTypes.array,
     reposManaged: PropTypes.oneOfType([
       PropTypes.string,
       PropTypes.arrayOf(
@@ -103,67 +105,48 @@ class NewIssue extends React.PureComponent {
 
     const id = selectedProject > 0 ? reposIds[selectedProject - 1] : ''
 
-    // TODO: refetch Issues list after mutation
+    const [ newIssue, { loading, error }] = this.props.graphqlMutation
+
+    if (loading) return <Creating />
+
+    if (error) return <div css={`margin-top: ${3 * GU}px`}>Error</div>
 
     return (
-      <div css={`margin: ${2 * GU}px 0`}>
-        <Mutation
-          mutation={NEW_ISSUE}
-          variables={{ title, description, id }}
-          onError={console.error}
-        >
-          {(newIssue, result) => {
-            const { data, loading, error, called } = result
-            if (!called) {
-              return (
-                <Form
-                  onSubmit={newIssue}
-                  submitText="Submit Issue"
-                  submitDisabled={this.canSubmit()}
-                >
-                  <Field label="Project">
-                    <DropDown
-                      items={items}
-                      selected={selectedProject}
-                      onChange={projectChange}
-                      wide
-                      required
-                    />
-                  </Field>
-                  <Field label="Title">
-                    <TextInput onChange={titleChange} required wide />
-                  </Field>
-                  <Field label="Description">
-                    <TextInput.Multiline
-                      rows={3}
-                      style={{
-                        resize: 'none',
-                        height: 'auto',
-                        paddingTop: '5px',
-                        paddingBottom: '5px',
-                      }}
-                      onChange={descriptionChange}
-                      wide
-                    />
-                  </Field>
-                </Form>
-              )
-            } // end if(!called)
-            if (loading) {
-              return <Creating />
-            }
-            if (error) {
-              return <div>Error</div>
-            }
-
-            const { createIssue } = data
-            if (createIssue) {
-              this.props.closePanel()
-            }
-            return null
-          }}
-        </Mutation>
-      </div>
+      <Form
+        css={`margin-top: ${3 * GU}px`}
+        onSubmit={async () => {
+          await newIssue({ variables: { title, description, id } })
+          this.props.closePanel()
+        }}
+        submitText="Submit Issue"
+        submitDisabled={this.canSubmit()}
+      >
+        <Field label="Project">
+          <DropDown
+            items={items}
+            selected={selectedProject}
+            onChange={projectChange}
+            wide
+            required
+          />
+        </Field>
+        <Field label="Title">
+          <TextInput onChange={titleChange} required wide />
+        </Field>
+        <Field label="Description">
+          <TextInput.Multiline
+            rows={3}
+            style={{
+              resize: 'none',
+              height: 'auto',
+              paddingTop: '5px',
+              paddingBottom: '5px',
+            }}
+            onChange={descriptionChange}
+            wide
+          />
+        </Field>
+      </Form>
     )
   }
 }
@@ -174,6 +157,12 @@ const NewIssueWrap = () => {
   const { closePanel } = usePanelManagement()
   const repos = useDecoratedRepos()
   const { appState: { github } } = useAragonApi()
+
+  const graphqlMutation = useMutation(NEW_ISSUE, {
+    onError: console.error,
+    refetchQueries: ['SearchIssues'], // TODO: doesn't work; needs delay before refetch
+  })
+
   if (!github.scope) return <AuthorizeGitHub />
 
   const repoNames = repos
@@ -187,6 +176,7 @@ const NewIssueWrap = () => {
   return (
     <NewIssue
       closePanel={closePanel}
+      graphqlMutation={graphqlMutation}
       reposManaged={repoNames}
       reposIds={reposIds}
     />
