@@ -289,7 +289,7 @@ const FilterBar = ({
   const rightFBRef = useRef(null)
   const activeFilters = () => {
     let count = 0
-    const types = [ 'labels', 'milestones', 'statuses' ]
+    const types = [ 'labels', 'statuses' ]
     types.forEach(t => count += Object.keys(filters[t]).length)
     return count
   }
@@ -395,43 +395,6 @@ const FilterBar = ({
     filtersData: PropTypes.object.isRequired,
   }
 
-  const FilterByMilestone = ({ filters, filtersData }) => (
-    <FilterDropDown
-      caption="Milestones"
-      enabled={Object.keys(filtersData.milestones).length > 0}
-    >
-      {Object.keys(filtersData.milestones)
-        .sort((m1, m2) => {
-          if (m1 === 'milestoneless') return -1
-          if (m2 === 'milestoneless') return 1
-          return filtersData.milestones[m1].title <
-        filtersData.milestones[m2].title
-            ? -1
-            : 1
-        })
-        .map(id => (
-          <FilterMenuItem
-            key={id}
-            onClick={filter('milestones', id)}
-          >
-            <div>
-              <Checkbox
-                onChange={noop}
-                checked={id in filters.milestones}
-              />
-            </div>
-            <ActionLabel>
-              {filtersData.milestones[id].title}
-            </ActionLabel>
-          </FilterMenuItem>
-        ))}
-    </FilterDropDown>
-  )
-  FilterByMilestone.propTypes = {
-    filters: PropTypes.object.isRequired,
-    filtersData: PropTypes.object.isRequired,
-  }
-
   const FilterByStatus = ({ filters, filtersData, allFundedIssues, allIssues }) => (
     <FilterDropDown
       caption="Status"
@@ -511,7 +474,6 @@ const FilterBar = ({
                   allIssues={allIssues}
                 />
                 <FilterByLabel filters={filters} filtersData={filtersData} />
-                <FilterByMilestone filters={filters} filtersData={filtersData} />
               </Overflow>
             </FilterBarMainLeft>
           </>

@@ -38,11 +38,6 @@ const Filters = ({ filters, issues, bountyIssues, disableFilter, disableAllFilte
       'labels',
       'name'
     )
-    const milestoneBasedFilters = generateFilterNamesAndPaths(
-      filterInformation,
-      'milestones',
-      'title'
-    )
     const statusBasedFilters = generateFilterNamesAndPaths(
       filterInformation,
       'statuses',
@@ -51,7 +46,6 @@ const Filters = ({ filters, issues, bountyIssues, disableFilter, disableAllFilte
 
     return {
       ...labelBasedFilters,
-      ...milestoneBasedFilters,
       ...statusBasedFilters,
     }
   }
@@ -103,7 +97,6 @@ const Wrap = styled.div`
 Filters.propTypes = {
   filters: PropTypes.shape({
     labels: PropTypes.object.isRequired,
-    milestones: PropTypes.object.isRequired,
     statuses: PropTypes.object.isRequired,
   }),
   issues: PropTypes.arrayOf(issueShape).isRequired,
@@ -117,7 +110,6 @@ Filters.propTypes = {
 Filters.defaultProps = {
   filters: {
     labels: {},
-    milestones: {},
     statuses: {},
   },
   issues: [],

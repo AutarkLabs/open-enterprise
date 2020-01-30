@@ -8,7 +8,6 @@ const prepareFilters = (issues, bountyIssues, repo) => {
   let filters = {
     projects: {},
     labels: {},
-    milestones: {},
     deadlines: {},
     experiences: {},
     statuses: {},
@@ -26,7 +25,6 @@ const prepareFilters = (issues, bountyIssues, repo) => {
     name: BOUNTY_STATUS['not-funded'],
   }
 
-  filters.milestones = repo.metadata.milestones
   filters.labels = repo.metadata.labels
 
   return filters

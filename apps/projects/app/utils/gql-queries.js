@@ -26,10 +26,6 @@ export const issueAttributes = `
       }
     }
   }
-  milestone {
-    id
-    title
-  }
   state
   url
 `

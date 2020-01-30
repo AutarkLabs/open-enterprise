@@ -61,7 +61,6 @@ class ProjectDetail extends React.PureComponent {
   updateQuery = (filters, filtersData) => {
     const queryFilters = {
       labels: Object.keys(filters.labels).map(labelId => filtersData.labels[labelId].name),
-      milestones: Object.keys(filters.milestones).map(milestoneId => filtersData.milestones[milestoneId].name),
       search: '',
     }
     this.props.setQuery(queryFilters)
@@ -78,7 +77,6 @@ class ProjectDetail extends React.PureComponent {
   }
 
   applyFilters = allIssues => {
-    const { textFilter } = this.state
     const { filters, bountyIssues } = this.props
 
     // only filter locally if filtering by bounty status
@@ -117,51 +115,7 @@ class ProjectDetail extends React.PureComponent {
       )
     }
 
-    const issuesByLabel = issuesByStatus.filter(issue => {
-      // if there are no labels to filter by, pass all
-      if (Object.keys(filters.labels).length === 0) return true
-      // if labelless issues are allowed, let them pass
-      if ('labelless' in filters.labels && issue.labels.totalCount === 0)
-        return true
-      // otherwise, fail all issues without labels
-      if (issue.labels.totalCount === 0) return false
-
-      const labelsIds = issue.labels.edges.map(label => label.node.id)
-
-      if (
-        Object.keys(filters.labels).filter(id => labelsIds.indexOf(id) !== -1)
-          .length > 0
-      )
-        return true
-      return false
-    })
-
-    const issuesByMilestone = issuesByLabel.filter(issue => {
-      // if there are no MS filters, all issues pass
-      if (Object.keys(filters.milestones).length === 0) return true
-      // should issues without milestones pass?
-      if ('milestoneless' in filters.milestones && issue.milestone === null)
-        return true
-      // if issues without milestones should not pass, they are rejected below
-      if (issue.milestone === null) return false
-      if (Object.keys(filters.milestones).indexOf(issue.milestone.id) !== -1)
-        return true
-      return false
-    })
-
-    let issuesFiltered
-
-    if (!textFilter) {
-      issuesFiltered = issuesByMilestone
-    } else {
-      issuesFiltered = issuesByMilestone.filter(
-        issue =>
-          issue.title.toUpperCase().indexOf(textFilter) !== -1 ||
-          String(issue.number).indexOf(textFilter) !== -1
-      )
-    }
-
-    return issuesFiltered.sort(sortOptions[this.props.sortBy].func)
+    return issuesByStatus
   }
 
   handleIssueSelection = issue => {
@@ -194,12 +148,10 @@ class ProjectDetail extends React.PureComponent {
   disableAllFilters = () => {
     this.props.setFilters({
       labels: {},
-      milestones: {},
       statuses: {},
     })
     this.props.setQuery({
       labels: [],
-      milestones: [],
     })
   }
 
@@ -349,7 +301,6 @@ const ProjectDetailWrap = ({ repo, ...props }) => {
     owner: repo.metadata.owner,
     name: repo.metadata.name,
     labels: [],
-    milestones: [],
   })
   const updateTextSearch = text => {
     setQuery({ search: text ? text + ' in:title' : '' })
@@ -360,7 +311,6 @@ const ProjectDetailWrap = ({ repo, ...props }) => {
 
   const [ filters, setFilters ] = useState({
     labels: {},
-    milestones: {},
     statuses: {},
   })
   const { requestPath } = usePathHelpers()
@@ -376,7 +326,6 @@ const ProjectDetailWrap = ({ repo, ...props }) => {
         after: $after,
         filterBy: {
           ${query.labels.length ? 'labels: [' + query.labels.map(l => `"${l}"`) + '],' : ''}
-          ${query.milestones.length ? 'milestones: [' + query.milestones.map(l => `"${l}"`) + '],' : ''}
           states: [OPEN]
         },
         orderBy: {
@@ -396,11 +345,6 @@ const ProjectDetailWrap = ({ repo, ...props }) => {
     }
   }
   `
-
-  console.log('is:issue state:open ' +
-    `repo:${query.repo} ` +
-    `sort:${query.sort} ` +
-    `${query.search}`)
 
   // text filter takes precedence
   const graphqlQuery = query.search ?

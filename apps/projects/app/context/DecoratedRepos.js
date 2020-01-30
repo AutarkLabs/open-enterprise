@@ -19,14 +19,6 @@ const repoQuery = repoId => `{
           }
         }
       }
-      milestones(first: 100) {
-        edges {
-          node {
-            id
-            title
-          }
-        }
-      }
       defaultBranchRef {
         target {
           ...on Commit {
@@ -88,10 +80,6 @@ export function DecoratedReposProvider(props) {
                 : 0,
               labels: node.labels.edges.reduce((map, label) => {
                 map[label.node.id] = label.node
-                return map
-              }, {}),
-              milestones: node.milestones.edges.reduce((map, milestone) => {
-                map[milestone.node.id] = milestone.node
                 return map
               }, {}),
             },

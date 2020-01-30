@@ -43,7 +43,6 @@ const repoShape = PropTypes.shape({
     name: PropTypes.string,
     owner: PropTypes.string,
     labels: PropTypes.object.isRequired,
-    milestones: PropTypes.object.isRequired,
   })
 }).isRequired
 
