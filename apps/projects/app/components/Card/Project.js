@@ -30,7 +30,7 @@ const Project = ({
   description,
   label,
   url,
-  key
+  repoKey
 }) => {
   const {
     api: { removeRepo },
@@ -38,7 +38,7 @@ const Project = ({
   } = useAragonApi()
   const { requestPath } = usePathHelpers()
   const bountiesCount = issues.filter(i =>
-    i.data.key === key &&
+    i.data.key === repoKey &&
     i.data.workStatus !== 'fulfilled' &&
     new Date() < new Date(i.data.deadline)
   ).length
@@ -47,17 +47,17 @@ const Project = ({
   const { editProject } = usePanelManagement()
 
   const removeProject = () => {
-    removeRepo(toHex(key)).toPromise()
+    removeRepo(toHex(repoKey)).toPromise()
     // TODO: Toast feedback here maybe
   }
 
-  const handleEditProject = () => editProject(key, label, description)
+  const handleEditProject = () => editProject(repoKey, label, description)
 
   const clickMenu = e => e.stopPropagation()
 
   const clickContext = e => {
     e.stopPropagation()
-    requestPath(`/projects/${key}`)
+    requestPath(`/projects/${repoKey}`)
   }
 
   return (
@@ -127,7 +127,7 @@ Project.propTypes = {
   decoupled: PropTypes.bool.isRequired,
   description: PropTypes.string.isRequired,
   label: PropTypes.string.isRequired,
-  key: PropTypes.string.isRequired,
+  repoKey: PropTypes.string.isRequired,
   url: PropTypes.string.isRequired,
 }
 

@@ -7,6 +7,7 @@ export const REQUESTED_GITHUB_DISCONNECT = 'Requested_GitHub_Disconnect'
 /* Projects.sol events */
 export const REPO_ADDED = 'RepoAdded'
 export const REPO_REMOVED = 'RepoRemoved'
+export const REPO_UPDATED = 'RepoUpdated'
 export const ISSUE_UPDATED = 'IssueUpdated'
 export const BOUNTY_ADDED = 'BountyAdded'
 export const ASSIGNMENT_REQUESTED = 'AssignmentRequested'

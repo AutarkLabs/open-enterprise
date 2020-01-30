@@ -5,18 +5,20 @@ import { useAragonApi } from '../../../api-react'
 import { toHex } from 'web3-utils'
 import { FormField } from '../../Form'
 import { ipfsAdd } from '../../../utils/ipfs-helpers'
+import usePanelManagement from '../usePanelManagement'
 
 
 const EditProject = ({ repoId, label, description: descriptionOld }) => {
   const [ title, setTitle ] = useState(label)
   const [ description, setDescription ] = useState(descriptionOld)
   const { api } = useAragonApi()
-
+  const { closePanel } = usePanelManagement()
   const updateProject = async () => {
+    closePanel()
     const hash = await ipfsAdd(
-      { repoId, title, description }
+      { title, description }
     )
-    api.updateProject(toHex(repoId), hash).toPromise()
+    api.setRepo(toHex(repoId), true, hash).toPromise()
   }
 
   return (

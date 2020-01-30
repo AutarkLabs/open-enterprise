@@ -8,6 +8,7 @@ import {
   REQUESTED_GITHUB_DISCONNECT,
   REPO_ADDED,
   REPO_REMOVED,
+  REPO_UPDATED,
   ISSUE_UPDATED,
   BOUNTY_ADDED,
   ASSIGNMENT_REQUESTED,
@@ -80,6 +81,7 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract, se
     app.cache('github', state.github).toPromise()
     return state
   }
+  case REPO_UPDATED:
   case REPO_ADDED: {
     return await syncRepos(state, returnValues)
   }
