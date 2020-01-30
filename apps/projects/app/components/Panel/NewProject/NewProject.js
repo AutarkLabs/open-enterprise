@@ -12,7 +12,7 @@ import noResultsSvg from '../../../assets/noResults.svg'
 import { FormField, FieldTitle } from '../../Form'
 import { STATUS } from '../../../utils/github'
 
-const disableDecoupledProjects = false
+const disableDecoupledProjects = true
 
 const RepoList = ({
   filter,
