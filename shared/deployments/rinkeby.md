@@ -32,7 +32,7 @@
 commit hash: 9890895240b237c1db1271264b2290d002eaf9d6
 
 Command:
-`./node_modules/.bin/lerna exec --scope="@tps/apps-projects" --stream aragon apm publish patch -- --files dist/ --environment rinkeby`
+`./node_modules/.bin/lerna exec --scope="@autarklabs/apps-projects" --stream aragon apm publish patch -- --files dist/ --environment rinkeby`
 
 
 ### v1.0.2
@@ -45,7 +45,7 @@ Command:
 ```
 
 Command:
-`./node_modules/.bin/lerna exec --scope="@tps/apps-projects" --stream aragon apm publish patch -- --files dist/ --environment rinkeby`
+`./node_modules/.bin/lerna exec --scope="@autarklabs/apps-projects" --stream aragon apm publish patch -- --files dist/ --environment rinkeby`
 
 
 ## DotVoting (formerly RangeVoting)

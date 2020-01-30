@@ -1,8 +1,9 @@
 {
-  "name": "@tps/apps-rewards",
+  "name": "@autarklabs/apps-rewards",
   "version": "0.0.1",
   "description": "Rewards app from Planning Suite",
   "scripts": {
+    "abi:extract": "truffle-extract --output abi/ --keys abi",
     "build:app": "parcel build app/index.html -d dist/ --public-url \".\" --no-cache",
     "build:script": "parcel build app/script.js -d dist/ --no-cache",
     "build": "npm run sync-assets && npm run build:app && npm run build:script",
@@ -14,7 +15,7 @@
     "ganache-cli:test": "sh ../../node_modules/@aragon/test-helpers/ganache-cli.sh",
     "lint": "solium --dir ./contracts",
     "precommit": "lint-staged",
-    "prepublishOnly": "truffle compile",
+    "prepublishOnly": "npm run compile && npm run abi:extract -- --no-compile",
     "publish": "aragon apm publish patch && sleep 3",
     "publish:cd": "../../shared/deployments/check-publish.sh",
     "publish:http": "npm run build:script && yes | aragon apm publish major --files dist --http localhost:5555 --http-served-from ./dist --propagate-content false --skip-confirmation true",
@@ -83,6 +84,7 @@
     "stylelint-config-styled-components": "^0.1.1",
     "stylelint-processor-styled-components": "^1.7.0",
     "truffle": "4.1.14",
+    "truffle-extract": "^1.2.1",
     "truffle-hdwallet-provider-privkey": "0.3.0",
     "truffle-privatekey-provider": "1.1.0"
   },
