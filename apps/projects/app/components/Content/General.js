@@ -39,7 +39,6 @@ const General = () => {
       description={repo.metadata.description}
       key={repo.id}
       label={repo.metadata.name}
-      repoId={repo.data._repo}
       url={repo.metadata.url}
     />
   ), [repos]
