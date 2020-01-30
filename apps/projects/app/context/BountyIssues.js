@@ -25,6 +25,12 @@ export function BountyIssuesProvider(props) {
   const [ bountyIssues, setBountyIssues ] = React.useState([])
   const shapeIssue = useShapedIssue()
 
+  const issueIds = React.useMemo(() => {
+    // old versions of the Projects app did not store issueId on ipfs
+    // we filter out such issues; they are not supported by this function
+    return issues.map(i => i.data.issueId).filter(i => i)
+  }, [issues])
+
   React.useEffect(() => {
     if (!github.token) return
 
@@ -34,10 +40,23 @@ export function BountyIssuesProvider(props) {
       },
     })
 
-    client.request(getIssues(issues.map(i => i.data.issueId)))
-      .then(data => setBountyIssues(data.nodes.map(shapeIssue)))
+    client.request(getIssues(issueIds))
+      .then(({ nodes }) => {
+        const now = new Date()
+        setBountyIssues(nodes.map(shapeIssue).sort((a, b) => {
+          //If a deadline has expired, most recent deadline first
+          //If a deadline upcoming, closest to the deadline first
+          let aDate = new Date(a.deadline)
+          let bDate = new Date(b.deadline)
+          if (aDate < now || bDate < now) {
+            aDate = now - aDate
+            bDate = now - bDate
+          }
+          return aDate - bDate
+        }))
+      })
       .catch(console.error)
-  }, [ github.token, issues ])
+  }, [ github.token, issueIds ])
 
   return <BountyIssuesContext.Provider value={bountyIssues} {...props} />
 }
