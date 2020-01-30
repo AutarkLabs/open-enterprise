@@ -28,6 +28,7 @@ import {
   TypeFilters,
   UserLink,
 } from '../PanelComponents'
+import useReviewFilters from '../../../hooks/useReviewFilters'
 
 const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
   const githubCurrentUser = useGithubAuth()
@@ -40,26 +41,14 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
 
   const canReview = issue.workStatus !== 'fulfilled' && !readOnly
 
-  const typesToShow = []
-  if (issue.requestsData.findIndex(request => !('review' in request)) !== -1)
-    typesToShow.push(canReview ? 'Available for review' : 'Unreviewed')
-  if (issue.requestsData.findIndex(request => 'review' in request) !== -1)
-    typesToShow.push('Reviewed')
-
-  let indexTypeSelected = 0
-  if ('review' in issue.requestsData[requestIndex])
-    indexTypeSelected = (typesToShow[0] === 'Reviewed') ? 0 : 1
-
-  const [ indexType, setIndexType ] = useState(indexTypeSelected)
-
-  const requests = issue.requestsData.filter(r => {
-    return (typesToShow[indexType] === 'Reviewed') ? 'review' in r : !('review' in r)
-  })
-
-  const newRequestIndex = requests.findIndex(
-    request => request.contributorAddr === issue.requestsData[requestIndex].contributorAddr
-  )
-  const [ index, setIndex ] = useState(newRequestIndex)
+  const {
+    items,
+    filterNames,
+    selectedFilter,
+    setSelectedFilter,
+    selectedItem,
+    setSelectedItem,
+  } = useReviewFilters(issue.requestsData, issue.requestsData[requestIndex], canReview)
 
   const updateFeedback = e => setFeedback(e.target.value)
   const buildReturnData = approved => {
@@ -74,28 +63,23 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
 
   const onAccept = () => onReviewApplication(true)
   const onReject = () => onReviewApplication(false)
-  const changeRequest = (index) => setIndex(index)
-  const changeRequestType = (index) => {
-    setIndex(0)
-    setIndexType(index)
-  }
 
   const onReviewApplication = async (approved) => {
     closePanel()
     const review = buildReturnData(approved)
     // new IPFS data is old data plus state returned from the panel
-    const ipfsData = requests[index]
+    const ipfsData = items[selectedFilter][selectedItem]
     const requestIPFSHash = await ipfsAdd({ ...ipfsData, review })
     reviewApplication(
       toHex(issue.repoId),
       issue.number,
-      requests[index].contributorAddr,
+      items[selectedFilter][selectedItem].contributorAddr,
       requestIPFSHash,
       approved
     ).toPromise()
   }
 
-  const request = requests[index]
+  const request = items[selectedFilter][selectedItem]
   const application = {
     user: {
       login: request.user.login,
@@ -120,18 +104,21 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
       <TypeFilters>
         <DropDown
           name="Type"
-          items={typesToShow}
-          onChange={changeRequestType}
-          selected={indexType}
+          items={filterNames}
+          onChange={index => {
+            setSelectedFilter(index)
+            setSelectedItem(0)
+          }}
+          selected={selectedFilter}
           wide
           css={`margin-right: ${0.5 * GU}px`}
         />
 
         <DropDown
           name="Applicant"
-          items={requests.map(request => request.user.login)}
-          onChange={changeRequest}
-          selected={index}
+          items={items[selectedFilter].map(i => i.user.login)}
+          onChange={index => setSelectedItem(index)}
+          selected={selectedItem}
           wide
           css={`margin-left: ${0.5 * GU}px`}
         />
