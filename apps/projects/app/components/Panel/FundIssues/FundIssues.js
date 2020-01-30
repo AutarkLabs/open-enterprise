@@ -22,7 +22,7 @@ import {
   TextInput,
   useTheme,
 } from '@aragon/ui'
-
+import { SwitchRow } from '../PanelComponents'
 import { Form, FormField } from '../../Form'
 import { DateInput } from '../../../../../../shared/ui'
 import { issueShape } from '../../../utils/shapes.js'
@@ -313,11 +313,7 @@ const FundForm = ({
         <FormField
           label="Work terms"
           input={
-            <div css={`
-              display: flex;
-              justify-content: space-between;
-              margin: ${GU}px 0 ${2 * GU}px 0;
-            `}>
+            <SwitchRow>
               <Text css="display: flex">
                 Applications required to work on issues&nbsp;
                 <Help hint="The work terms" css={`margin-left: ${.5 * GU}`}>
@@ -330,7 +326,7 @@ const FundForm = ({
                 checked={!openSubmission}
                 onChange={() => setOpenSubmission(!openSubmission)}
               />
-            </div>
+            </SwitchRow>
           }
         />
 

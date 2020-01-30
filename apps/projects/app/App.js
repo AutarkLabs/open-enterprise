@@ -1,13 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import PropTypes from 'prop-types'
 import { ApolloProvider } from 'react-apollo'
 
 import { useAragonApi } from './api-react'
 import { Main } from '@aragon/ui'
 
 import ErrorBoundary from './components/App/ErrorBoundary'
-import { Issues, Overview, Settings } from './components/Content'
-import IssueDetail from './components/Content/IssueDetail'
 import { PanelManager, PanelContext } from './components/Panel'
 
 import { IdentityProvider } from '../../../shared/identity'
@@ -23,30 +20,14 @@ import { LoadingAnimation } from './components/Shared'
 import { EmptyWrapper } from './components/Shared'
 import { Error } from './components/Card'
 import { DecoratedReposProvider } from './context/DecoratedRepos'
-import usePathSegments from './hooks/usePathSegments'
+import { BountyIssuesProvider } from './context/BountyIssues'
+import Routes from './Routes'
 
 let popupRef = null
 
-function Routes({ handleGithubSignIn }) {
-  const { selectedIssueId, selectedTab } = usePathSegments()
-
-  if (selectedIssueId) return <IssueDetail issueId={selectedIssueId} />
-
-  if (selectedTab === 'issues') return <Issues />
-
-  if (selectedTab === 'settings') return (
-    <Settings onLogin={handleGithubSignIn} />
-  )
-
-  return <Overview />
-}
-
-Routes.propTypes = {
-  handleGithubSignIn: PropTypes.func.isRequired,
-}
-
 const App = () => {
-  const { api, appState } = useAragonApi()
+  const { api, appState, guiStyle } = useAragonApi()
+  const { appearance } = guiStyle
   const [ githubLoading, setGithubLoading ] = useState(false)
   const [ panel, setPanel ] = useState(null)
   const [ panelProps, setPanelProps ] = useState(null)
@@ -120,26 +101,28 @@ const App = () => {
   const noop = () => {}
   if (githubLoading) {
     return (
-      <EmptyWrapper>
-        <LoadingAnimation />
-      </EmptyWrapper>
+      <Main theme={appearance}>
+        <EmptyWrapper>
+          <LoadingAnimation />
+        </EmptyWrapper>
+      </Main>
     )
   } else if (github.status === STATUS.INITIAL) {
     return (
-      <Main role="main">
+      <Main role="main" theme={appearance}>
         <Unauthorized onLogin={handleGithubSignIn} isSyncing={isSyncing} />
       </Main>
     )
   } else if (github.status === STATUS.FAILED) {
     return (
-      <Main>
+      <Main theme={appearance}>
         <Error action={noop} />
       </Main>
     )
   }
 
   return (
-    <Main>
+    <Main theme={appearance}>
       <ApolloProvider client={client}>
         <PanelContext.Provider value={configurePanel}>
           <IdentityProvider
@@ -147,14 +130,17 @@ const App = () => {
             onShowLocalIdentityModal={handleShowLocalIdentityModal}
           >
             <DecoratedReposProvider>
-              <main>
-                <ErrorBoundary>
-                  <Routes handleGithubSignIn={handleGithubSignIn} />
-                </ErrorBoundary>
-              </main>
+              <BountyIssuesProvider>
+                <main>
+                  <ErrorBoundary>
+                    <Routes handleGithubSignIn={handleGithubSignIn} />
+                  </ErrorBoundary>
+                </main>
+              </BountyIssuesProvider>
               <PanelManager
                 activePanel={panel}
                 onClose={closePanel}
+                handleGithubSignIn={handleGithubSignIn}
                 {...panelProps}
               />
             </DecoratedReposProvider>

@@ -67,6 +67,7 @@ const EditVoteOption = ({
         <Slider
           onUpdate={x => onUpdate(Math.round(x * 100))}
           value={value / 100}
+          theme={theme}
         />
         <HiddenLabel htmlFor={`percentage-${label}`}>Percentage</HiddenLabel>
         <TextInput

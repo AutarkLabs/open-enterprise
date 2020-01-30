@@ -1,7 +1,7 @@
-import React from 'react'
+import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import styled, { css } from 'styled-components'
-import { Button, Text, theme } from '@aragon/ui'
+import { Button, Text, useTheme } from '@aragon/ui'
 import {
   addMonths,
   addYears,
@@ -17,15 +17,15 @@ import {
   subYears
 } from 'date-fns'
 
-const mainColor = '#30D9D4'
+//const mainColor = '#30D9D4'
 
 const Container = styled.div`
   display: grid;
   min-width: 15em;
   margin: 0 auto;
   padding-top: 0.5em;
-  background: ${theme.contentBackground};
-  border: 1px solid ${theme.contentBorder};
+  background: ${props => props.theme.surface};
+  border: 1px solid ${props => props.theme.border};
   border-radius: 3px;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
 
@@ -58,7 +58,7 @@ const Selector = styled.div`
 
 const ArrowButton = styled(Button.Anchor)`
   font-size: 60%;
-  color: ${theme.contentBorder};
+  color: ${props => props.theme.border};
 
   &:hover {
     border: none;
@@ -87,159 +87,151 @@ const DayView = styled.li`
   cursor: pointer;
   font-size: 90%;
   user-select: none;
-
   ${props => props.today && css`
-    border: 1px solid ${theme.disabled};
+    border: 1px solid ${props => props.theme.disabledContent};
   `}
 
   ${props => props.disabled && css`
     pointer-events: none;
-    color: ${theme.disabled};
+    color: ${props => props.theme.disabledContent};
   `}
-
   ${props => props.selected && css`
     &&& {
-      background: ${mainColor};
-      border-color: ${mainColor};
-      color: ${theme.negativeText};
+      background: ${props => props.theme.accent};
+      border-color: ${props => props.theme.accent};
+      color: ${props => props.theme.accentContent};
     }
   `}
-
-  &:after {
+  &::after {
     display: block;
     content: '';
     margin-top: 100%;
   }
 
   &:hover {
-    background: ${theme.contentBackgroundActive};
+    background: ${props => props.theme.surfaceHighlight};
   }
 `
 
 const WeekDay = styled(DayView)`
   pointer-events: none;
-  color: ${theme.textTertiary};
+  color: ${props => props.theme.surfaceContentSecondary};
   text-transform: uppercase;
 `
 
-class DatePicker extends React.PureComponent {
-  state = {
-    value: this.props.currentDate || new Date()
-  }
+const DatePicker = ({
+  horizontalAlign,
+  verticalAlign,
+  currentDate,
+  overlay,
+  dayFormat,
+  weekDayFormat,
+  monthFormat,
+  yearFormat,
+  monthYearFormat,
+  hideWeekDays,
+  hideMonthSelector,
+  hideYearSelector,
+  onSelect
+}) => {
+  const theme = useTheme()
+  const [ value, setValue ] = useState(currentDate || new Date())
+  const today = startOfDay(new Date())
+  //const { value: selected = today } = this.state
 
-  handleSelection = (date) => (event) => {
+  const handleSelection = (date) => (event) => {
     event.preventDefault()
 
-    if (typeof this.props.onSelect === 'function') {
-      this.props.onSelect(date)
+    if (typeof onSelect === 'function') {
+      onSelect(date)
     }
   }
 
-  nextMonth = (event) => {
+  const nextMonth = (event) => {
     event.stopPropagation()
-
-    this.setState({
-      value: addMonths(startOfMonth(this.state.value), 1)
-    })
+    setValue(addMonths(startOfMonth(value), 1))
   }
 
-  nextYear = (event) => {
+  const nextYear = (event) => {
     event.stopPropagation()
-
-    this.setState({
-      value: addYears(startOfMonth(this.state.value), 1)
-    })
+    setValue(addYears(startOfMonth(value), 1))
   }
 
-  previousMonth = (event) => {
+  const previousMonth = (event) => {
     event.stopPropagation()
-
-    this.setState({
-      value: subMonths(startOfMonth(this.state.value), 1)
-    })
+    setValue(subMonths(startOfMonth(value), 1))
   }
 
-  previousYear = (event) => {
+  const previousYear = (event) => {
     event.stopPropagation()
-
-    this.setState({
-      value: subYears(startOfMonth(this.state.value), 1)
-    })
+    setValue(subYears(startOfMonth(value), 1))
   }
 
-  render () {
-    const today = startOfDay(new Date())
-    const { value: selected = today } = this.state
+  return (
+    <Container overlay={overlay} theme={theme} horizontalAlign={horizontalAlign} verticalAlign={verticalAlign}>
+      {!hideYearSelector && (
+        <Selector>
+          <ArrowButton onClick={previousYear} theme={theme}>
+            ◀
+          </ArrowButton>
+          <Text size='normal'>
+            {formatDate(value, yearFormat)}
+          </Text>
+          <ArrowButton onClick={nextYear} theme={theme}>
+            ▶
+          </ArrowButton>
+        </Selector>
+      )}
 
-    return (
-      <Container
-        overlay={this.props.overlay}
-        horizontalAlign={this.props.horizontalAlign}
-        verticalAlign={this.props.verticalAlign}
-      >
-        {!this.props.hideYearSelector && (
-          <Selector>
-            <ArrowButton onClick={this.previousYear}>
-              ◀
-            </ArrowButton>
-            <Text size='normal'>
-              {formatDate(selected, this.props.yearFormat)}
+      {!hideMonthSelector && (
+        <Selector>
+          <ArrowButton onClick={previousMonth} theme={theme}>
+            ◀
+          </ArrowButton>
+          <Text size='large' weight='bold'>
+            {formatDate(value, !hideYearSelector
+              ? monthFormat
+              : monthYearFormat
+            )}
+          </Text>
+          <ArrowButton onClick={nextMonth} theme={theme}>
+            ▶
+          </ArrowButton>
+        </Selector>
+      )}
+
+      <MonthView>
+        {!hideWeekDays && eachDayOfInterval({
+          start: startOfWeek(value),
+          end: endOfWeek(value)
+        }).map(day => (
+          <WeekDay key={formatDate(day, 'eeeeee')} theme={theme}>
+            <Text size='xsmall'>
+              {formatDate(day, weekDayFormat)}
             </Text>
-            <ArrowButton onClick={this.nextYear}>
-              ▶
-            </ArrowButton>
-          </Selector>
-        )}
+          </WeekDay>
+        ))}
 
-        {!this.props.hideMonthSelector && (
-          <Selector>
-            <ArrowButton onClick={this.previousMonth}>
-              ◀
-            </ArrowButton>
-            <Text size='large' weight='bold'>
-              {formatDate(selected, !this.props.hideYearSelector
-                ? this.props.monthFormat
-                : this.props.monthYearFormat
-              )}
+        {eachDayOfInterval({
+          start: startOfWeek(startOfMonth(value)),
+          end: endOfWeek(endOfMonth(value))
+        }).map(day => (
+          <DayView
+            key={day.getTime()}
+            disabled={value.getMonth() !== day.getMonth()}
+            selected={isSameDay(day, currentDate)}
+            today={isSameDay(day, today)}
+            onClick={handleSelection(day)}
+            theme={theme}
+          >
+            <Text size='small'>
+              {formatDate(day, dayFormat)}
             </Text>
-            <ArrowButton onClick={this.nextMonth}>
-              ▶
-            </ArrowButton>
-          </Selector>
-        )}
-
-        <MonthView>
-          {!this.props.hideWeekDays && eachDayOfInterval({
-            start: startOfWeek(selected),
-            end: endOfWeek(selected)
-          }).map(day => (
-            <WeekDay key={formatDate(day, 'eeeeee')}>
-              <Text size='xsmall'>
-                {formatDate(day, this.props.weekDayFormat)}
-              </Text>
-            </WeekDay>
-          ))}
-
-          {eachDayOfInterval({
-            start: startOfWeek(startOfMonth(selected)),
-            end: endOfWeek(endOfMonth(selected))
-          }).map(day => (
-            <DayView
-              key={day.getTime()}
-              disabled={selected.getMonth() !== day.getMonth()}
-              selected={isSameDay(day, this.props.currentDate)}
-              today={isSameDay(day, today)}
-              onClick={this.handleSelection(day)}
-            >
-              <Text size='small'>
-                {formatDate(day, this.props.dayFormat)}
-              </Text>
-            </DayView>
-          ))}
-        </MonthView>
-      </Container>
-    )
-  }
+          </DayView>
+        ))}
+      </MonthView>
+    </Container>
+  )
 }
 
 DatePicker.propTypes = {
@@ -259,11 +251,7 @@ DatePicker.propTypes = {
   monthFormat: PropTypes.string,
   monthYearFormat: PropTypes.string,
   weekDayFormat: PropTypes.string,
-  yearFormat: PropTypes.string,
-
-  // Positioning
-  horizontalAlign: PropTypes.string,
-  verticalAlign: PropTypes.string,
+  yearFormat: PropTypes.string
 }
 
 DatePicker.defaultProps = {

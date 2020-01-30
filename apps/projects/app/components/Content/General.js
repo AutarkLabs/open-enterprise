@@ -2,7 +2,7 @@ import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
-import { Project, Empty } from '../Card'
+import { Project, NoProjects } from '../Card'
 import { Button, IconPlus, Header, useLayout } from '@aragon/ui'
 import { CARD_STRETCH_BREAKPOINT } from '../../utils/responsive'
 import { useDecoratedRepos } from '../../context/DecoratedRepos'
@@ -29,7 +29,7 @@ Wrap.propTypes = {
   children: PropTypes.node.isRequired,
 }
 
-const Overview = () => {
+const General = () => {
   const { width } = useLayout()
   const repos = useDecoratedRepos()
 
@@ -49,7 +49,7 @@ const Overview = () => {
   ))
 
   if (!repos.length) {
-    return <Wrap><Empty /></Wrap>
+    return <Wrap><NoProjects /></Wrap>
   }
 
   return (
@@ -67,4 +67,4 @@ const StyledProjects = styled.div`
     props.screenSize < CARD_STRETCH_BREAKPOINT ? 'column' : 'row'};
   flex-wrap: wrap;
 `
-export default Overview
+export default General

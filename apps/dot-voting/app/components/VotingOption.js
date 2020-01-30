@@ -76,7 +76,7 @@ const VotingOption = ({ valueSpring, label, percentage, allocation, color, thres
           position: relative;
         `}
       >
-        <BarWrapper>
+        <BarWrapper theme={theme}>
           <Bar
             style={{
               transform: valueSpring.interpolate(v => `scale3d(${v}, 1, 1)`),
@@ -124,7 +124,7 @@ const Labels = styled.div`
 
 const BarWrapper = styled.div`
   overflow: hidden;
-  background: #edf3f6;
+  background: ${({ theme }) => theme.surfaceUnder};
   border-radius: 2px;
   position: relative;
   width: 100%;

@@ -5,6 +5,7 @@ import {
   Field,
   IconClose,
   TextInput,
+  useSidePanel,
   useTheme,
 } from '@aragon/ui'
 import { Form, OptionsInput } from '../../../../../shared/ui'
@@ -35,6 +36,7 @@ ErrorMessage.propTypes = {
 }
 
 const NewVote = ({ onClose }) => {
+  const { readyToFocus } = useSidePanel()
   const { api } = useAragonApi()
   const [ description, setDescription ] = useState()
   const [ options, setOptions ] = useState({ '0':'' })
@@ -80,7 +82,7 @@ const NewVote = ({ onClose }) => {
       description,
       Object.values(options).filter(o => o !== '')
     )
-    api.newVote(callscript, '').toPromise()
+    api.newVote(callscript, description).toPromise()
     onClose()
   }
 
@@ -102,7 +104,7 @@ const NewVote = ({ onClose }) => {
           onChange={e => setDescription(e.target.value)}
           placeholder="Add your description here."
           wide
-          autofocus
+          autofocus={readyToFocus}
         />
       </Field>
       <Field

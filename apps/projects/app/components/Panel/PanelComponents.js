@@ -151,3 +151,8 @@ export const TypeFilters = styled.div`
   display: flex;
   margin-bottom: ${3 * GU}px;
 `
+export const SwitchRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin: ${GU}px 0 ${2 * GU}px 0;
+`

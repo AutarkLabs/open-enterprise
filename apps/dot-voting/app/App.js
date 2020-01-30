@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { Button, EmptyStateCard, GU, Header, IconPlus, LoadingRing, Main, SidePanel, SyncIndicator } from '@aragon/ui'
 import { useAragonApi } from './api-react'
 import { IdentityProvider } from './components/LocalIdentityBadge/IdentityManager'
-import { AppLogicProvider, useAppLogic } from './app-logic'
+import { useAppLogic } from './app-logic'
 import { NewVote } from './components/Panels'
 import Decisions from './Decisions'
 import emptyStatePng from './assets/voting-empty-state.png'
@@ -80,7 +80,8 @@ Empty.propTypes = {
 const App = () => {
   useVoteCloseWatcher()
 
-  const { api } = useAragonApi()
+  const { api, guiStyle } = useAragonApi()
+  const { appearance } = guiStyle
   const [ panelOpen, setPanelOpen ] = useState(false)
   const newVote = () => setPanelOpen(true)
   const closePanel = () => setPanelOpen(false)
@@ -95,16 +96,16 @@ const App = () => {
       .toPromise()
   }, [api])
 
-  const { isSyncing, votes } = useAppLogic()
+  const { isSyncing, votes, voteTime, pctBase } = useAppLogic()
 
   return (
-    <IdentityProvider
-      onResolve={handleResolveLocalIdentity}
-      onShowLocalIdentityModal={handleShowLocalIdentityModal}>
+    <Main  assetsUrl={ASSETS_URL} theme={appearance}>
       {!votes.length ? (
-        <Empty isSyncing={isSyncing} onClick={newVote} />
+        <Empty isSyncing={isSyncing} onClick={newVote}/>
       ) : (
-        <>
+        <IdentityProvider
+          onResolve={handleResolveLocalIdentity}
+          onShowLocalIdentityModal={handleShowLocalIdentityModal}>
           <Header
             primary="Dot Voting"
             secondary={
@@ -114,26 +115,18 @@ const App = () => {
                 onClick={newVote}
                 label="New dot vote"
               />
-            } />
-          <Decisions/>
+            }
+          />
+          <Decisions />
           <SyncIndicator visible={isSyncing} />
-        </>
+        </IdentityProvider>
       )}
       <SidePanel title='New dot vote' opened={panelOpen} onClose={closePanel}>
         <NewVote onClose={closePanel} />
       </SidePanel>
-    </IdentityProvider>
+    </Main>
   )
 }
 
-const DotVoting = () =>
-  <main>
-    <Main assetsUrl={ASSETS_URL}>
-      <AppLogicProvider>
-        <App />
-      </AppLogicProvider>
-    </Main>
-  </main>
-
 // eslint-disable-next-line react/display-name
-export default DotVoting
+export default App

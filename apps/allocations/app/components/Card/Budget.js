@@ -5,7 +5,7 @@ import BigNumber from 'bignumber.js'
 import { displayCurrency } from '../../../../../shared/ui/helpers'
 import * as types from '../../utils/prop-types'
 
-import usePathHelpers from '../../hooks/usePathHelpers'
+import usePathHelpers from '../../../../../shared/utils/usePathHelpers'
 import {
   Card,
   IconCheck,

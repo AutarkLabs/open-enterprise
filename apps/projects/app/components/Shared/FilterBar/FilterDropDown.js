@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { Spring, animated } from 'react-spring'
 import ClickOutHandler from 'react-onclickout'
-import { springs, GU, theme } from '@aragon/ui'
+import { springs, GU, useTheme } from '@aragon/ui'
 import FilterButton from './FilterButton'
 import { IconMore, IconDropArrow } from '../../../assets'
 
@@ -62,6 +62,7 @@ OverflowDropDown.defaultProps = {
 }
 
 export const FilterDropDown = ({ caption, children, enabled }) => {
+  const theme = useTheme()
   const [ opened, setOpened ] = useState(false)
   const handleClickOut = () => setOpened(false)
   const handleBaseButtonClick = () => {
@@ -71,7 +72,7 @@ export const FilterDropDown = ({ caption, children, enabled }) => {
   return (
     <SpringWrap handleClickOut={handleClickOut} opened={opened}>
       {(openProgress) => (
-        <Main>
+        <Main theme={theme}>
           <FilterButton
             onClick={handleBaseButtonClick}
             disabled={!enabled}
@@ -94,7 +95,7 @@ export const FilterDropDown = ({ caption, children, enabled }) => {
           </FilterButton>
 
           {opened &&
-            <Popup style={{ opacity: openProgress }}>
+            <Popup style={{ opacity: openProgress }} theme={theme}>
               {children}
             </Popup>
           }
@@ -113,14 +114,14 @@ FilterDropDown.defaultProps = {
 }
 
 const Main = styled(animated.div)`
-  background: ${theme.contentBackground};
+  background: ${props => props.theme.surface};
   height: 100%;
   position: relative;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0);
 `
 const Popup = styled(animated.div)`
-  background: ${theme.contentBackground};
-  border: 1px solid ${theme.contentBorder};
+  background: ${props => props.theme.surface};
+  border: 1px solid ${props => props.theme.border};
   border-radius: 3px;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.3);
   padding: ${GU}px;

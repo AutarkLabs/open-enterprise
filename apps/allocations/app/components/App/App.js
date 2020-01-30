@@ -5,7 +5,7 @@ import { Main, SidePanel, SyncIndicator } from '@aragon/ui'
 import { IdentityProvider } from '../LocalIdentityBadge/IdentityManager'
 import { BudgetDetail, Overview } from '.'
 import { usePanel } from '../../context/Panel'
-import usePathHelpers from '../../hooks/usePathHelpers'
+import usePathHelpers from '../../../../../shared/utils/usePathHelpers'
 import { Empty } from '../Card'
 
 function Routes() {
@@ -22,8 +22,9 @@ function Routes() {
 }
 
 const App = () => {
-  const { api, appState } = useAragonApi()
+  const { api, appState, guiStyle } = useAragonApi()
   const { isSyncing = true } = appState
+  const { appearance } = guiStyle
 
   const { panel, panelOpen, setPanel } = usePanel()
 
@@ -42,7 +43,7 @@ const App = () => {
   const PanelContent = panel ? panel.content : null
 
   return (
-    <Main>
+    <Main theme={appearance}>
       <IdentityProvider
         onResolve={handleResolveLocalIdentity}
         onShowLocalIdentityModal={handleShowLocalIdentityModal}

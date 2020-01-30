@@ -2,19 +2,26 @@ import React from 'react'
 import { useAppState, useNetwork } from '@aragon/api-react'
 import {
   DataView,
-  IconCheck,
   IconCross,
   ProgressBar,
   Text,
   useLayout,
   useTheme,
 } from '@aragon/ui'
+import IconDoubleCheck
+  from '../../../../../shared/ui/components/assets/svg/IconDoubleCheck'
 import LocalIdentityBadge from '../LocalIdentityBadge/LocalIdentityBadge'
 import { BigNumber } from 'bignumber.js'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
-import { STATUSES } from '../../utils/constants'
+import {
+  STATUSES,
+  STATUS_APPROVED,
+  STATUS_ENACTED,
+  STATUS_REJECTED,
+  STATUS_UNDERGOING_VOTE,
+} from '../../utils/constants'
 import { displayCurrency } from '../../../../../shared/ui/helpers'
 import { addressesEqual } from '../../../../../shared/lib/web3-utils'
 
@@ -122,8 +129,12 @@ const Status = ({ code }) => {
   const theme = useTheme()
   return (
     <StatusContent theme={theme} code={code}>
-      { code === 1 && <IconCross size="medium" color={theme.negative} /> }
-      { code > 1 && <IconCheck size="medium" color={theme.positive} /> }
+      { code === STATUS_REJECTED &&
+        <IconCross size="medium" color={theme.negative} />
+      }
+      { (code === STATUS_APPROVED || code === STATUS_ENACTED) &&
+        <IconDoubleCheck size="medium" color={theme.positive} />
+      }
       <StatusText>
         {STATUSES[code]}
       </StatusText>
@@ -132,7 +143,7 @@ const Status = ({ code }) => {
 }
 
 Status.propTypes = {
-  code: PropTypes.number.isRequired,
+  code: PropTypes.string.isRequired,
 }
 
 const Amount = styled.div`
@@ -160,8 +171,11 @@ const RecipientAmount = styled.div`
  `
 
 const StatusContent = styled.div`
-  color: ${({ code, theme }) => code === 0 ?
-    theme.contentSecondary : theme.content};
+  color: ${({ code, theme }) => code === STATUS_UNDERGOING_VOTE
+    ? theme.contentSecondary
+    : code === STATUS_REJECTED
+      ? theme.negative
+      : theme.positive };
   display: flex;
   align-items: center;
 `
