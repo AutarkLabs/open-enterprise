@@ -8,6 +8,7 @@ import {
   REQUESTED_GITHUB_DISCONNECT,
   REPO_ADDED,
   REPO_REMOVED,
+  ISSUE_UPDATED,
   BOUNTY_ADDED,
   ASSIGNMENT_REQUESTED,
   ASSIGNMENT_APPROVED,
@@ -30,7 +31,8 @@ import {
   updateIssueDetail,
   syncIssues,
   syncTokens,
-  syncSettings
+  syncSettings,
+  loadDecoupledIssueData
 } from './helpers'
 
 import { STATUS } from '../utils/github'
@@ -39,6 +41,7 @@ import { app } from './app'
 
 export const handleEvent = async (state, action, vaultAddress, vaultContract, settings) => {
   const { event, returnValues, address } = action
+  console.log('event: ', action)
   switch (event) {
   case SYNC_STATUS_SYNCING: {
     return {
@@ -86,6 +89,15 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract, se
     if (repoIndex === -1) return state
     state.repos.splice(repoIndex,1)
     return state
+  }
+  case ISSUE_UPDATED: {
+    if(!returnValues || !returnValues.repoId) return state
+    const id = returnValues.repoId
+    const repoIndex = state.repos.findIndex(repo => repo.id === id)
+    if(repoIndex === -1) return state
+    if(!state.repos[repoIndex].data.decoupled) return state
+    const issueData = await loadDecoupledIssueData(returnValues)
+    return syncIssues(state, returnValues, issueData)
   }
   case BOUNTY_ADDED: {
     if(!returnValues) return state

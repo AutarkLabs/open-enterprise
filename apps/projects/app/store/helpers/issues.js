@@ -78,6 +78,14 @@ export const loadIpfsData = async ipfsHash => {
   }
 }
 
+export const loadDecoupledIssueData = 
+  async ({ repoId, issueNumber }) => {
+    const {
+      data: ipfsHash
+    } = await app.call('getIssue', repoId, issueNumber).toPromise()
+    return ipfsGet(ipfsHash)
+  }
+
 const existPendingApplications = issue => {
   if (!('requestsData' in issue) || issue.requestsData.length === 0) return false
   return issue.requestsData.filter(rd => !('review' in rd)).length > 0
