@@ -33,7 +33,10 @@ class NewIssue extends React.PureComponent {
   state = NewIssue.initialState
   static propTypes = {
     account: PropTypes.string,
+    api: PropTypes.any.isRequired,
     closePanel: PropTypes.func.isRequired,
+    issues: PropTypes.array,
+    repoHexIds: PropTypes.array,
     reposManaged: PropTypes.oneOfType([
       PropTypes.string,
       PropTypes.arrayOf(
@@ -107,6 +110,7 @@ class NewIssue extends React.PureComponent {
 
     const handleSubmit = async e => {
       e.preventDefault()
+      this.props.closePanel()
       const newIssueData = {
         number: issues.filter(i => i.id === repoHexIds[selectedProject - 1]).length,
         id: repoHexIds[selectedProject - 1],
