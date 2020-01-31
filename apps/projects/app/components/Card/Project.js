@@ -20,7 +20,7 @@ import {
   CARD_STRETCH_BREAKPOINT,
 } from '../../utils/responsive'
 import { useAragonApi } from '../../api-react'
-import { toHex } from 'web3-utils'
+import { hexToAscii } from 'web3-utils'
 import { usePanelManagement } from '../Panel'
 
 const pluralize = (word, number) => `${word}${number > 1 ? 's' : ''}`
@@ -30,7 +30,7 @@ const Project = ({
   description,
   label,
   url,
-  key
+  repoId
 }) => {
   const {
     api: { removeRepo },
@@ -38,7 +38,7 @@ const Project = ({
   } = useAragonApi()
   const { requestPath } = usePathHelpers()
   const bountiesCount = issues.filter(i =>
-    i.data.key === key &&
+    i.data.repoId === repoId &&
     i.data.workStatus !== 'fulfilled' &&
     new Date() < new Date(i.data.deadline)
   ).length
@@ -46,18 +46,22 @@ const Project = ({
   const { width } = useLayout()
   const { editProject } = usePanelManagement()
 
+  const repoIdToAscii = (repoId) => {
+    return decoupled ? repoId : hexToAscii(repoId)
+  }
+
   const removeProject = () => {
-    removeRepo(toHex(key)).toPromise()
+    removeRepo(repoId).toPromise()
     // TODO: Toast feedback here maybe
   }
 
-  const handleEditProject = () => editProject(key, label, description)
+  const handleEditProject = () => editProject(repoIdToAscii(repoId), label, description)
 
   const clickMenu = e => e.stopPropagation()
 
   const clickContext = e => {
     e.stopPropagation()
-    requestPath(`/projects/${key}`)
+    requestPath(`/projects/${repoIdToAscii(repoId)}`)
   }
 
   return (
@@ -127,7 +131,7 @@ Project.propTypes = {
   decoupled: PropTypes.bool.isRequired,
   description: PropTypes.string.isRequired,
   label: PropTypes.string.isRequired,
-  key: PropTypes.string.isRequired,
+  repoId: PropTypes.string.isRequired,
   url: PropTypes.string.isRequired,
 }
 

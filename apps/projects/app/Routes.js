@@ -12,7 +12,12 @@ export default function Routes({ handleGithubSignIn }) {
 
   const { repoId } = parsePath('^/projects/:repoId')
   const repo = React.useMemo(() => {
-    return repos.find(r => r.data._repo === repoId)
+    return repos.find(r => {
+      if(r.decoupled){
+        return r.id === repoId
+      }
+      return r.data._repo === repoId
+    })
   }, [ repos, repoId ])
   if (repo) return <ProjectDetail repo={repo} />
 

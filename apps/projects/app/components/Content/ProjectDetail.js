@@ -196,7 +196,7 @@ class ProjectDetail extends React.PureComponent {
   )
 
   render() {
-    const { data, loading, error, refetch, fetchMore } = this.props.graphqlQuery
+    const { data, loading, error, refetch, fetchMore } = this.props.repo.decoupled ? {} : this.props.graphqlQuery
 
     if (error) return this.queryError(error, refetch)
 
@@ -212,7 +212,7 @@ class ProjectDetail extends React.PureComponent {
 
     return (
       <StyledIssues>
-        {this.filterBar(allIssues, filteredIssues)}
+        {!this.props.repo.decoupled && this.filterBar(allIssues, filteredIssues)}
 
         <IssuesScrollView>
           <ScrollWrapper>
@@ -295,11 +295,11 @@ const ProjectDetailWrap = ({ repo, ...props }) => {
   const shapeIssue = useShapedIssue()
   const { setupNewIssue } = usePanelManagement()
   const [ query, setQueryRaw ] = useState({
-    repo: `${repo.metadata.owner}/${repo.metadata.name}`,
+    repo: repo.decoupled ? repo.id : `${repo.metadata.owner}/${repo.metadata.name}`,
     search: '',
     sort: 'updated-desc',
-    owner: repo.metadata.owner,
-    name: repo.metadata.name,
+    owner: repo.decoupled ? '' : repo.metadata.owner,
+    name: repo.decoupled ? '' : repo.metadata.name,
     labels: [],
   })
   const updateTextSearch = text => {

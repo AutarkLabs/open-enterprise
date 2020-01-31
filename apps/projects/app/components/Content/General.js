@@ -38,6 +38,7 @@ const General = () => {
       decoupled={repo.decoupled}
       description={repo.metadata.description}
       key={repo.id}
+      repoId={repo.id}
       label={repo.metadata.name}
       url={repo.metadata.url}
     />
