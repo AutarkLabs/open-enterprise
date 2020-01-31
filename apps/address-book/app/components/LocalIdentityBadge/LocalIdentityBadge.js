@@ -1,26 +1,55 @@
 import React from 'react'
-import PropTypes from 'prop-types'
-import { useNetwork } from '@aragon/api-react'
-import { IdentityBadge } from '@aragon/ui'
+import { useNetwork } from '../../api-react'
+import { GU, IconLabel, IdentityBadge, Link, useTheme } from '@aragon/ui'
 import { useIdentity } from './IdentityManager'
 import LocalLabelPopoverTitle from './LocalLabelPopoverTitle'
 import LocalLabelPopoverActionLabel from './LocalLabelPopoverActionLabel'
 
-const LocalIdentityBadge = ({ entity, forceAddress, ...props }) => {
+const LocalIdentityBadge = ({ entity, ...props }) => {
   const network = useNetwork()
-  const [ label, showLocalIdentityModal ] = useIdentity(entity)
-  const handleClick = () => showLocalIdentityModal(entity)
+  const [ label, source, handleShowLocalIdentityModal ] = useIdentity(entity)
+  const handleCustomLabel = () => handleShowLocalIdentityModal(entity)
+  const handleProfile = () => {}
+  const getPopoverAction = () => {
+    const theme = useTheme()
+    //if(source === 'addressBook') return null
+    if(source === '3box') {
+      return {
+        label: (
+          <Link
+            href={`https://www.3box.io/${entity}`}
+            css={`
+              display: flex;
+              align-items: center;
+              text-decoration: none;
+              color: ${theme.contentSecondary}
+            `}
+          >
+            <IconLabel
+              css={`
+                margin-right: ${1 * GU}px;
+              `}
+            />
+            View profile
+          </Link>
+        ),
+        onClick: handleProfile
+      }
+    }
+    return {
+      label: <LocalLabelPopoverActionLabel hasLabel={Boolean(label)} />,
+      onClick: handleCustomLabel
+    }
+  }
+
   return (
     <IdentityBadge
-      label={(!forceAddress && label) || ''}
+      label={label || ''}
       entity={entity}
       networkType={network && network.type}
-      popoverAction={{
-        label: <LocalLabelPopoverActionLabel hasLabel={Boolean(label)} />,
-        onClick: handleClick,
-      }}
+      popoverAction={getPopoverAction()}
       popoverTitle={
-        label ? <LocalLabelPopoverTitle label={label} /> : undefined
+        <LocalLabelPopoverTitle label={label || ''} source={source}/>
       }
       {...props}
     />
@@ -29,7 +58,6 @@ const LocalIdentityBadge = ({ entity, forceAddress, ...props }) => {
 
 LocalIdentityBadge.propTypes = {
   ...IdentityBadge.propTypes,
-  forceAddress: PropTypes.bool
 }
 
 export default LocalIdentityBadge

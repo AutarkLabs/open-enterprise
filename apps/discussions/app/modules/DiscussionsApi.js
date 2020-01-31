@@ -3,7 +3,7 @@ import { ipfs } from '../ipfs'
 
 const eventTypes = new Set(['Post', 'Revise', 'Hide'])
 
-class Discussions {
+class DiscussionsApi {
   constructor(api) {
     this.address = ''
     this.abi = []
@@ -27,7 +27,10 @@ class Discussions {
 
   _fetchDiscussionAppInfo = () =>
     new Promise(resolve => {
+      console.log('Aragon api: ', this.api)
+
       this.api.getApps().subscribe(apps => {
+        console.log('Apps: ', apps)
         const { abi, proxyAddress } = apps.find(
           app => app.name === 'Discussions'
         )
@@ -308,4 +311,4 @@ class Discussions {
     this.contract.hide(postId, discussionThreadId).toPromise()
 }
 
-export default Discussions
+export default DiscussionsApi

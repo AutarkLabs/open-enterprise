@@ -55,7 +55,7 @@ const App = () => {
           opened={panelOpen}
           onClose={() => setPanel(null)}
         >
-          {panel && <PanelContent {...panel.data} />}
+          {panel ? <PanelContent {...panel.data} /> : <></>}
         </SidePanel>
       </IdentityProvider>
     </Main>

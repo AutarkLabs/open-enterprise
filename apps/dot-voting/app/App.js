@@ -97,11 +97,11 @@ const App = () => {
       .toPromise()
   }, [api])
 
-  const { isSyncing, votes, voteTime, pctBase } = useAppLogic()
+  const { isSyncing, votes } = useAppLogic()
 
   return (
     <Main  assetsUrl={ASSETS_URL} theme={theme || appearance}>
-      <Discussions app={api}>
+      <Discussions aragonApi={api}>
         {!votes.length ? (
           <Empty isSyncing={isSyncing} onClick={newVote}/>
         ) : (

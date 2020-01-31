@@ -1,91 +1,62 @@
 import React from 'react'
-import PropTypes from 'prop-types'
-import styled from 'styled-components'
-import { Badge, IdentityBadge, font } from '@aragon/ui'
-import { IdentityContext } from './IdentityManager'
+import { useNetwork } from '../api-react'
+import { IconLabel, IdentityBadge, GU, Link, useTheme } from '@aragon/ui'
+import { useIdentity } from './IdentityManager'
+import LocalLabelPopoverTitle from './LocalLabelPopoverTitle'
+import LocalLabelPopoverActionLabel from './LocalLabelPopoverActionLabel'
 
-function useIdentity(address) {
-  const [ name, setName ] = React.useState(null)
-  const { resolve, updates$, showLocalIdentityModal } = React.useContext(
-    IdentityContext
-  )
-
-  const handleNameChange = metadata => {
-    setName(metadata ? metadata.name : null)
-  }
-
-  const handleShowLocalIdentityModal = address => {
-    // Emit an event whenever the modal is closed (when the promise resolves)
-    return showLocalIdentityModal(address)
-      .then(() => updates$.next(address))
-      .catch(e => null)
-  }
-
-  React.useEffect(() => {
-    resolve(address).then(handleNameChange)
-
-    const subscription = updates$.subscribe(updatedAddress => {
-      if (updatedAddress.toLowerCase() === address.toLowerCase()) {
-        // Resolve and update state when the identity have been updated
-        resolve(address).then(handleNameChange)
+const LocalIdentityBadge = ({ entity, networkType, ...props }) => {
+  const [ label, source, handleShowLocalIdentityModal ] = useIdentity(entity)
+  const handleCustomLabel = () => handleShowLocalIdentityModal(entity)
+  const handleProfile = () => {}
+  const getPopoverAction = () => {
+    const theme = useTheme()
+    //if(source === 'addressBook') return null
+    if(source === '3box') {
+      return {
+        label: (
+          <Link
+            href={`https://www.3box.io/${entity}`}
+            css={`
+              display: flex;
+              align-items: center;
+              text-decoration: none;
+              color: ${theme.contentSecondary}
+            `}
+          >
+            <IconLabel
+              css={`
+                margin-right: ${1 * GU}px;
+              `}
+            />
+            View profile
+          </Link>
+        ),
+        onClick: handleProfile
       }
-    })
-    return () => subscription.unsubscribe()
-  }, [address])
+    }
+    return {
+      label: <LocalLabelPopoverActionLabel hasLabel={Boolean(label)} />,
+      onClick: handleCustomLabel
+    }
+  }
 
-  return [ name, handleShowLocalIdentityModal ]
-}
-
-const LocalIdentityBadge = ({ entity, forceAddress, ...props }) => {
-  const [ label, showLocalIdentityModal ] = useIdentity(entity)
-  const handleClick = () => showLocalIdentityModal(entity)
   return (
     <IdentityBadge
-      customLabel={(!forceAddress && label) || ''}
+      label={label || ''}
       entity={entity}
-      popoverAction={{
-        label: `${label ? 'Edit' : 'Add'} custom label`,
-        onClick: handleClick,
-      }}
+      networkType={networkType}
+      popoverAction={getPopoverAction()}
       popoverTitle={
-        label ? (
-          <Wrap>
-            <Label>{label}</Label>
-            <StyledBadge>Custom label</StyledBadge>
-          </Wrap>
-        ) : (
-          'Address'
-        )
+        <LocalLabelPopoverTitle label={label || ''} source={source}/>
       }
-      fontSize="large"
       {...props}
     />
   )
 }
 
 LocalIdentityBadge.propTypes = {
-  entity: PropTypes.string.isRequired,
-  forceAddress: PropTypes.bool
+  ...IdentityBadge.propTypes,
 }
-
-const Wrap = styled.div`
-  display: grid;
-  align-items: center;
-  grid-template-columns: auto 1fr;
-  padding-right: 24px;
-`
-
-const Label = styled.span`
-  display: inline-block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-`
-
-const StyledBadge = styled(Badge)`
-  margin-left: 16px;
-  text-transform: uppercase;
-  ${font({ size: 'xxsmall' })};
-`
 
 export default LocalIdentityBadge

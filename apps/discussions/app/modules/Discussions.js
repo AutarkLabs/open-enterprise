@@ -5,19 +5,19 @@ import useHandshake from './useHandshake'
 
 export const DiscussionsContext = createContext({})
 
-const Discussions = ({ children, app }) => {
+const Discussions = ({ children, aragonApi }) => {
   const [hasInit, setHasInit] = useState(false)
   const [discussions, setDiscussions] = useState({})
-  const [discussionApi, setDiscussionApi] = useState({})
+  const [discussionsApi, setDiscussionsApi] = useState({})
   const { handshakeOccured } = useHandshake()
 
   useEffect(() => {
     const initDiscussions = async () => {
-      const api = new DiscussionsApi(app)
+      const api = new DiscussionsApi(aragonApi)
       await api.init()
       const discussionData = await api.collect()
       setDiscussions(discussionData)
-      setDiscussionApi(api)
+      setDiscussionsApi(api)
       setHasInit(true)
 
       api.listenForUpdates(setDiscussions)
@@ -27,7 +27,9 @@ const Discussions = ({ children, app }) => {
     }
   }, [hasInit, handshakeOccured])
   return (
-    <DiscussionsContext.Provider value={{ discussions, discussionApi, app }}>
+    <DiscussionsContext.Provider
+      value={{ discussions, discussionsApi, api: aragonApi }}
+    >
       {children}
     </DiscussionsContext.Provider>
   )
@@ -35,7 +37,7 @@ const Discussions = ({ children, app }) => {
 
 Discussions.propTypes = {
   children: PropTypes.node.isRequired,
-  app: PropTypes.object,
+  aragonApi: PropTypes.object,
 }
 
 export default Discussions

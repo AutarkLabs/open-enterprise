@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { Box, GU, useTheme } from '@aragon/ui'
+import { IdentityProvider } from './LocalIdentityBadge/IdentityManager'
 import { useDiscussion } from './'
 import Comment from './Comment'
 import CommentForm from './CommentForm'
@@ -17,11 +18,11 @@ const CommentsBox = styled(Box)`
 `
 const Discussion = ({ discussionId, ethereumAddress, className }) => {
   const theme = useTheme()
-  const { discussion, discussionApi, app } = useDiscussion(discussionId)
+  const { discussion, discussionsApi, api } = useDiscussion(discussionId)
 
   const save = ({ text, id, revisions, postCid }) =>
     id
-      ? discussionApi.revise(
+      ? discussionsApi.revise(
           text,
           discussionId,
           id,
@@ -29,9 +30,19 @@ const Discussion = ({ discussionId, ethereumAddress, className }) => {
           revisions,
           ethereumAddress
         )
-      : discussionApi.post(text, discussionId, ethereumAddress)
+      : discussionsApi.post(text, discussionId, ethereumAddress)
 
-  const hide = ({ id }) => () => discussionApi.hide(id, discussionId)
+  const hide = ({ id }) => () => discussionsApi.hide(id, discussionId)
+
+  const handleResolveLocalIdentity = useCallback(address => {
+    return api.resolveAddressIdentity(address).toPromise()
+  }, [api])
+
+  const handleShowLocalIdentityModal = useCallback(address => {
+    return api
+      .requestAddressIdentityModification(address)
+      .toPromise()
+  }, [api])
 
   // aragon wrapper currently places a question mark "help" icon at the bottom
   // right of the page, which overlaps the form submit buttons, given its current
@@ -39,21 +50,25 @@ const Discussion = ({ discussionId, ethereumAddress, className }) => {
   // able to remove this 40px spacer.
   return (
     <div className={className} css="margin-bottom: 40px">
-      {discussion.length > 0 && (
-        <CommentsBox heading='Comments' theme={theme}>
-          {discussion.map(comment => (
-            <Comment
-              app={app}
-              comment={comment}
-              currentUser={ethereumAddress}
-              key={comment.id}
-              onDelete={hide(comment)}
-              onSave={save}
-            />
-          ))}
-        </CommentsBox>
-      )}
-      <CommentForm onSave={save} />
+      <IdentityProvider
+        onResolve={handleResolveLocalIdentity}
+        onShowLocalIdentityModal={handleShowLocalIdentityModal}
+      >
+        {discussion.length > 0 && (
+          <CommentsBox heading='Comments' theme={theme}>
+            {discussion.map(comment => (
+              <Comment
+                comment={comment}
+                currentUser={ethereumAddress}
+                key={comment.id}
+                onDelete={hide(comment)}
+                onSave={save}
+              />
+            ))}
+          </CommentsBox>
+        )}
+        <CommentForm onSave={save} />
+      </IdentityProvider>
     </div>
   )
 }

@@ -10,13 +10,16 @@ const IdentityContext = React.createContext({
 })
 
 function useIdentity(address) {
-  const [ name, setName ] = useState(null)
+  const [ label, setLabel ] = useState(null)
+  const [ source, setSource ] = useState(null)
+  //const [ image, setImage ] = useState(null)
   const { resolve, updates$, showLocalIdentityModal } = useContext(
     IdentityContext
   )
 
-  const handleNameChange = useCallback(metadata => {
-    setName(metadata ? metadata.name : null)
+  const handleChange = useCallback(metadata => {
+    setLabel(metadata ? metadata.name : null)
+    setSource(metadata && metadata.source ? metadata.source : null)
   }, [])
 
   const handleShowLocalIdentityModal = useCallback(
@@ -30,18 +33,18 @@ function useIdentity(address) {
   )
 
   useEffect(() => {
-    resolve(address).then(handleNameChange)
+    resolve(address).then(handleChange)
 
     const subscription = updates$.subscribe(updatedAddress => {
       if (updatedAddress.toLowerCase() === address.toLowerCase()) {
         // Resolve and update state when the identity have been updated
-        resolve(address).then(handleNameChange)
+        resolve(address).then(handleChange)
       }
     })
     return () => subscription.unsubscribe()
-  }, [ address, handleNameChange, updates$ ])
+  }, [ address, handleChange, updates$ ])
 
-  return [ name, handleShowLocalIdentityModal ]
+  return [ label, source, handleShowLocalIdentityModal ]
 }
 
 const IdentityProvider = ({

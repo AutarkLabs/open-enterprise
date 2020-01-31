@@ -4,8 +4,6 @@ import PropTypes from 'prop-types'
 import { Button, Field, TextInput, Text, useTheme } from '@aragon/ui'
 import { IconMarkdown } from '../../../../shared/ui'
 
-const input = createRef()
-
 const Buttons = styled.div`
   display: grid;
   grid-gap: 10px;
@@ -33,11 +31,6 @@ const CommentForm = ({ defaultValue, onCancel, onSave }) => {
   const theme = useTheme()
   const [text, setText] = useState(defaultValue || '')
 
-  useEffect(() => {
-    setText(defaultValue)
-    if (defaultValue && input.current) input.current.focus()
-  }, [defaultValue])
-
   const [cancelInProgress, setCancelInProgress] = useState(false)
   const startCancel = () => setCancelInProgress(true)
   const abortCancel = () => setCancelInProgress(false)
@@ -61,7 +54,6 @@ const CommentForm = ({ defaultValue, onCancel, onSave }) => {
     <form onSubmit={submit}>
       <Field label="Your Comment">
         <Input
-          ref={input}
           autoFocus={!!defaultValue}
           onChange={e => setText(e.target.value)}
           name="text"
