@@ -114,6 +114,7 @@ class NewIssue extends React.PureComponent {
 
     const handleSubmit = async e => {
       e.preventDefault()
+      this.props.closePanel()
       const newIssueData = {
         number: issues.filter(i => i.id === repoHexIds[selectedProject - 1]).length,
         id: repoHexIds[selectedProject - 1],
