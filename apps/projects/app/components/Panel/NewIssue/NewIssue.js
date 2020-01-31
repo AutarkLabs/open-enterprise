@@ -35,6 +35,9 @@ class NewIssue extends React.PureComponent {
   state = NewIssue.initialState
   static propTypes = {
     account: PropTypes.string,
+    api: PropTypes.object.isRequired,
+    issues: PropTypes.array.isRequired,
+    repoHexIds: PropTypes.array.isRequired,
     closePanel: PropTypes.func.isRequired,
     graphqlMutation: PropTypes.array,
     reposManaged: PropTypes.oneOfType([
@@ -46,6 +49,7 @@ class NewIssue extends React.PureComponent {
         })
       ),
     ]).isRequired, // array of managed repos
+    scope: PropTypes.bool.isRequired
   }
 
   static initialState = {
@@ -129,22 +133,16 @@ class NewIssue extends React.PureComponent {
     }
 
     // TODO: refetch Issues list after mutation
-    const [ newIssue, { loading, error }] = this.props.graphqlMutation
+    const [{ loading, error }] = this.props.graphqlMutation
+    if (this.props.scope && selectedProject > 0 && !reposManaged[selectedProject - 1].decoupled) return <AuthorizeGitHub />
 
     if (loading) return <Creating />
 
     if (error) return <div css={`margin-top: ${3 * GU}px`}>Error</div>
 
     return (
-      <Form
-        css={`margin-top: ${3 * GU}px`}
-        onSubmit={async () => {
-          await newIssue({ variables: { title, description, id } })
-          this.props.closePanel()
-        }}
-        submitText="Submit Issue"
-        submitDisabled={this.canSubmit()}
-      >
+      <div css={`margin: ${3 * GU}px 0`}>
+
         <Field label="Project">
           <DropDown
             items={items}
@@ -228,7 +226,7 @@ class NewIssue extends React.PureComponent {
             }}
           </Mutation>
         ))}
-      </Form>
+      </div>
     )
   }
 }
@@ -238,14 +236,13 @@ class NewIssue extends React.PureComponent {
 const NewIssueWrap = () => {
   const { closePanel } = usePanelManagement()
   const repos = useDecoratedRepos()
-  const { appState: { github, issues }, api, connectedAccount } = useAragonApi()
+  const { appState: { issues, github }, api, connectedAccount } = useAragonApi()
 
   const graphqlMutation = useMutation(NEW_ISSUE, {
     onError: console.error,
     refetchQueries: ['SearchIssues'], // TODO: doesn't work; needs delay before refetch
   })
 
-  if (!github.scope) return <AuthorizeGitHub />
 
   const repoNames = repos
     ? repos.map(repo => ({
@@ -268,6 +265,7 @@ const NewIssueWrap = () => {
       reposManaged={repoNames}
       reposIds={reposIds}
       repoHexIds={repoHexIds}
+      scope = {!github.scope}
     />
   )
 }

@@ -11,10 +11,11 @@ import useShapedIssue from '../../hooks/useShapedIssue'
 import { useBountyIssues } from '../../context/BountyIssues'
 import { issueAttributes, SEARCH_ISSUES } from '../../utils/gql-queries.js'
 import { Issue } from '../Card'
-import { FilterBar, LoadingAnimation } from '../Shared'
+import { FilterBar, FilterBarDecoupled, LoadingAnimation } from '../Shared'
 import { usePanelManagement } from '../Panel'
 import usePathHelpers from '../../../../../shared/utils/usePathHelpers'
 import { repoShape } from '../../utils/shapes.js'
+import { useAragonApi } from '../../api-react'
 
 const sortOptions = {
   'updated-desc': {
@@ -30,6 +31,7 @@ const sortOptions = {
 class ProjectDetail extends React.PureComponent {
   static propTypes = {
     bountyIssues: PropTypes.array.isRequired,
+    issues: PropTypes.array.isRequired,
     filters: PropTypes.object.isRequired,
     graphqlQuery: PropTypes.shape({
       data: PropTypes.object,
@@ -178,7 +180,29 @@ class ProjectDetail extends React.PureComponent {
       />
     )
   }
-
+  filterBarDecoupled = (allIssues, filteredIssues) => {
+    return (
+      <FilterBarDecoupled
+        setParentFilters={this.props.setFilters}
+        filters={this.props.filters}
+        issues={allIssues}
+        issuesFiltered={filteredIssues}
+        handleFiltering={this.handleFiltering}
+        handleSorting={this.props.setSortBy}
+        bountyIssues={this.props.bountyIssues}
+        disableFilter={this.disableFilter}
+        disableAllFilters={this.disableAllFilters}
+        deselectAllIssues={this.deselectAllIssues}
+        onSearchChange={this.handleTextFilter}
+        selectedIssues={Object.keys(this.state.selectedIssues).map(
+          id => this.state.selectedIssues[id]
+        )}
+        sortBy={this.props.sortBy}
+        sortOptions={sortOptions}
+        repo={this.props.repo}
+      />
+    )
+  }
   queryError = (error, refetch) => (
     <StyledIssues>
       {this.filterBar([], [])}
@@ -197,14 +221,15 @@ class ProjectDetail extends React.PureComponent {
 
   render() {
     const { data, loading, error, refetch, fetchMore } = this.props.repo.decoupled ? {} : this.props.graphqlQuery
-
     if (error) return this.queryError(error, refetch)
 
     let dataSource
     let pageInfo
-    if (data) {
+    if (data && !this.props.repo.decoupled) {
       pageInfo = data.repository ? data.repository.issues.pageInfo : data.search.pageInfo
       dataSource = data.repository ? data.repository.issues.nodes : data.search.issues
+    } else {
+      dataSource = this.props.issues
     }
 
     const allIssues = dataSource ? dataSource.map(this.props.shapeIssue) : []
@@ -212,7 +237,7 @@ class ProjectDetail extends React.PureComponent {
 
     return (
       <StyledIssues>
-        {!this.props.repo.decoupled && this.filterBar(allIssues, filteredIssues)}
+        {this.props.repo.decoupled ? this.filterBarDecoupled(allIssues, filteredIssues): this.filterBar(allIssues, filteredIssues)}
 
         <IssuesScrollView>
           <ScrollWrapper>
@@ -292,14 +317,17 @@ const ProjectDetailWrap = ({ repo, ...props }) => {
   const bountyIssues = useBountyIssues().filter(issue =>
     issue.repoId === repo.data._repo
   )
+  const { appState } = useAragonApi()
+  const issues = appState.issues.filter(issue => issue.data.id === repo.id).map(issue => issue.data)
+  
   const shapeIssue = useShapedIssue()
   const { setupNewIssue } = usePanelManagement()
   const [ query, setQueryRaw ] = useState({
     repo: repo.decoupled ? repo.id : `${repo.metadata.owner}/${repo.metadata.name}`,
     search: '',
     sort: 'updated-desc',
-    owner: repo.decoupled ? '' : repo.metadata.owner,
-    name: repo.decoupled ? '' : repo.metadata.name,
+    owner: repo.decoupled ? 'AutarkLabs' : repo.metadata.owner,
+    name: repo.decoupled ? 'open-enterprise' : repo.metadata.name,
     labels: [],
   })
   const updateTextSearch = text => {
@@ -377,7 +405,6 @@ const ProjectDetailWrap = ({ repo, ...props }) => {
     setSortByRaw(sort)
     setQuery({ sort })
   }
-
   return (
     <>
       <Header
@@ -388,6 +415,7 @@ const ProjectDetailWrap = ({ repo, ...props }) => {
       />
       <ProjectDetail
         bountyIssues={bountyIssues}
+        issues={issues}
         filters={filters}
         graphqlQuery={graphqlQuery}
         viewIssue={viewIssue}
