@@ -1,13 +1,16 @@
 const { hash: namehash } = require('eth-ens-namehash')
 
 const ARAGON_APPS = [
-  //   { name: 'agent', contractName: 'Agent' },
+  { name: 'agent', contractName: 'Agent' },
   { name: 'vault', contractName: 'Vault' },
   { name: 'voting', contractName: 'Voting' },
   //   { name: 'survey', contractName: 'Survey' },
   //   { name: 'payroll', contractName: 'Payroll' },
   { name: 'finance', contractName: 'Finance' },
-  { name: 'token-manager', contractName: 'TokenManager' },
+  //{ name: 'token-manager-custom', contractName: 'TokenManager' },
+  //{ name: 'whitelist-oracle', contractName: 'WhitelistOracle' },
+  { name: 'token-manager.hatch', contractName: 'TokenManager' },
+  { name: 'whitelist-oracle.hatch', contractName: 'WhitelistOracle' },
 ]
   
 const ARAGON_APP_IDS = ARAGON_APPS.reduce((ids, { name }) => {

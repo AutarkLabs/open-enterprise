@@ -1,391 +1,321 @@
-/* global artifacts, assert, before, context, contract, it, web3 */
-const { hash: namehash } = require('eth-ens-namehash')
-const encodeCall = require('@aragon/templates-shared/helpers/encodeCall')
-const assertRevert = require('@aragon/templates-shared/helpers/assertRevert')(web3)
+/* eslint-disable no-console */
+/* global artifacts, assert, before, context, contract, it */
+
 const { randomId } = require('@aragon/templates-shared/helpers/aragonId')
-const { assertRole, assertMissingRole, assertRoleNotGranted } = require('@aragon/templates-shared/helpers/assertRole')(web3)
-const { getEventArgument } = require('@aragon/test-helpers/events')
+const truffleAssert = require('truffle-assertions')
 
+const { APPS, APP_IDS } = require('../temp/helpers/apps')
 
-// Needed to fork and customize these dependencies from "@aragon/templates-shared"
-const { APP_IDS } = require('../temp/helpers/apps')
-const { getENS, getTemplateAddress } = require('../temp/lib/ens')(web3, artifacts)
-const { getInstalledAppsById } = require('../temp/helpers/events')(artifacts)
+const namehash = require('eth-ens-namehash').hash
+const promisify = require('util').promisify
+const exec = promisify(require('child_process').exec)
+const keccak256 = require('js-sha3').keccak_256
 
-const OpenEnterpriseTemplate = artifacts.require('OpenEnterpriseTemplate')
-const ACL = artifacts.require('ACL')
-const Kernel = artifacts.require('Kernel')
-const Vault = artifacts.require('Vault')
-const Voting = artifacts.require('Voting')
-const Finance = artifacts.require('Finance')
-const TokenManager = artifacts.require('TokenManager')
-const MiniMeToken = artifacts.require('MiniMeToken')
-const PublicResolver = artifacts.require('PublicResolver')
-const EVMScriptRegistry = artifacts.require('EVMScriptRegistry')
+/** Helper function to import truffle contract artifacts */
+const getContract = name => artifacts.require(name)
 
-// Open Enterprise Apps
-const AddressBook = artifacts.require('AddressBook')
-const Allocations = artifacts.require('Allocations')
-const Discussions = artifacts.require('DiscussionApp')
-const DotVoting = artifacts.require('DotVoting')
-const Projects = artifacts.require('Projects')
-const Rewards = artifacts.require('Rewards')
+/** Helper function to read events from receipts */
+const getReceipt = (receipt, event, arg) => {
+  const result = receipt.logs.filter(l => l.event === event)[0].args
+  return arg ? result[arg] : result
+}
+
+const getReceipts = (receipt, event, arg) => {
+  const results = receipt.logs.filter(l => l.event === event)
+  return arg ? results.map(e => e.args[arg]) : results
+}
+
+const getTokenManagers = receipt => {
+  const tokenManagerAppId = namehash('token-manager.hatch.aragonpm.eth')
+  return receipt.logs
+    .filter(e => e.event === 'InstalledApp' && e.args.appId === tokenManagerAppId)
+    .map(e => e.args.appProxy)
+}
+
+const getTokenFromTokenManager = async tokenManagerAddr => {
+  const tokenManager =  getContract('TokenManager').at(tokenManagerAddr)
+  const tokenAddr = await tokenManager.token()
+  const token = getContract('MiniMeToken').at(tokenAddr)
+  return token
+}
+
+/** Helper path functions to allow executing the script from relative or root location */
+const parentDir = () => {
+  const pwd = process.cwd().split('/')
+  return pwd[pwd.length - 2]
+}
+
+const bountiesPath = `${
+  process.env.SOLIDITY_COVERAGE
+    ? '../../../'
+    : parentDir() === 'templates'
+      ? '../../'
+      : ''
+}shared/integrations/StandardBounties`
+
 
 const ONE_DAY = 60 * 60 * 24
 const ONE_WEEK = ONE_DAY * 7
 const THIRTY_DAYS = ONE_DAY * 30
-const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
-// TODO: Test permissions removed from deployer, specially vault
-// TODO: Test different token amounts, even very large amounts
-contract('OpenEnterpriseTemplate', ([ owner, member1, member2 ]) => {
-  let daoID, template, dao, acl, ens, feed
-  let voting, tokenManager, token, finance, vault
-  let addressBook, allocations, discussions, dotVoting, projects, rewards
-
-  const MEMBERS = [ member1, member2 ]
-  const STAKES = [ 1, 1 ]
-  const TOKEN_NAME = 'Autark Token'
-  const TOKEN_SYMBOL = 'AUT'
+contract('OpenEnterpriseTemplate', ([ owner, member1, member2, member3 ]) => {
+  const TOKEN1_NAME = 'DaoToken1'
+  const TOKEN1_SYMBOL = 'DT1'
+  const TOKEN2_NAME = 'DaoToken2'
+  const TOKEN2_SYMBOL = 'DT2'
+  const VOTING_BOOLS = [ false, false ]
+  const TOKEN_TRANSFERABLE = false
+  const TOKENS_LIMIT = true
+  const TOKEN_HOLDERS = [ member1, member2, member3 ]
+  const TOKEN_STAKES = [ 100, 200, 500 ]
+  const TOKEN_BOOLS = [ TOKENS_LIMIT, TOKEN_TRANSFERABLE, TOKENS_LIMIT, TOKEN_TRANSFERABLE ]
 
   const VOTE_DURATION = ONE_WEEK
   const SUPPORT_REQUIRED = 50e16
   const MIN_ACCEPTANCE_QUORUM = 20e16
-  const VOTING_SETTINGS = [ SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, VOTE_DURATION ]
+  const A1_VOTING_SETTINGS = [ SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, VOTE_DURATION ]
   const DOT_VOTING_SETTINGS = [ SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, VOTE_DURATION ]
+  const VOTING_SETTINGS = [ ...DOT_VOTING_SETTINGS, ...A1_VOTING_SETTINGS ]
+  const FINANCE_PERIOD = THIRTY_DAYS
 
-  before('fetch open enterprise template and ENS', async () => {
-    ens = await getENS()
-    template = OpenEnterpriseTemplate.at(await getTemplateAddress())
+  let template
+
+  before('deploy required contract dependencies', async () => {
+    // TODO: Make verbosity optional
+    const bountiesAddress =
+      (await exec(
+        `cd ${bountiesPath} && npm run migrate${
+          process.env.SOLIDITY_COVERAGE ? ':coverage' : ''
+        } | tail -n 1`
+      )).stdout.trim()
+    if (!bountiesAddress) {
+      throw new Error('StandardBounties deployment failed, the test cannot continue')
+    }
+    console.log('       Deployed StandardBounties at', bountiesAddress)
+
+    // Deploy ENS
+    const ensFactBase = await getContract('ENSFactory').new()
+    const ensReceipt = await ensFactBase.newENS(owner)
+    const ens = getContract('ENS').at(getReceipt(ensReceipt, 'DeployENS', 'ens'))
+    console.log('       Deployed ENS at', ens.address)
+
+    // Deploy DaoFactory
+    const kernelBase = await getContract('Kernel').new(true) // petrify immediately
+    const aclBase = await getContract('ACL').new()
+    const regFactBase = await getContract('EVMScriptRegistryFactory').new()
+    const daoFactBase = await getContract('DAOFactory').new(
+      kernelBase.address,
+      aclBase.address,
+      regFactBase.address
+    )
+    console.log('       Deployed DAOFactory at', daoFactBase.address)
+
+    // Deploy MiniMeTokenFactory
+    const miniMeFactoryBase = await getContract('MiniMeTokenFactory').new()
+    console.log('       Deployed MiniMeTokenFactory at', miniMeFactoryBase.address)
+
+    // Deploy AragonID
+    const publicResolver = await ens.resolver(namehash('resolver.eth'))
+    const tld = namehash('eth')
+    const label = '0x'+keccak256('aragonid')
+    const node = namehash('aragonid.eth')
+    const aragonID = await getContract('FIFSResolvingRegistrar').new(ens.address, publicResolver, node)
+    console.log('       Deployed AragonID at', aragonID.address)
+    // TODO: Configure AragonID
+    // await ens.setOwner(node, aragonID.address)
+    await ens.setSubnodeOwner(tld, label, aragonID.address)
+    // await aragonID.register('0x'+keccak256('owner'), owner)
+
+    // Deploy APM
+    const tldName = 'eth'
+    const labelName = 'aragonpm'
+    const tldHash = namehash(tldName)
+    const labelHash = '0x'+keccak256(labelName)
+    // Deploy Hatch
+    const hatchTldName = 'aragonpm.eth'
+    const hatchTldHash = namehash(hatchTldName)
+    const hatchLabelName = 'hatch'
+    const hatchLabelHash = '0x'+keccak256(hatchLabelName)
+    // const apmNode = namehash(`${labelName}.${tldName}`)
+
+    const apmRegistryBase = await getContract('APMRegistry').new()
+    const apmRepoBase = await getContract('Repo').new()
+    const ensSubdomainRegistrarBase = await getContract('ENSSubdomainRegistrar').new()
+    const apmFactory = await getContract('APMRegistryFactory').new(
+      daoFactBase.address,
+      apmRegistryBase.address,
+      apmRepoBase.address,
+      ensSubdomainRegistrarBase.address,
+      ens.address,
+      ensFactBase.address
+    )
+    // Assign ENS name (${labelName}.${tldName}) to factory...
+    // await ens.setOwner(apmNode, apmFactory.address)
+    // Create subdomains and assigning it to APMRegistryFactory
+    // assign `aragonpm.eth` to ourselves first so we can assign `hatch.aragonpm.eth`
+    // This is a workaround to setting up a dao around the `aragonpm.eth` namespace
+    await ens.setSubnodeOwner(tldHash, labelHash, owner)
+    // assign `hatch.aragonpm.eth` to apmFactory
+    await ens.setSubnodeOwner(hatchTldHash, hatchLabelHash, apmFactory.address)
+    // transfer `aragonpm.eth` to apmFactory
+    await ens.setSubnodeOwner(tldHash, labelHash, apmFactory.address)
+    // TODO: Transferring name ownership from deployer to APMRegistryFactory
+    const apmReceipt = await apmFactory.newAPM(tldHash, labelHash, owner)
+    const hatchApmReceipt = await apmFactory.newAPM(hatchTldHash, hatchLabelHash, owner)
+    const apm = getContract('APMRegistry').at(getReceipt(apmReceipt, 'DeployAPM', 'apm'))
+    console.log('       Deployed APM at', apm.address)
+    const hatchApm = getContract('APMRegistry').at(getReceipt(hatchApmReceipt, 'DeployAPM', 'apm'))
+    console.log('       Deployed Hatch APM at', hatchApm.address)
+
+    // Register apps
+    for (const { name, contractName } of APPS) {
+      const appBase = await getContract(contractName).new()
+      console.log(`       Registering package for ${appBase.constructor.contractName} as "${name}.aragonpm.eth"`)
+      if (name.includes('hatch')) {
+        await hatchApm.newRepoWithVersion(name.replace('.hatch',''), owner, [ 1, 0, 0 ], appBase.address, '')
+      } else {
+        await apm.newRepoWithVersion(name, owner, [ 1, 0, 0 ], appBase.address, '')
+      }
+    }
+
+
+    // Deploy OpenEnterpriseTemplate
+    const baseContracts = [ daoFactBase.address, ens.address, miniMeFactoryBase.address, aragonID.address, bountiesAddress ]
+    template = await getContract('OpenEnterpriseTemplate').new(baseContracts)
+    console.log('       Deployed OpenEnterpriseTemplate at', template.address)
+    console.log('\n       ===== Deployments completed =====\n\n')
   })
 
-  const newOpenEnterprise = async (...params) => {
-    const lastParam = params[params.length - 1]
-    const txParams = (!Array.isArray(lastParam) && typeof lastParam === 'object') ? params.pop() : {}
-    const newOpenEnterpriseFn = OpenEnterpriseTemplate.abi.find(({ name, inputs }) => name === 'newOpenEnterprise' && inputs.length === params.length)
-    return await template.sendTransaction(encodeCall(newOpenEnterpriseFn, params, txParams))
-  }
-
-  const loadDAO = async (baseDAO, baseOpenEnterprise, apps = { discussions: false } ) => {
-    dao = Kernel.at(getEventArgument(baseDAO, 'DeployDao', 'dao'))
-
-    token = MiniMeToken.at(getEventArgument(baseDAO, 'DeployToken', 'token'))
-    acl = ACL.at(await dao.acl())
-    const oeApps = getInstalledAppsById(baseOpenEnterprise)
-    const installedApps = { ...getInstalledAppsById(baseDAO),
-                            'address-book': oeApps['address-book'],
-                            allocations: oeApps['allocations'],
-                            discussions: oeApps['discussions'],
-                            'dot-voting': oeApps['dot-voting'],
-                            projects: oeApps['projects'],
-                            rewards: oeApps['rewards'] }
-    assert.equal(dao.address, getEventArgument(baseDAO, 'DeployDao', 'dao'), 'should have emitted a SetupDao event')
-
-    assert.equal(installedApps.voting.length, 1, 'should have installed 1 voting app')
-    voting = Voting.at(installedApps.voting[0])
-
-    assert.equal(installedApps.finance.length, 1, 'should have installed 1 finance app')
-    finance = Finance.at(installedApps.finance[0])
-
-    assert.equal(installedApps['token-manager'].length, 1, 'should have installed 1 token manager app')
-    tokenManager = TokenManager.at(installedApps['token-manager'][0])
-
-    assert.equal(installedApps.vault.length, 1, 'should have installed 1 vault app')
-    vault = Vault.at(installedApps.vault[0])
-
-    assert.equal(installedApps['address-book'].length, 1, 'should have installed 1 address book app')
-    addressBook = AddressBook.at(installedApps['address-book'][0])
-
-    assert.equal(installedApps.allocations.length, 1, 'should have installed 1 allocations app')
-    allocations = Allocations.at(installedApps.allocations[0])
-
-    assert.equal(installedApps['dot-voting'].length, 1, 'should have installed 1 dot voting app')
-    dotVoting = DotVoting.at(installedApps['dot-voting'][0])
-
-    assert.equal(installedApps.projects.length, 1, 'should have installed 1 projects app')
-    projects = Projects.at(installedApps.projects[0])
-
-    assert.equal(installedApps.rewards.length, 1, 'should have installed 1 rewards app')
-    rewards = Rewards.at(installedApps.rewards[0])
-
-    if (apps.discussions) {
-      assert.equal(installedApps.discussions.length, 1, 'should have installed 1 discussions app')
-      discussions = Discussions.at(installedApps.discussions[0])
-    }
-  }
-
-  const itSetupsDAOCorrectly = (financePeriod) => {
-    it('registers a new DAO on ENS', async () => {
-      const aragonIdNameHash = namehash(`${daoID}.aragonid.eth`)
-      const resolvedAddress = await PublicResolver.at(await ens.resolver(aragonIdNameHash)).addr(aragonIdNameHash)
-      assert.equal(resolvedAddress, dao.address, 'aragonId ENS name does not match')
-    })
-
-    it('creates a new token', async () => {
-      assert.equal(await token.name(), TOKEN_NAME)
-      assert.equal(await token.symbol(), TOKEN_SYMBOL)
-      assert.equal(await token.transfersEnabled(), true)
-      assert.equal((await token.decimals()).toString(), 18)
-    })
-
-    it('mints requested amounts for the members', async () => {
-      assert.equal((await token.totalSupply()).toString(), MEMBERS.length)
-      for (const holder of MEMBERS) assert.equal((await token.balanceOf(holder)).toString(), 1)
-    })
-
-    it('should have voting app correctly setup', async () => {
-      assert.isTrue(await voting.hasInitialized(), 'voting not initialized')
-      // assert.equal((await voting.supportRequiredPct()).toString(), SUPPORT_REQUIRED)
-      // assert.equal((await voting.minAcceptQuorumPct()).toString(), MIN_ACCEPTANCE_QUORUM)
-      // assert.equal((await voting.voteTime()).toString(), VOTE_DURATION)
-
-      // await assertRole(acl, voting, voting, 'CREATE_VOTES_ROLE', tokenManager)
-      // await assertRole(acl, voting, voting, 'MODIFY_QUORUM_ROLE')
-      // await assertRole(acl, voting, voting, 'MODIFY_SUPPORT_ROLE')
-    })
-
-    it('should have token manager app correctly setup', async () => {
-      assert.isTrue(await tokenManager.hasInitialized(), 'token manager not initialized')
-      assert.equal(await tokenManager.token(), token.address)
-
-      // await assertRole(acl, tokenManager, voting, 'MINT_ROLE')
-      // await assertRole(acl, tokenManager, voting, 'BURN_ROLE')
-
-      // await assertMissingRole(acl, tokenManager, 'ISSUE_ROLE')
-      // await assertMissingRole(acl, tokenManager, 'ASSIGN_ROLE')
-      // await assertMissingRole(acl, tokenManager, 'REVOKE_VESTINGS_ROLE')
-    })
-
-    it('should have finance app correctly setup', async () => {
-      assert.isTrue(await finance.hasInitialized(), 'finance not initialized')
-
-      const expectedPeriod = financePeriod === 0 ? THIRTY_DAYS : financePeriod
-      assert.equal((await finance.getPeriodDuration()).toString(), expectedPeriod, 'finance period should be 30 days')
-
-      await assertRole(acl, finance, voting, 'CREATE_PAYMENTS_ROLE')
-      await assertRole(acl, finance, voting, 'EXECUTE_PAYMENTS_ROLE')
-      await assertRole(acl, finance, voting, 'MANAGE_PAYMENTS_ROLE')
-
-      await assertMissingRole(acl, finance, 'CHANGE_PERIOD_ROLE')
-      await assertMissingRole(acl, finance, 'CHANGE_BUDGETS_ROLE')
-    })
-
-    it('should have address book app correctly setup', async () => {
-      // TODO: This seems a bug from aragonOS?
-      await addressBook.initialize()
-      assert.isTrue(await addressBook.hasInitialized(), 'address book not initialized')
-
-      // TODO: Check roles for each app
-      // await assertRole(acl, addressBook, voting, 'ADD_ENTRY_ROLE')
-      // await assertRole(acl, addressBook, voting, 'REMOVE_ENTRY_ROLE')
-      // await assertRole(acl, finance, voting, 'MANAGE_PAYMENTS_ROLE')
-
-      //await assertMissingRole(acl, addressBook, 'UPDATE_ENTRY_ROLE')
-      // await assertMissingRole(acl, finance, 'CHANGE_BUDGETS_ROLE')
-    })
-
-    it('should have allocations app correctly setup', async () => {
-      assert.isTrue(await allocations.hasInitialized(), 'allocations not initialized')
-
-      // TODO: Check roles for each app
-      // await assertRole(acl, finance, voting, 'CREATE_PAYMENTS_ROLE')
-    })
-
-    it('should have dot voting app correctly setup', async () => {
-      assert.isTrue(await dotVoting.hasInitialized(), 'dot voting not initialized')
-
-      // TODO: Check roles for each app
-      // await assertRole(acl, finance, voting, 'CREATE_PAYMENTS_ROLE')
-    })
-
-    it('should have projects app correctly setup', async () => {
-      assert.isTrue(await projects.hasInitialized(), 'projects not initialized')
-
-      // TODO: Check roles for each app
-      // await assertRole(acl, finance, voting, 'CREATE_PAYMENTS_ROLE')
-      // await assertRole(acl, finance, voting, 'EXECUTE_PAYMENTS_ROLE')
-      // await assertRole(acl, finance, voting, 'MANAGE_PAYMENTS_ROLE')
-
-      // await assertMissingRole(acl, finance, 'CHANGE_PERIOD_ROLE')
-      // await assertMissingRole(acl, finance, 'CHANGE_BUDGETS_ROLE')
-    })
-
-    it('should have rewards app correctly setup', async () => {
-      assert.isTrue(await rewards.hasInitialized(), 'rewards not initialized')
-
-      // TODO: Check roles for each app
-      // await assertRole(acl, finance, voting, 'CREATE_PAYMENTS_ROLE')
-      // await assertRole(acl, finance, voting, 'EXECUTE_PAYMENTS_ROLE')
-      // await assertRole(acl, finance, voting, 'MANAGE_PAYMENTS_ROLE')
-
-      // await assertMissingRole(acl, finance, 'CHANGE_PERIOD_ROLE')
-      // await assertMissingRole(acl, finance, 'CHANGE_BUDGETS_ROLE')
-    })
-
-    it('sets up DAO and ACL permissions correctly', async () => {
-      await assertRole(acl, dao, voting, 'APP_MANAGER_ROLE')
-      await assertRole(acl, acl, voting, 'CREATE_PERMISSIONS_ROLE')
-
-      await assertRoleNotGranted(acl, dao, 'APP_MANAGER_ROLE', template)
-      await assertRoleNotGranted(acl, acl, 'CREATE_PERMISSIONS_ROLE', template)
-    })
-
-    it('sets up EVM scripts registry permissions correctly', async () => {
-      const reg = await EVMScriptRegistry.at(await acl.getEVMScriptRegistry())
-      await assertRole(acl, reg, voting, 'REGISTRY_ADD_EXECUTOR_ROLE')
-      await assertRole(acl, reg, voting, 'REGISTRY_MANAGER_ROLE')
-    })
-  }
-
-  const itSetupsVaultAppCorrectly = () => {
-    it('should have vault app correctly setup', async () => {
-      assert.isTrue(await vault.hasInitialized(), 'vault not initialized')
-      assert.equal(await dao.recoveryVaultAppId(), APP_IDS.vault, 'vault app is not being used as the vault app of the DAO')
-      /*assert.equal(web3.toChecksumAddress(await finance.vault()), vault.address, 'finance vault is not the vault app')
-      assert.equal(web3.toChecksumAddress(await dao.getRecoveryVault()), vault.address, 'vault app is not being used as the vault app of the DAO')
-
-      await assertRole(acl, vault, voting, 'TRANSFER_ROLE', finance)
-      */
-    })
-  }
-
-  const itSetupsDiscussionsAppCorrectly = () => {
-    it('should have discussions app correctly setup', async () => {
-      // assert.isTrue(await discussions.hasInitialized(), 'discussions not initialized')
-
-      // TODO: extra assertions here
-      // assert.equal(await discussions.feed(), feed.address)
-      // assert.equal(await discussions.rateExpiryTime(), DISCUSSIONS_RATE_EXPIRY_TIME)
-      // assert.equal(await discussions.denominationToken(), DISCUSSIONS_DENOMINATION_TOKEN)
-      // assert.equal(web3.toChecksumAddress(await discussions.finance()), finance.address)
-
-      // TODO: assert roles from here
-      // await assertRole(acl, finance, voting, 'CREATE_PAYMENTS_ROLE', discussions)
-      // await assertRoleNotGranted(acl, finance, 'CREATE_PAYMENTS_ROLE', template)
-
-      // const expectedGrantee = ZERO_ADDRESS // TODO: This should be any address
-
-      // await assertRole(acl, discussions, voting, 'ADD_BONUS_ROLE', expectedGrantee)
-    })
-  }
-
-  // TODO: add info to README: It is currently not possible to create instances of this template with a single transaction because of gas limitations
-  context('creating instances with separated transactions', () => {
-    context('when the creation fails', () => {
-      const DEFAULT_PERIOD = 0
-      const USE_DISCUSSIONS = true
-
-      context('when there was no token created before', () => {
-        //Is supposed to return 'TEMPLATE_MISSING_TOKEN_CACHE' in the revert message but doesn't
-        it('reverts', async () => {
-          return assertRevert(async () => {
-            await newOpenEnterprise(DOT_VOTING_SETTINGS, DEFAULT_PERIOD, USE_DISCUSSIONS)
-          })
-        })
+  context('dao instantiation', () => {
+    context('when using agent as vault', () => {
+      const USE_AGENT_AS_VAULT = true
+      it('should run newTokensAndInstance without error', async () => {
+        await template.newTokensAndInstance(
+          randomId(),
+          TOKEN1_NAME,
+          TOKEN1_SYMBOL,
+          TOKEN2_NAME,
+          TOKEN2_SYMBOL,
+          VOTING_SETTINGS,
+          VOTING_BOOLS,
+          USE_AGENT_AS_VAULT
+        )
       })
 
-      context('when there was a token created', () => {
-        before('create token', async () => {
-          await template.newToken(TOKEN_NAME, TOKEN_SYMBOL)
-        })
+      it('should run newTokenManagers without error', async () => {
+        await template.newTokenManagers(
+          TOKEN_HOLDERS,
+          TOKEN_STAKES,
+          TOKEN_HOLDERS,
+          TOKEN_STAKES,
+          TOKEN_BOOLS
+        )
+      })
 
-        // it('reverts when no members were given', async () => {
-        //   await assertRevert(newOpenEnterprise(DOT_VOTING_SETTINGS, DEFAULT_PERIOD, USE_DISCUSSIONS), 'OPEN_ENTERPRISE_MISSING_MEMBERS')
-        // })
-
-        // it('reverts when an empty id is provided', async () => {
-        //   await assertRevert(newOpenEnterprise(DOT_VOTING_SETTINGS, DEFAULT_PERIOD, USE_DISCUSSIONS), 'TEMPLATE_INVALID_ID')
-        // })
+      it('should run finalizeDao without error', async () => {
+        await template.finalizeDao(
+          [ FINANCE_PERIOD, FINANCE_PERIOD ],
+          false
+        )
       })
     })
 
-    context('when the creation succeeds', () => {
-      let instanceReceipt, tokenReceipt, baseDAO, baseOpenEnterprise
-
-      const itCostsUpTo = expectedDaoCreationCost => {
-        const expectedTokenCreationCost = 1.8e6
-        const expectedTotalCost = expectedTokenCreationCost + expectedDaoCreationCost
-
-        it(`gas costs must be up to ~${expectedTotalCost} gas`, async () => {
-          const tokenCreationCost = tokenReceipt.receipt.gasUsed
-          assert.isAtMost(tokenCreationCost, expectedTokenCreationCost, `token creation call should cost up to ${tokenCreationCost} gas`)
-          const daoCreationCost = instanceReceipt.receipt.gasUsed
-          assert.isAtMost(daoCreationCost, expectedDaoCreationCost, `dao creation call should cost up to ${expectedDaoCreationCost} gas`)
-          const totalCost = tokenCreationCost + daoCreationCost
-          assert.isAtMost(totalCost, expectedTotalCost, `total costs should be up to ${expectedTotalCost} gas`)
-        })
-      }
-
-      const createDAO = (useDiscussions = false, periods = [ 0, 0 ]) => {
-        before('create open enterprise entity', async () => {
-          daoID = randomId()
-          baseDAO = await template.newTokenAndInstance(TOKEN_NAME, TOKEN_SYMBOL, daoID, MEMBERS, STAKES, VOTING_SETTINGS, periods[0])
-          baseOpenEnterprise = await template.newOpenEnterprise(VOTING_SETTINGS, periods[1], useDiscussions)
-          await loadDAO(baseDAO, baseOpenEnterprise, { discussions: useDiscussions })
-        })
-      }
-
-      const createBaseDAO = () => {
-        daoID = randomId()
-        it('should create token, dao and base apps', async () => {
-          baseDAO = await template.newTokenAndInstance(TOKEN_NAME, TOKEN_SYMBOL, daoID, MEMBERS, STAKES, VOTING_SETTINGS, 0, { from: owner })
-          // Costs for token and dao 3249295 -> token, dao and acl
-          // Costs for token and dao 3344131 -> create id
-          // Costs for token and dao 3771214 -> add vault
-          // Costs for token and dao 6505129 -> add core apps, permissions, mint tokens, cache
-        })
-      }
-
-      const setupOpenEnterprise = () => {
-        daoID = randomId()
-        it('should setup open enterprise correctly', async () => {
-          baseOpenEnterprise = await template.newOpenEnterprise(VOTING_SETTINGS, 0, false, { from: owner })
-          // Costs for newOpenEnterprise call: 2798046 gas -> all apps
-        })
-      }
-
-      context('when requesting a custom finance period', () => {
-        const PERIODS = Array(2).fill(60 * 60 * 24 * 15) // 15 days
-
-        context('when requesting a discussions app', () => {
-          const USE_DISCUSSIONS = true
-
-          createDAO(USE_DISCUSSIONS, PERIODS)
-          //itCostsUpTo(5.05e6)
-          itSetupsDAOCorrectly(...PERIODS)
-          itSetupsDiscussionsAppCorrectly()
-        })
-
-        context('when requesting a vault app', () => {
-          const USE_DISCUSSIONS = false
-
-          createDAO(USE_DISCUSSIONS, PERIODS)
-          //itCostsUpTo(5e6)
-          itSetupsDAOCorrectly(...PERIODS)
-          itSetupsVaultAppCorrectly()
-        })
+    context('when using just vault', () => {
+      const USE_AGENT_AS_VAULT = false
+      let installedOracle
+      it('should run newTokensAndInstance without error', async () => {
+        await template.newTokensAndInstance(
+          randomId(),
+          TOKEN1_NAME,
+          TOKEN1_SYMBOL,
+          TOKEN2_NAME,
+          TOKEN2_SYMBOL,
+          VOTING_SETTINGS,
+          VOTING_BOOLS,
+          USE_AGENT_AS_VAULT
+        )
       })
 
-      context('when requesting a default finance period', () => {
-        const PERIODS = Array(2).fill(0) // use default
+      it('should run newTokenManagers without error', async () => {
+        const result = await template.newTokenManagers(
+          TOKEN_HOLDERS,
+          TOKEN_STAKES,
+          TOKEN_HOLDERS,
+          TOKEN_STAKES,
+          TOKEN_BOOLS
+        )
+        installedOracle = getReceipts(result, 'InstalledApp')
+          .reduce((appAddress, l) => {
+            return l.args.appId === APP_IDS['whitelist-oracle.hatch'] ?
+              l.args.appProxy : appAddress
+          }, null)
+      })
 
-        context('when requesting a discussions app', () => {
-          const USE_DISCUSSIONS = true
+      it('should run finalizeDao without error', async () => {
+        await template.finalizeDao(
+          [ FINANCE_PERIOD, FINANCE_PERIOD ],
+          false
+        )
+      })
 
-          createDAO(USE_DISCUSSIONS, PERIODS)
-          //itCostsUpTo(5.05e6)
-          itSetupsDAOCorrectly(...PERIODS)
-          itSetupsDiscussionsAppCorrectly()
-        })
+      it('should have initialized Oracle', async () => {
+        await truffleAssert.reverts(
+          getContract('WhitelistOracle')
+            .at(installedOracle)
+            .initialize([]),
+          'INIT_ALREADY_INITIALIZED'
+        )
+      })
+    })
 
-        context('when requesting a vault app', () => {
-          const USE_DISCUSSIONS = false
+    context('special cases', () => {
+      let installReceipt
 
-          createDAO(USE_DISCUSSIONS, PERIODS)
-          // itCostsUpTo(6.79e6)
-          itSetupsDAOCorrectly(...PERIODS)
-          itSetupsVaultAppCorrectly()
-        })
+      before('reproduce 2 non-transferable tokens scenario', async () => {
+        /* Create DAO to reproduce */
+        await template.newTokensAndInstance(
+          randomId(),
+          TOKEN1_NAME,
+          TOKEN1_SYMBOL,
+          TOKEN2_NAME,
+          TOKEN2_SYMBOL,
+          VOTING_SETTINGS,
+          VOTING_BOOLS,
+          false // use agent as vault ?
+        )
+
+        installReceipt = await template.newTokenManagers(
+          [owner],  // first token holders
+          [200],    // first token holders stakes
+          [owner],  // second token holders
+          [200],    // second token holders stakes
+          [ false, false, false, false ] // [Token1Limit, Token1Transferable, Token2Limit, Token2Transferable]
+        )
+
+        await template.finalizeDao(
+          [ FINANCE_PERIOD, FINANCE_PERIOD ],
+          false
+        )
+      })
+
+      it('should not allow token-transfers', async () => {
+        // get TokenManager apps and their  tokens
+        const [ firstTokenManager, secondTokenManager ] = getTokenManagers(installReceipt)
+        const firstToken = await getTokenFromTokenManager(firstTokenManager)
+        const secondToken = await getTokenFromTokenManager(secondTokenManager)
+        console.log('              Tokens found:', await firstToken.name(), await secondToken.name())
+
+        // assert non-transferability of both tokens
+        await truffleAssert.reverts(
+          firstToken.transfer(member1, 100, { from: owner }),
+          '', // there is no reason for in the contract require
+          'first token should be non-transferable'
+        )
+        await truffleAssert.reverts(
+          secondToken.transfer(member1, 100, { from: owner }),
+          '',
+          'second token should be non-transferable'
+        )
       })
     })
   })

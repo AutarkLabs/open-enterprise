@@ -22,10 +22,13 @@ const settings = {
     '1000000000000000000',
     '100000000000000000',
   ],
-  token: { name: 'Autark Coin', symbol: 'AUT' },
+  token1: { name: 'Autark Coin', symbol: 'AUT' },
+  token2: { name: 'Reputation Coin', symbol: 'REP' },
   useDiscussions: true,
+  useAgentAsVault: false,
   // The order is important for now. TODO: make it an object instead
   votingSettings: [ SUPPORT_REQUIRED, MIN_ACCEPTANCE_QUORUM, VOTE_DURATION ],
+  votingBools: [ false, false ],
 }
 
 // create new dao
