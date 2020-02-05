@@ -2,14 +2,11 @@ import PropTypes from 'prop-types'
 import React, { useState, useCallback } from 'react'
 import styled from 'styled-components'
 import { useQuery } from '@apollo/react-hooks'
-import { gql } from 'apollo-boost'
-
 import { Button, GU, Header, IconPlus, Text } from '@aragon/ui'
 import { compareAsc, compareDesc } from 'date-fns'
-
 import useShapedIssue from '../../hooks/useShapedIssue'
 import { useBountyIssues } from '../../context/BountyIssues'
-import { issueAttributes, SEARCH_ISSUES } from '../../utils/gql-queries.js'
+import { SEARCH_ISSUES } from '../../utils/gql-queries.js'
 import { Issue } from '../Card'
 import { FilterBar, LoadingAnimation } from '../Shared'
 import { usePanelManagement } from '../Panel'
@@ -59,11 +56,13 @@ class ProjectDetail extends React.PureComponent {
   }
 
   updateQuery = (filters, filtersData) => {
-    const queryFilters = {
-      labels: Object.keys(filters.labels).map(labelId => filtersData.labels[labelId].name),
-      search: '',
+    if (Object.keys(filters.labels).length > 0) {
+      this.props.setQuery({
+        labels: Object.keys(filters.labels).map(id => 'label:' + filtersData.labels[id].name).join(' ')
+      })
+    } else {
+      this.props.setQuery({ labels: '' })
     }
-    this.props.setQuery(queryFilters)
   }
 
 
@@ -200,14 +199,7 @@ class ProjectDetail extends React.PureComponent {
 
     if (error) return this.queryError(error, refetch)
 
-    let dataSource
-    let pageInfo
-    if (data) {
-      pageInfo = data.repository ? data.repository.issues.pageInfo : data.search.pageInfo
-      dataSource = data.repository ? data.repository.issues.nodes : data.search.issues
-    }
-
-    const allIssues = dataSource ? dataSource.map(this.props.shapeIssue) : []
+    const allIssues = data ? data.search.issues.map(this.props.shapeIssue) : []
     const filteredIssues = this.applyFilters(allIssues)
 
     return (
@@ -240,31 +232,18 @@ class ProjectDetail extends React.PureComponent {
                 </Text>
                 <LoadingAnimation />
               </div>
-            ) : data && pageInfo.hasNextPage && (
+            ) : data && data.search.pageInfo.hasNextPage && (
               <Button
                 style={{ margin: '12px 0 30px 0' }}
                 mode="secondary"
                 onClick={() => {
                   fetchMore({
-                    variables: { after: pageInfo.endCursor },
+                    variables: { after: data.search.pageInfo.endCursor },
                     updateQuery: (prev, { fetchMoreResult }) => {
 
                       if (!fetchMoreResult) return prev
 
-                      return data.repository ? {
-                        ...fetchMoreResult,
-                        repository: {
-                          ...fetchMoreResult.repository,
-                          issues: {
-                            ...fetchMoreResult.repository.issues,
-                            nodes: [
-                              ...prev.repository.issues.nodes,
-                              ...fetchMoreResult.repository.issues.nodes,
-                            ]
-                          },
-                        }
-                      } : {
-
+                      return {
                         ...fetchMoreResult,
                         search: {
                           ...fetchMoreResult.search,
@@ -318,58 +297,18 @@ const ProjectDetailWrap = ({ repo, ...props }) => {
     requestPath('/issues/' + id)
   })
 
-  const SEARCH_ISSUES_2 = gql`
-  query SearchIssues($after: String, $owner: String!, $name: String!) {
-    repository(owner: $owner, name: $name) {
-      issues(
-        first: 25,
-        after: $after,
-        filterBy: {
-          ${query.labels.length ? 'labels: [' + query.labels.map(l => `"${l}"`) + '],' : ''}
-          states: [OPEN]
-        },
-        orderBy: {
-          field: UPDATED_AT, direction: ${query.sort === 'updated-desc' ? 'DESC' : 'ASC'}
-        }) {
-          totalCount
-          pageInfo {
-            startCursor
-            hasNextPage
-            endCursor
-          }
-
-        nodes {
-          ${ issueAttributes }
-        }
-      }
-    }
-  }
-  `
-
-  // text filter takes precedence
-  const graphqlQuery = query.search ?
-    useQuery(SEARCH_ISSUES, {
-      notifyOnNetworkStatusChange: true,
-      onError: console.error,
-      variables: {
-        after: query.after,
-        query: 'is:issue state:open ' +
-          `repo:${query.repo} ` +
-          `sort:${query.sort} ` +
-          `${query.search}`,
-      },
-    })
-    :
-    useQuery(SEARCH_ISSUES_2, {
-      notifyOnNetworkStatusChange: true,
-      onError: console.error,
-      variables: {
-        after: query.after,
-        owner: query.owner,
-        name: query.name,
-        labels: query.labels,
-      },
-    })
+  const graphqlQuery = useQuery(SEARCH_ISSUES, {
+    notifyOnNetworkStatusChange: true,
+    onError: console.error,
+    variables: {
+      after: query.after,
+      query: 'is:issue state:open ' +
+      `repo:${query.repo} ` +
+      `sort:${query.sort} ` +
+      `${query.search} ` +
+      `${query.labels}`,
+    },
+  })
 
   const [ sortBy, setSortByRaw ] = useState(Object.keys(sortOptions)[0])
 
