@@ -33,6 +33,12 @@
       "network": "rinkeby",
       "registry": "0x98Df287B6C145399Aaa709692c8D308357bC085D",
       "wsRPC": "wss://rinkeby.eth.aragon.network/ws"
+    },
+    "hatch-mainnet": {
+      "appName": "open-enterprise-template.hatch.aragonpm.eth",
+      "network": "mainnet",
+      "registry": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+      "wsRPC": "wss://mainnet.eth.aragon.network/ws"
     }
   },
   "roles": [],
