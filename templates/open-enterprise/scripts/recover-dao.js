@@ -31,7 +31,7 @@ module.exports = async function getSecondDaoTxData(callback) {
   const quorum = await getQuorum(minSupport)
   const allocationsPeriod = await getAllocationsPeriod()
   const dataString = TemplateContract.newOpenEnterprise.getData(
-    [ minSupport, quorum, voteDuration ],
+    [ quorum, minSupport, voteDuration ],
     allocationsPeriod,
     false
   )
