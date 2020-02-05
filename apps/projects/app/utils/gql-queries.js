@@ -11,6 +11,7 @@ export const issueAttributes = `
     url
   }
   createdAt
+  updatedAt
   repository {
     id
     name
@@ -25,31 +26,24 @@ export const issueAttributes = `
       }
     }
   }
-  milestone {
-    id
-    title
-  }
   state
   url
 `
 
-export const getIssuesGQL = ({ repoId, count, after }) => gql`
-  query getIssuesForRepo {
-    repository: node(id: "${repoId}") {
-      ... on Repository {
-        issues(
-          states:OPEN,
-          first: ${count},
-          ${after ? `after: "${after}",` : ''}
-          orderBy: {field: CREATED_AT, direction: DESC}
-        ) {
-          totalCount
-          pageInfo {
-            endCursor
-            hasNextPage
-          }
-          nodes { ${issueAttributes} }
-        }
+export const SEARCH_ISSUES = gql`
+  query SearchIssues($after: String, $query: String!) {
+    search(
+      after:$after,
+      first:25,
+      query:$query,
+      type:ISSUE,
+    ) {
+      pageInfo {
+        endCursor
+        hasNextPage
+      }
+      issues:nodes {
+        ... on Issue { ${ issueAttributes } }
       }
     }
   }
