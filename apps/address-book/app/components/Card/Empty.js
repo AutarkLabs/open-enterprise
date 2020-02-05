@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { Button, EmptyStateCard, GU, Info, Link, LoadingRing } from '@aragon/ui'
+import { Button, EmptyStateCard, GU, Link, LoadingRing } from '@aragon/ui'
 import emptyStatePng from '../../assets/no-contacts.png'
 
 const illustration = <img src={emptyStatePng} alt="" height="160" />
@@ -17,16 +17,6 @@ const BetterLink = styled(Link)`
 
 const Empty = ({ action, isSyncing }) => (
   <EmptyWrapper>
-    <Info style={{ margin: 3 * GU }} mode="warning">
-      Note: The Address Book application is designed to act as a new Identity
-      Provider for Aragon Organizations, so you can assign a name to an
-      Ethereum address and have that name be displayed in all of your Aragon
-      apps in place of the address. This requires <BetterLink
-        href="https://github.com/aragon/aragon.js/pull/391">an enhancement to
-      aragonSDK</BetterLink>, which is scheduled for an upcoming release. We will
-      remove this note once it’s fully available, but until then you can begin
-      naming and categorizing addresses.
-    </Info>
     <EmptyStateCard
       text={
         isSyncing ? (
