@@ -8,9 +8,9 @@ import "@aragon/os/contracts/lib/math/SafeMath.sol";
 import "@aragon/os/contracts/lib/math/SafeMath64.sol";
 
 // TODO: Use @aragon/os/contracts/ version when it gets merged
-import "../evmscript/ScriptHelpers.sol";
+import "../evmscript/DynamicScriptHelpers.sol";
 // TODO: Research why using the @aragon/os version breaks coverage
-import "./IForwarder.sol";
+import "@aragon/os/contracts/common/IForwarder.sol";
 
 /**
   * @title ADynamicForwarder App
@@ -22,7 +22,7 @@ import "./IForwarder.sol";
 
 
 contract ADynamicForwarder is IForwarder {
-    using ScriptHelpers for bytes;
+    using DynamicScriptHelpers for bytes;
     using SafeMath for uint256;
     using SafeMath64 for uint64;
 
