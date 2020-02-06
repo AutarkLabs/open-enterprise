@@ -13,7 +13,7 @@ const STATUS = {
 // TODO: Extract to an external js utility to keep this file clean
 // Variable fields depending on the execution environment:
 // TODO: This should be dynamically set depending on the execution environment (dev, prod...)
-const AUTH_URI = 'https://tps.autark.xyz/authenticate'
+const AUTH_URI = 'https://oe.autark.xyz/authenticate'
 const CLIENT_ID = '686f96197cc9bb07a43d'
 const GITHUB_URI = 'https://github.com/login/oauth/authorize'
 

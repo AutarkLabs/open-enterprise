@@ -1,5 +1,5 @@
 module.exports = {
-  copyPackages: ['@tps/test-helpers/contracts/common'],
+  copyPackages: ['@autarklabs/test-helpers/contracts/common'],
   deepSkip: true,
   norpc: true,
   skipFiles: ['test'],
