@@ -5,12 +5,11 @@ import standardBounties from '../../abi/StandardBounties.json'
 
 export const loadIssueData = async ({ repoId, issueNumber }) => {
   const {
-    hasBounty,
     standardBountyId,
     balance,
     assignee,
   } = await app.call('getIssue', repoId, issueNumber).toPromise()
-
+  const hasBounty = !!balance
   const bountiesRegistry = await app.call('bountiesRegistry').toPromise()
   const bountyContract = app.external(bountiesRegistry, standardBounties.abi)
   const {
@@ -46,22 +45,22 @@ export const loadIssueData = async ({ repoId, issueNumber }) => {
     // passed in
     number: Number(issueNumber),
     repoId: hexToAscii(repoId),
-
+    repoHexId: repoId,
     // from Projects.sol
     assignee,
     balance,
     hasBounty,
     standardBountyId,
+    openSubmission: /^0xf{40}$/i.test(assignee),
 
     // from StandardBounties.sol
     deadline: new Date(Number(deadline)).toISOString(),
     token,
     workStatus,
-    openSubmission: /^0xf{40}$/i.test(assignee),
   }
 }
 
-export const loadIpfsData = async ipfsHash => {
+export const loadIpfsData = async ({ ipfsHash }) => {
   const {
     issueId,
     exp,

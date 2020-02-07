@@ -10,7 +10,7 @@ import {
   REPO_REMOVED,
   REPO_UPDATED,
   ISSUE_UPDATED,
-  BOUNTY_ADDED,
+  BOUNTY_ISSUED,
   ASSIGNMENT_REQUESTED,
   ASSIGNMENT_APPROVED,
   ASSIGNMENT_REJECTED,
@@ -97,19 +97,28 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract, se
     const id = returnValues.repoId
     const repoIndex = state.repos.findIndex(repo => repo.id === id)
     if(repoIndex === -1) return state
-    if(!state.repos[repoIndex].data.decoupled) return state
-    const issueData = await loadDecoupledIssueData(returnValues)
+    //if(!state.repos[repoIndex].data.decoupled) return state
+    let issueData
+    if(!state.repos[repoIndex].data.decoupled || returnValues.bountySize > 0) {
+      const ipfsData = await loadIpfsData(returnValues)
+      issueData = await loadIssueData(returnValues)
+      issueData = { ...issueData, ...ipfsData }
+      issueData = determineWorkStatus(issueData)
+    } else {
+      issueData = await loadDecoupledIssueData(returnValues)
+    }
     return syncIssues(state, returnValues, issueData)
   }
-  case BOUNTY_ADDED: {
-    if(!returnValues) return state
-    const { repoId, issueNumber, ipfsHash } = returnValues
-    const ipfsData = await loadIpfsData(ipfsHash)
-    let issueData = await loadIssueData({ repoId, issueNumber })
-    issueData = { ...issueData, ...ipfsData }
-    issueData = determineWorkStatus(issueData)
-    return syncIssues(state, returnValues, issueData, [])
-  }
+  //case BOUNTY_ISSUED: {
+  //  console.log('issue: ',returnValues)
+  //  if(!returnValues) return state
+  //  const { repoId, issueNumber, ipfsHash } = returnValues
+  //  const ipfsData = await loadIpfsData(ipfsHash)
+  //  let issueData = await loadIssueData({ repoId, issueNumber })
+  //  issueData = { ...issueData, ...ipfsData }
+  //  issueData = determineWorkStatus(issueData)
+  //  return syncIssues(state, returnValues, issueData, [])
+  //}
   case ASSIGNMENT_REQUESTED: {
     if(!returnValues) return state
     const { repoId, issueNumber } = returnValues

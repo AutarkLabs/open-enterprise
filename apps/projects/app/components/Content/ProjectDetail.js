@@ -233,6 +233,7 @@ class ProjectDetail extends React.PureComponent {
     }
 
     const allIssues = dataSource ? dataSource.map(this.props.shapeIssue) : []
+    console.log('all shaped Issues: ', allIssues)
     const filteredIssues = this.applyFilters(allIssues)
 
     return (
@@ -317,9 +318,11 @@ const ProjectDetailWrap = ({ repo, ...props }) => {
   const bountyIssues = useBountyIssues().filter(issue =>
     issue.repoId === repo.data._repo
   )
+  console.log('bounties: ', useBountyIssues())
   const { appState } = useAragonApi()
-  const issues = appState.issues.filter(issue => issue.data.id === repo.id).map(issue => issue.data)
-  
+  console.log('contract state: ', appState)
+  const issues = appState.issues.filter(issue => issue.data.repository.hexId === repo.id).map(issue => issue.data)
+  console.log('issues: ', issues)
   const shapeIssue = useShapedIssue()
   const { setupNewIssue } = usePanelManagement()
   const [ query, setQueryRaw ] = useState({

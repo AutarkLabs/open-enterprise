@@ -48,9 +48,11 @@ const errorMessages = {
 
 const bountiesFor = ({ bountySettings, issues, tokens }) => issues.reduce(
   (bounties, issue) => {
-    bounties[issue.id] = {
+    const data = issue.repository.decoupled ? issue : undefined
+    const issueId = issue.repository.decoupled ? issue.id : issue.repoId + issue.number
+    bounties[issueId] = {
       fundingHistory: issue.fundingHistory || [],
-      issueId: issue.id,
+      issueId,
       repo: issue.repo,
       number: issue.number,
       repoId: issue.repoId,
@@ -63,6 +65,7 @@ const bountiesFor = ({ bountySettings, issues, tokens }) => issues.reduce(
       slotsIndex: 0,
       payout: issue.payout || 0,
       token: tokens.find(t => t.symbol === issue.symbol) || tokens[0],
+      data
     }
     return bounties
   },
@@ -384,6 +387,7 @@ FundForm.propTypes = {
 }
 
 const FundIssues = ({ issues, mode }) => {
+  console.log('funding issues: ', issues)
   const githubCurrentUser = useGithubAuth()
   const { api, appState } = useAragonApi()
   const { bountySettings } = appState
@@ -436,7 +440,7 @@ const FundIssues = ({ issues, mode }) => {
 
   const submitBounties = useCallback(async e => {
     e.preventDefault()
-
+    console.log('made it here', bounties)
     setSubmitting(true)
 
     const repoIds = []
@@ -468,10 +472,18 @@ const FundIssues = ({ issues, mode }) => {
         ],
         hours: bounty.hours,
         repo: bounty.repo,
+        ...bounty.data
       })
     })
     const ipfsAddresses = await computeIpfsString(ipfsData)
-
+    console.table({ repoIds,
+      issueNumbers,
+      bountySizes,
+      deadlines,
+      tokenTypes,
+      tokenContracts,
+      ipfsAddresses,
+      description })
     const addBountiesF = openSubmission ? api.addBountiesNoAssignment : api.addBounties
     await addBountiesF(
       repoIds,

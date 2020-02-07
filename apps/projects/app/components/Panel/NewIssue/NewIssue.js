@@ -116,8 +116,8 @@ class NewIssue extends React.PureComponent {
       e.preventDefault()
       this.props.closePanel()
       const newIssueData = {
-        number: issues.filter(i => i.id === repoHexIds[selectedProject - 1]).length,
-        id: repoHexIds[selectedProject - 1],
+        number: issues.filter(i => i.data.repository.hexId === repoHexIds[selectedProject - 1]).length,
+        id: repoHexIds[selectedProject - 1] + '_' + issues.filter(i => i.data.repository.hexId === repoHexIds[selectedProject - 1]).length,
         title,
         body: description,
         author: {
@@ -127,10 +127,13 @@ class NewIssue extends React.PureComponent {
         labels: { totalCount: 0, edges: Array(0) },
         milestone: null,
         state: 'OPEN',
-        url: null
+        url: null,
+        createdAt: new Date()
       }
+      console.table(newIssueData)
+      console.log('issueslist: ',issues)
       const hashedIssueData = await ipfsAdd(newIssueData)
-      api.setIssue(newIssueData.id, newIssueData.number, hashedIssueData).toPromise()
+      api.setIssue(repoHexIds[selectedProject - 1], newIssueData.number, hashedIssueData).toPromise()
     }
 
     // TODO: refetch Issues list after mutation
