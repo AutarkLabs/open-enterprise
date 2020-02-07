@@ -51,11 +51,10 @@ Empty.propTypes = {
 }
 
 const EmptyWrapper = styled.div`
-  align-items: center;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   height: calc(100vh - ${14 * GU}px);
-  justify-content: space-between;
 `
 
 export default Empty
