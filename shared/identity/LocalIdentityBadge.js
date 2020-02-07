@@ -1,11 +1,13 @@
 import React from 'react'
-import { useNetwork } from '../api-react'
+import { useInstalledApps } from '@aragon/api-react'
 import { IconLabel, IdentityBadge, GU, Link, useTheme } from '@aragon/ui'
 import { useIdentity } from './IdentityManager'
 import LocalLabelPopoverTitle from './LocalLabelPopoverTitle'
 import LocalLabelPopoverActionLabel from './LocalLabelPopoverActionLabel'
 
 const LocalIdentityBadge = ({ entity, networkType, ...props }) => {
+  const installedApps = useInstalledApps()
+  const kernel = installedApps.find(app => app.name === 'Kernel').appAddress
   const [ label, source, handleShowLocalIdentityModal ] = useIdentity(entity)
   const handleCustomLabel = () => handleShowLocalIdentityModal(entity)
   const handleProfile = () => {}
@@ -16,7 +18,10 @@ const LocalIdentityBadge = ({ entity, networkType, ...props }) => {
       return {
         label: (
           <Link
-            href={`https://www.3box.io/${entity}`}
+            href={kernel && network.type !== 'private'
+              ? `https://beta.autark.xyz/#/${kernel}/profile/${entity}`
+              : `https://www.3box.io/${entity}`
+            }
             css={`
               display: flex;
               align-items: center;
