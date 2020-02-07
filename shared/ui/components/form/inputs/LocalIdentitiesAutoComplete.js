@@ -2,8 +2,8 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { useAragonApi } from '@aragon/api-react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
+import AutoCompleteSelected from './AutoCompleteSelected'
 import {
-  _AutoCompleteSelected as AutoCompleteSelected,
   EthIdenticon,
   GU,
   IdentityBadge,
@@ -118,11 +118,14 @@ const LocalIdentitiesAutoComplete = React.forwardRef(
         itemButtonStyles={`
           cursor: pointer;
           border-radius: 0;
+          background: ${theme.surface};
           &:focus {
             outline: 2px solid ${theme.accent};
           }
+          &:focus,
+          &:hover,
           &:active {
-            background: #f9fafc;
+            background: ${theme.surfaceHighlight};
           }
         `}
         items={items}
@@ -137,7 +140,6 @@ const LocalIdentitiesAutoComplete = React.forwardRef(
         selectedButtonStyles={`
           display: block;
           padding: 0;
-
           &:focus,
           &:active {
             outline: none;
@@ -173,7 +175,7 @@ const Name = styled.div`
   text-overflow: ellipsis;
   display: inline-block;
   text-align: left;
-  color: #000;
+  color: ${({theme}) => theme.content};
 `
 
 export default LocalIdentitiesAutoComplete

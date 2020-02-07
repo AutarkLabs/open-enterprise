@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 import styled from 'styled-components'
-import { Button, IconPlus, IconRemove, theme, unselectable } from '@aragon/ui'
+import { Button, IconPlus, IconRemove, useTheme, unselectable } from '@aragon/ui'
 
 import LocalIdentitiesAutoComplete from './LocalIdentitiesAutoComplete'
 
@@ -10,6 +10,7 @@ const RecipientsInput = ({
   recipientsValid,
   onChange,
 }) => {
+  const theme = useTheme()
 
   const changeRecipient = (value, id) => {
     onChange({
@@ -51,6 +52,7 @@ const RecipientsInput = ({
               </AutoCompleteWrapper>
               { Object.keys(recipients).length > 1 && (
                 <IconContainer
+                  theme={theme}
                   style={{ transform: 'scale(.8)' }}
                   onClick={() => removeRecipient(id)}
                   title="Remove this recipient"
@@ -100,16 +102,16 @@ const AutoCompleteWrapper = styled.div`
 const IconContainer = styled.button`
   ${unselectable};
   all: unset;
-  color: ${({ disabled }) => (disabled ? theme.disabled : theme.textSecondary)};
+  color: ${({ theme, disabled }) => (disabled ? theme.disabled : theme.contentSecondary)};
   cursor: ${({ disabled }) => (disabled ? 'not-allowed' : 'pointer')};
   display: flex;
   justify-content: center;
   :hover {
-    color: ${({ disabled }) =>
+    color: ${({ theme, disabled }) =>
     disabled ? theme.disabled : theme.contentBorderActive};
   }
   :active {
-    color: ${({ disabled }) => (disabled ? theme.disabled : theme.accent)};
+    color: ${({ theme, disabled }) => (disabled ? theme.disabled : theme.accent)};
   }
   > svg {
     color: inherit;
