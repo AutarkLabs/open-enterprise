@@ -22,13 +22,16 @@ import {
   Avatar,
   FieldText,
   IssueTitle,
+  PanelContent,
   ReviewButtons,
   Status,
   SubmissionDetails,
+  TypeFilters,
   UserLink,
 } from '../PanelComponents'
 import workRatings from '../../../utils/work-ratings.js'
 import { DetailHyperText } from '../../../../../../shared/ui'
+import useReviewFilters from '../../../hooks/useReviewFilters'
 
 const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
   const githubCurrentUser = useGithubAuth()
@@ -37,10 +40,21 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
   } = useAragonApi()
   const { closePanel } = usePanelManagement()
   const theme = useTheme()
-
   const [ feedback, setFeedback ] = useState('')
   const [ rating, setRating ] = useState(-1)
-  const [ index, setIndex ] = useState(submissionIndex)
+
+  const approvedSubmissions = issue.workSubmissions.filter(s => s.review && s.review.accepted)
+
+  const canReview = approvedSubmissions.length < (issue.bounties ? issue.bounties : 1) && !readOnly
+
+  const {
+    items,
+    filterNames,
+    selectedFilter,
+    setSelectedFilter,
+    selectedItem,
+    setSelectedItem,
+  } = useReviewFilters(issue.workSubmissions, issue.workSubmissions[submissionIndex], canReview)
 
   const buildReturnData = accepted => {
     const today = new Date()
@@ -57,7 +71,6 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
   const onReject = () => onReviewSubmission(false)
   const updateRating = (index) => setRating(index)
   const updateFeedback = e => setFeedback(e.target.value)
-  const changeSubmission = (index) => setIndex(index)
 
   const canSubmit = () => !(rating > 0)
 
@@ -86,24 +99,37 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
     ).toPromise()
   }
 
-  const work = issue.workSubmissions[index]
+  const work = items[selectedFilter][selectedItem]
   const submitter = issue.work.user
   const submissionDateDistance = formatDistance(new Date(work.submissionDate), new Date())
   const submitterName = submitter.name ? submitter.name : submitter.login
 
   return(
-    <div css={`margin: ${2 * GU}px 0`}>
+    <PanelContent>
       <IssueTitle issue={issue} />
 
-      <FieldTitle>Work Submissions</FieldTitle>
-      <DropDown
-        name="Submission"
-        items={issue.workSubmissions.map(submission => submission.user.login)}
-        onChange={changeSubmission}
-        selected={index}
-        wide
-        css={`margin-bottom: ${3 * GU}px`}
-      />
+      <TypeFilters>
+        <DropDown
+          name="Type"
+          items={filterNames}
+          onChange={index => {
+            setSelectedFilter(index)
+            setSelectedItem(0)
+          }}
+          selected={selectedFilter}
+          wide
+          css={`margin-right: ${0.5 * GU}px`}
+        />
+
+        <DropDown
+          name="Submission"
+          items={items[selectedFilter].map(i => i.user.login)}
+          onChange={index => setSelectedItem(index)}
+          selected={selectedItem}
+          wide
+          css={`margin-left: ${0.5 * GU}px`}
+        />
+      </TypeFilters>
 
       <SubmissionDetails background={`${theme.background}`} border={`${theme.border}`}>
         <UserLink>
@@ -147,7 +173,7 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
           </FieldText>
         </React.Fragment>
       )}
-      {!readOnly && !work.review && (
+      {canReview && !work.review && (
         <React.Fragment>
           <FormField
             label="Quality Rating"
@@ -183,10 +209,9 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
         </React.Fragment>
       )}
 
-    </div>
+    </PanelContent>
   )
 }
-
 ReviewWork.propTypes = {
   issue: issueShape,
   readOnly: PropTypes.bool.isRequired,
