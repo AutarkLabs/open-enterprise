@@ -8,9 +8,21 @@ import "@aragon/os/contracts/lib/math/SafeMath.sol";
 import "@aragon/os/contracts/lib/math/SafeMath64.sol";
 
 // TODO: Use @aragon/os/contracts/ version when it gets merged
-import "../evmscript/DynamicScriptHelpers.sol";
+import "./DynamicScriptHelpers.sol";
 // TODO: Research why using the @aragon/os version breaks coverage
-import "@aragon/os/contracts/common/IForwarder.sol";
+// import "@aragon/os/contracts/common/IForwarder.sol";
+
+interface InterfacedForwarder {
+    function isForwarder() external pure returns (bool);
+
+    // TODO: this should be external
+    // See https://github.com/ethereum/solidity/issues/4832
+    function canForward(address sender, bytes evmCallScript) public view returns (bool);
+
+    // TODO: this should be external
+    // See https://github.com/ethereum/solidity/issues/4832
+    function forward(bytes evmCallScript) public;
+}
 
 /**
   * @title ADynamicForwarder App
@@ -21,7 +33,7 @@ import "@aragon/os/contracts/common/IForwarder.sol";
   */
 
 
-contract ADynamicForwarder is IForwarder {
+contract ADynamicForwarder is InterfacedForwarder {
     using DynamicScriptHelpers for bytes;
     using SafeMath for uint256;
     using SafeMath64 for uint64;
