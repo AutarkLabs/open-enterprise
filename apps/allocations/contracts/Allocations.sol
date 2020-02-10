@@ -431,7 +431,11 @@ contract Allocations is AragonApp {
         uint64 _startTime,
         uint64 _period,
         uint256 _amount
-    ) public auth(CREATE_ALLOCATION_ROLE) returns(uint64 payoutId)
+    )
+    public
+    auth(CREATE_ALLOCATION_ROLE)
+    transitionsPeriod
+    returns(uint64 payoutId)
     {
         require(maxCandidates >= _candidateAddresses.length); // solium-disable-line error-reason
         Account storage account = accounts[_accountId];
