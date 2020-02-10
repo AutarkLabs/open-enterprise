@@ -28,7 +28,7 @@ export const initEthToken = () => {
 }
 
 export const initializeTokens = async (cachedState = {}, settings) => {
-  
+
   initEthToken()
   const newState = {
     ...cachedState,
@@ -49,7 +49,7 @@ const loadTokenBalances = async (state, includedTokenAddresses, settings) => {
   let newState = {
     ...state,
   }
-  
+
   if (
     !Array.isArray(newState.balances) &&
     !Array.isArray(includedTokenAddresses)

@@ -18,11 +18,11 @@ context('Rewards', () => {
     cy.on("window:load", async (win) => {
       if (win.web3) {
         console.log(win.web3)
-        await win.web3.eth.sendTransaction({ 
-          from: root,  
+        await win.web3.eth.sendTransaction({
+          from: root,
           to: finance, // needs to be updated when aragonCLI or aragen are updated
-          value: 2e18, 
-          gas: 350000 
+          value: 2e18,
+          gas: 350000
         })
 
         let tokenAddress = "0xf2804D07A941F77F34EEEb252D172E4268d0e9D4"

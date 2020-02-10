@@ -71,7 +71,7 @@ Before calling `acceptFulfillment`, make sure that the sum of all the values in 
 
 ### WARNINGS
 
-1\. [Projects.sol#L340](https://github.com/AutarkLabs/planning-suite/blob/d6acd0820939813c974625b634361156dfced360/apps/projects/contracts/Projects.sol#L340) 
+1\. [Projects.sol#L340](https://github.com/AutarkLabs/planning-suite/blob/d6acd0820939813c974625b634361156dfced360/apps/projects/contracts/Projects.sol#L340)
 
 When a repository is deleted, funds in open bounties related to repository issues become (at least temporarily) blocked.
 We recommend you keep score of open bounty repositories and prohibit deleting them if this entails a loss of funds.
@@ -189,7 +189,7 @@ Re-calling `isContract(_bountiesAddr)` is not beneficial and gas-consuming. We r
 
 *Fixed at   [0d1835d](https://github.com/AutarkLabs/open-enterprise/commit/0d1835d5499af056fc24969e9d5d306e856b674d)*
 
-7\. [Projects.sol#L269](https://github.com/AutarkLabs/planning-suite/blob/d6acd0820939813c974625b634361156dfced360/apps/projects/contracts/Projects.sol#L269) 
+7\. [Projects.sol#L269](https://github.com/AutarkLabs/planning-suite/blob/d6acd0820939813c974625b634361156dfced360/apps/projects/contracts/Projects.sol#L269)
 
 We recommend using the current `bountySize` directly from `Bounties`. This step may be skipped if, after fixing major issue #1, `bountySize` will always be equal to the corresponding bounty balance in `Bounties`.
 
@@ -197,7 +197,7 @@ We recommend using the current `bountySize` directly from `Bounties`. This step 
 
 8\. [Projects.sol#L572](https://github.com/AutarkLabs/planning-suite/blob/d6acd0820939813c974625b634361156dfced360/apps/projects/contracts/Projects.sol#L572)
 
-[Projects.sol#L622](https://github.com/AutarkLabs/planning-suite/blob/d6acd0820939813c974625b634361156dfced360/apps/projects/contracts/Projects.sol#L622) 
+[Projects.sol#L622](https://github.com/AutarkLabs/planning-suite/blob/d6acd0820939813c974625b634361156dfced360/apps/projects/contracts/Projects.sol#L622)
 
 Input array length validation is missing. We recommend adding a check that all input array lengths are equal.
 
@@ -223,11 +223,11 @@ Since `assignee` is set here, using `ETH` instead of `address(0)` is misleading.
 *Fixed at   [0d1835d](https://github.com/AutarkLabs/open-enterprise/commit/0d1835d5499af056fc24969e9d5d306e856b674d)*
 
 12\. There is no way to withdraw or use contributions made directly through the `Bounties` contract.
-One of the possible solutions is multiple `drainBounty` function calls. 
+One of the possible solutions is multiple `drainBounty` function calls.
 
 *Acknowledged*
 
-13\. There is no way to get all issues for a given repository. Problems may arise while creating the issue list. 
+13\. There is no way to get all issues for a given repository. Problems may arise while creating the issue list.
 One of the possible solutions is using a repository issue counter.
 
 *Acknowledged*
@@ -240,7 +240,7 @@ This comment is not accurate because the function does not return the id of the 
 
 15\. [Projects.sol#L150-L151](https://github.com/AutarkLabs/planning-suite/blob/d6acd0820939813c974625b634361156dfced360/apps/projects/contracts/Projects.sol#L150-L151)
 
-[Projects.sol#L157](https://github.com/AutarkLabs/planning-suite/blob/d6acd0820939813c974625b634361156dfced360/apps/projects/contracts/Projects.sol#L157) 
+[Projects.sol#L157](https://github.com/AutarkLabs/planning-suite/blob/d6acd0820939813c974625b634361156dfced360/apps/projects/contracts/Projects.sol#L157)
 
 [Projects.sol#L162](https://github.com/AutarkLabs/planning-suite/blob/d6acd0820939813c974625b634361156dfced360/apps/projects/contracts/Projects.sol#L162)
 
@@ -275,7 +275,7 @@ The common code (comprising 90% of the given functions) may be moved to a separa
 
 [Projects.sol#L882](https://github.com/AutarkLabs/planning-suite/blob/d6acd0820939813c974625b634361156dfced360/apps/projects/contracts/Projects.sol#L882)
 
-We recommend eliminating the commented code fragments. 
+We recommend eliminating the commented code fragments.
 
 *Fixed at   [0d1835d](https://github.com/AutarkLabs/open-enterprise/commit/0d1835d5499af056fc24969e9d5d306e856b674d)*
 

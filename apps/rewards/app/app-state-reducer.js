@@ -15,7 +15,7 @@ import {
 import { MILLISECONDS_IN_A_MONTH, MILLISECONDS_IN_A_WEEK, MILLISECONDS_IN_A_YEAR, MILLISECONDS_IN_A_DAY } from '../../../shared/ui/utils/math-utils'
 
 function appStateReducer(state) {
-  
+
   if(state){
     state.amountTokens = state.balances.map(token => {
       return { amount: token.amount, symbol: token.symbol, address: token.address, decimals: token.decimals, transferable: token.transfersEnabled }
@@ -24,7 +24,7 @@ function appStateReducer(state) {
     state.claims = state.claims  || []
     state.rewards = state.rewards === [] ? [] : state.rewards.reduce((rewards, reward) => {
       const currentReward = reward.isMerit ? undefined : rewards.find(filteredElement => {
-        return filteredElement.description === reward.description && parseInt(filteredElement.rewardId, 10) + filteredElement.occurances === parseInt(reward.rewardId) && 
+        return filteredElement.description === reward.description && parseInt(filteredElement.rewardId, 10) + filteredElement.occurances === parseInt(reward.rewardId) &&
         reward.amount === filteredElement.amount && filteredElement.duration === reward.duration
       })
       if(currentReward !== undefined){

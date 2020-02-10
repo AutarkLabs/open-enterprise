@@ -6,7 +6,7 @@ if [ $? == "1" ]
 then
   aragon apm publish major --files dist/ --environment continuous-deployment --apm.ipfs.rpc https://ipfs.autark.xyz:5001 --ipfs-check false --propagate-content false --skip-confirmation --no-prepublish
   exit $?
-else 
+else
   echo "no contract changes"
 fi
 

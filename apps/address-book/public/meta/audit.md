@@ -54,12 +54,12 @@ Stages of the audit were as follows:
 ### CRITICAL
 
 Not found
- 
+
 ### MAJOR
 Not found
 
 ### WARNINGS
- 
+
 Not found
 
 ### COMMENTS
@@ -72,7 +72,7 @@ We recommend adding the explicit check `isInitialized`.
 
 2\. [AddressBook.sol#L91](https://github.com/AutarkLabs/planning-suite/blob/66a851551888ba7eadaab6a5f037048655bc5d88/apps/address-book/contracts/AddressBook.sol#L91)
 
-There is a constant for this kind of error message - `ERROR_CID_MALFORMED`. We recommend factoring out the entire check as a modifier. 
+There is a constant for this kind of error message - `ERROR_CID_MALFORMED`. We recommend factoring out the entire check as a modifier.
 
 *Fixed at [ed2f199](https://github.com/AutarkLabs/planning-suite/blob/ed2f199ddda280d1e7033648b69399547f05eec7/apps/address-book/contracts/AddressBook.sol)*
 
@@ -95,7 +95,7 @@ The important thing to understand is that the memory layout of the next version 
 
 It is expected that structured content objects for the entries will be stored in IPFS. Users and developers should keep in mind that IPFS does not guarantee data availability. After some time unused data is removed from IPFS unless explicitly pinned by some node.
 
-*Acknowledged, dev notes were created at [AddressBook.sol#L60](https://github.com/AutarkLabs/planning-suite/blob/4f3f11c194b285f8e407e3cd4def56afb418b233/apps/address-book/contracts/AddressBook.sol#L60)* 
+*Acknowledged, dev notes were created at [AddressBook.sol#L60](https://github.com/AutarkLabs/planning-suite/blob/4f3f11c194b285f8e407e3cd4def56afb418b233/apps/address-book/contracts/AddressBook.sol#L60)*
 
 
 6\. [AddressBook.sol#L64](https://github.com/AutarkLabs/planning-suite/blob/66a851551888ba7eadaab6a5f037048655bc5d88/apps/address-book/contracts/AddressBook.sol#L64)

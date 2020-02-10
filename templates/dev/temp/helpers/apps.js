@@ -12,7 +12,7 @@ const ARAGON_APPS = [
   // { name: 'token-manager.hatch', contractName: 'TokenManager' },
   // { name: 'whitelist-oracle.hatch', contractName: 'WhitelistOracle' },
 ]
-  
+
 const ARAGON_APP_IDS = ARAGON_APPS.reduce((ids, { name }) => {
   ids[name] = namehash(`${name}.aragonpm.eth`)
   return ids

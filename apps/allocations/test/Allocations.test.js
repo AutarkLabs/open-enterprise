@@ -334,7 +334,7 @@ contract('Allocations', accounts => {
         (web3.toWei(0.01, 'ether') * SUPPORTS[2]) / TOTAL_SUPPORT,
         'bossk expense'
       )
-      
+
       await app.runPayout(accountId, ethPayoutId)
 
       // calling runPayout has no effect
@@ -415,7 +415,7 @@ contract('Allocations', accounts => {
 
     it('execute single payout by candidate', async () => {
       let empireBalance = await web3.eth.getBalance(empire)
-      
+
       //Repay gas costs to empire
       const costs = (
         empireInitialBalance.toNumber()

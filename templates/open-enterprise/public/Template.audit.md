@@ -57,9 +57,9 @@ Stages of the audit were as follows:
 ## Detected Issues
 
 ### CRITICAL
- 
+
 Not found
- 
+
 ### MAJOR
 1\. [OpenEnterpriseTemplate.sol#L177](https://github.com/AutarkLabs/open-enterprise/blob/1502373a0071253f5b90c9e703395754d2f947cc/templates/open-enterprise/contracts/OpenEnterpriseTemplate.sol#L177)
 

@@ -17,7 +17,7 @@ cleanup() {
 }
 
 setup_coverage_variables() {
-  ACCOUNTS=${ACCOUNTS-200}  
+  ACCOUNTS=${ACCOUNTS-200}
   BALANCE=${BALANCE-100000}
   COMMAND=${COMMAND-testrpc-sc}
   ENVIRONMENT=${ENVIRONMENT-coverage}

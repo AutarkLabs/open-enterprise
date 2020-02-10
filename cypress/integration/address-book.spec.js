@@ -16,7 +16,7 @@ context('Address Book', () => {
     cy.contains('button','Address Book',{ timeout: 150000 }).wait(1000).click()
   })
   it('creates Address Entry', () =>{
-      
+
     cy.getWithinIframe('button:contains("New entity")').trigger('click')
     .getWithinIframe('input[name="name"]').type('Hello World', { force: true })
     .getWithinIframe('input[name="address"]').type('0xb4124ceb3451635dacedd11767f004d8a28c6ee7', { force: true })
