@@ -9,7 +9,7 @@
     "compile": "truffle compile",
     "console": "truffle dev",
     "copy-public-assets": "rsync -rtu ./public/ ./dist",
-    "coverage": "SOLIDITY_COVERAGE=true npm run ganache-cli:test",
+    "coverage": "cross-env SOLIDITY_COVERAGE=true npm run ganache-cli:test",
     "frontend": "npm run sync-assets && parcel app/index.html --port 2222",
     "ganache-cli:test": "../shared/test-helpers/ganache-cli.sh",
     "lint": "solium --dir ./contracts",
