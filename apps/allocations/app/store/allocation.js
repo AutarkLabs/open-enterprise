@@ -110,9 +110,9 @@ const getAllocation = async ({ accountId, payoutId }) => {
         token,
         date: new Date(startTime*1000),
         recipients,
-        status: recipients.every(r => r.executions === recurrences)
+        status: recipients.every(r => r.executions === recurrences || r.supports === '0')
           ? STATUS_ENACTED
-          : STATUS_APPROVED, //Approved will be made dynamic once the execution handler is integrated
+          : STATUS_APPROVED,
       }))
     )
     .toPromise()
