@@ -42,7 +42,6 @@ import { app } from './app'
 
 export const handleEvent = async (state, action, vaultAddress, vaultContract, settings) => {
   const { event, returnValues, address } = action
-  console.log('event: ', action)
   switch (event) {
   case SYNC_STATUS_SYNCING: {
     return {

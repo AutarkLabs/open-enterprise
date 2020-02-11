@@ -2,12 +2,24 @@ const BOUNTY_STATUS = {
   'not-funded': 'Issues without funding',
   'all-funded': 'Funded issues',
   'funded': 'Accepting applicants',
-  'open-submission-funded': 'Accepting work submissions',
   'review-applicants': 'Pending application review',
   'in-progress': 'Work in progress',
   'review-work': 'Work ready for review',
   'fulfilled': 'Fulfilled',
 }
+
+const BOUNTY_STATUS_FUNDED = [
+  'funded',
+  'review-applicants',
+  'in-progress',
+  'review-work',
+  'fulfilled'
+]
+
+const BOUNTY_STATUS_GENERAL = [
+  'all-funded',
+  'not-funded'
+]
 
 const BOUNTY_BADGE_COLOR = {
   'funded': { bg: '#e7f8ec', fg: '#51d4b7' },
@@ -17,5 +29,12 @@ const BOUNTY_BADGE_COLOR = {
   'fulfilled': { bg: '#d1d1d1', fg: '#445159' },
 }
 
-export { BOUNTY_STATUS, BOUNTY_BADGE_COLOR }
+const BOUNTY_STATUS_LONG = {
+  'funded': 'Accepting applications for work on this issue',
+  'review-applicants': 'Pending application review',
+  'in-progress': 'Accepting work for review on this issue',
+  'review-work': 'Work ready for review',
+  'fulfilled': 'Fulfilled',
+}
 
+export { BOUNTY_BADGE_COLOR, BOUNTY_STATUS, BOUNTY_STATUS_FUNDED, BOUNTY_STATUS_GENERAL, BOUNTY_STATUS_LONG }

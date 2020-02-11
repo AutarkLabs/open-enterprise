@@ -21,6 +21,7 @@ import { EmptyWrapper } from './components/Shared'
 import { Error } from './components/Card'
 import { DecoratedReposProvider } from './context/DecoratedRepos'
 import { BountyIssuesProvider } from './context/BountyIssues'
+import { IssueFiltersProvider } from './context/IssueFilters'
 import Routes from './Routes'
 
 let popupRef = null
@@ -130,19 +131,21 @@ const App = () => {
             onShowLocalIdentityModal={handleShowLocalIdentityModal}
           >
             <DecoratedReposProvider>
-              <BountyIssuesProvider>
-                <main>
-                  <ErrorBoundary>
-                    <Routes handleGithubSignIn={handleGithubSignIn} />
-                  </ErrorBoundary>
-                </main>
-              </BountyIssuesProvider>
-              <PanelManager
-                activePanel={panel}
-                onClose={closePanel}
-                handleGithubSignIn={handleGithubSignIn}
-                {...panelProps}
-              />
+              <IssueFiltersProvider>
+                <BountyIssuesProvider>
+                  <main>
+                    <ErrorBoundary>
+                      <Routes handleGithubSignIn={handleGithubSignIn} />
+                    </ErrorBoundary>
+                  </main>
+                </BountyIssuesProvider>
+                <PanelManager
+                  activePanel={panel}
+                  onClose={closePanel}
+                  handleGithubSignIn={handleGithubSignIn}
+                  {...panelProps}
+                />
+              </IssueFiltersProvider>
             </DecoratedReposProvider>
           </IdentityProvider>
         </PanelContext.Provider>

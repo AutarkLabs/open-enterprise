@@ -4,7 +4,7 @@ import { BOUNTY_STATUS } from '../../../utils/bounty-status'
   prepareFilters builds data structure for displaying filterbar dropdowns
   data comes from complete issues array, issuesFiltered is used for counters
 */
-const prepareFilters = (issues, bountyIssues, repo) => {
+const prepareFilters = (repo) => {
   let filters = {
     projects: {},
     labels: {},

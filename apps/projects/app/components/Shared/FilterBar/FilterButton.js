@@ -47,5 +47,8 @@ FilterButton.propTypes = {
   disabled: PropTypes.bool.isRequired,
   title: PropTypes.string,
 }
+FilterButton.defaultProps = {
+  disabled: false,
+}
 
 export default FilterButton
