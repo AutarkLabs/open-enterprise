@@ -77,7 +77,7 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
     closePanel()
 
     reviewSubmission(
-      toHex(issue.repoId),
+      issue.repoHexId || toHex(issue.repoId),
       issue.number,
       issue.workSubmissions.length - 1,
       accepted,

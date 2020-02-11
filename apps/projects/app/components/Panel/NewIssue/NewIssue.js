@@ -116,8 +116,8 @@ class NewIssue extends React.PureComponent {
       e.preventDefault()
       this.props.closePanel()
       const newIssueData = {
-        number: issues.filter(i => i.data.repository.hexId === repoHexIds[selectedProject - 1]).length,
-        id: repoHexIds[selectedProject - 1] + '_' + issues.filter(i => i.data.repository.hexId === repoHexIds[selectedProject - 1]).length,
+        number: issues.filter(i => i.data.repoHexId === repoHexIds[selectedProject - 1]).length,
+        id: repoHexIds[selectedProject - 1] + '_' + issues.filter(i => i.data.repoHexId === repoHexIds[selectedProject - 1]).length,
         title,
         body: description,
         author: {

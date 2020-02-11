@@ -49,7 +49,7 @@ const RequestAssignment = ({ issue }) => {
       applicationDate: today.toISOString(),
     }
     const hash = await ipfsAdd(data)
-    api.requestAssignment(toHex(issue.repoId), issue.number, hash).toPromise()
+    api.requestAssignment(issue.repoHexId || toHex(issue.repoId), issue.number, hash).toPromise()
   }
 
   const canSubmit = () => !(ack1 && ack2 && workplan)

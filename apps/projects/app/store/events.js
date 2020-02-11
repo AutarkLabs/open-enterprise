@@ -146,6 +146,7 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract, se
   case BOUNTY_FULFILLED: {
     if(!returnValues) return state
     const { _bountyId, _fulfillmentId, _fulfillers, _submitter, _data } = returnValues
+    console.log('returned', returnValues)
     const issue = state.issues.find(i => i.data.standardBountyId === _bountyId)
     if (!issue) return state
 
@@ -158,7 +159,7 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract, se
       // and ACTION_PERFORMED has already marked this submission as reviewed
       return state
     }
-
+    console.log('found issue: ', issue)
     const issueNumber = String(issue.data.number)
     const submission = await buildSubmission({
       fulfillmentId: _fulfillmentId,
@@ -175,6 +176,7 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract, se
       workSubmissions,
       work: submission,
     }
+    console.log('before issue detail')
     issueData = await updateIssueDetail(issueData)
     issueData = determineWorkStatus(issueData)
     return syncIssues(state, { issueNumber }, issueData)

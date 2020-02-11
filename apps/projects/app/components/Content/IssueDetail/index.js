@@ -19,6 +19,7 @@ import BountyCard from './BountyCard'
 import { usePanelManagement } from '../../Panel'
 import usePathHelpers from '../../../../../../shared/utils/usePathHelpers'
 import { useDecoratedRepos } from '../../../context/DecoratedRepos'
+import { toHex } from 'web3-utils'
 
 function Wrap({ children, repo }) {
   const { goBack } = usePathHelpers()
@@ -55,28 +56,57 @@ Wrap.propTypes = {
 }
 
 const IssueDetail = ({ issueId }) => {
-  const { appState: { github } } = useAragonApi()
+  const { appState: { github, issues  } } = useAragonApi()
   const client = useMemo(() => initApolloClient(github.token), [])
   const { layoutName } = useLayout()
   const shapeIssue = useShapedIssue()
-  const { loading, error, data } = useQuery(GET_ISSUE, {
-    client,
-    onError: console.error,
-    variables: { id: issueId },
-  })
 
+  const storedIssue = useMemo(() => {
+    return issues.find(i => issueId === i.data.issueId )
+  }, [issues])
+  console.log('id: ', issueId)
+  console.log('stored Issue: ', storedIssue)
+  let unshapedIssue, repo, queryDetails
   const repos = useDecoratedRepos()
-  const repo = useMemo(() => {
-    if (!data || !data.node) return null
-    return repos.find(repo => repo.data._repo === data.node.repository.id)
-  }, [ data, repos ])
+  if (storedIssue.data.repository) {
+    unshapedIssue = storedIssue.data
+    repo = useMemo(() => {
+      //if ()
+      //if (!data || !data.node) return null
+      return repos.find(repo => repo.id === unshapedIssue.repoHexId || repo.data._repo === toHex(unshapedIssue.repoId))
+    }, [ storedIssue, repos ])
+  } else {
+    queryDetails = useQuery(GET_ISSUE, {
+      client,
+      onError: console.error,
+      variables: { id: issueId },
+    })
 
-  if (loading) return <Wrap>Loading...</Wrap>
-  if (error) return <Wrap>{JSON.stringify(error)}</Wrap>
+    const  { loading, error, data } = queryDetails
 
-  const issue = shapeIssue(data.node)
+    repo = useMemo(() => {
+      if (!data || !data.node) return null
+      return repos.find(repo => repo.data._repo === data.node.repository.id)
+    }, [ data, repos ])
+
+    if (loading) return <Wrap>Loading...</Wrap>
+    if (error) return <Wrap>{JSON.stringify(error)}</Wrap>
+    
+    console.log('issue detail: ', data)
+    unshapedIssue = data.node
+
+    
+  }
+  //repo = useMemo(() => {
+  //  if (!unshapedIssue) return null
+  //  return repos.find(repo => repo.id === unshapedIssue.data.repoHexId || repo.data._repo === toHex(unshapedIssue.data.repoId))
+  //}, [ unshapedIssue, repos ])
+  //const issue = shapeIssue(unshapedIssue)
   const columnView = layoutName === 'small' || layoutName === 'medium'
-
+  //const repos = useDecoratedRepos()
+  const issue = shapeIssue(unshapedIssue)
+  console.log('shaped issue: ', issue)
+  
   return (
     <Wrap repo={repo}>
       {columnView ? (

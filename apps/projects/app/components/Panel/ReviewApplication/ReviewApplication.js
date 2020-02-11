@@ -62,7 +62,7 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
     const requestIPFSHash = await ipfsAdd({ ...ipfsData, review })
 
     reviewApplication(
-      toHex(issue.repoId),
+      issue.repoHexId || toHex(issue.repoId),
       issue.number,
       issue.requestsData[index].contributorAddr,
       requestIPFSHash,

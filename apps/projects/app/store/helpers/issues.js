@@ -8,6 +8,7 @@ export const loadIssueData = async ({ repoId, issueNumber }) => {
     standardBountyId,
     balance,
     assignee,
+    fulfilled
   } = await app.call('getIssue', repoId, issueNumber).toPromise()
   const hasBounty = !!balance
   const bountiesRegistry = await app.call('bountiesRegistry').toPromise()
@@ -49,6 +50,7 @@ export const loadIssueData = async ({ repoId, issueNumber }) => {
     // from Projects.sol
     assignee,
     balance,
+    fulfilled,
     hasBounty,
     standardBountyId,
     openSubmission: /^0xf{40}$/i.test(assignee),
@@ -198,7 +200,9 @@ export const buildSubmission = async ({ fulfillmentId, fulfillers, ipfsHash, sub
 
 export const updateIssueDetail = async data => {
   let returnData = { ...data }
-  const repoId = toHex(data.repoId)
+  console.log('return data: ', data)
+  // keep hex conversion for compatibility with older issues
+  const repoId = data.repoHexId || toHex(data.repoId)
   const issueNumber = String(data.number)
   const requestsData = await loadRequestsData({ repoId, issueNumber })
   returnData.requestsData = requestsData

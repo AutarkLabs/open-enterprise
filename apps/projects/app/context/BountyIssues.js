@@ -32,9 +32,12 @@ export function BountyIssuesProvider(props) {
     return issues
       .filter(i => !i.data.repository || (i.data.repository && !i.data.repository.decoupled))
       .map(i => {
-        console.log('issue to query: ',i)
-        i.data.issueId
-      }).filter(i => i)
+        console.log('issue to query: ',i.data.issueId)
+        return i.data.issueId
+      }).filter(i => {
+        console.log('made it through: ', i)
+        return i
+      })
   }, [issues])
 
   const decoupledBounties = React.useMemo(() => {

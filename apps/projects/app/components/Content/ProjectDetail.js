@@ -319,9 +319,12 @@ const ProjectDetailWrap = ({ repo, ...props }) => {
     issue.repoId === repo.data._repo
   )
   console.log('bounties: ', useBountyIssues())
+  console.log('actual bounty issues: ', bountyIssues)
   const { appState } = useAragonApi()
   console.log('contract state: ', appState)
-  const issues = appState.issues.filter(issue => issue.data.repository.hexId === repo.id).map(issue => issue.data)
+  const issues = appState.issues
+    .filter(issue => issue.data.repository && issue.data.repository.hexId === repo.id)
+    .map(issue => issue.data)
   console.log('issues: ', issues)
   const shapeIssue = useShapedIssue()
   const { setupNewIssue } = usePanelManagement()
