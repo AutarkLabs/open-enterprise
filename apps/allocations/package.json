@@ -11,7 +11,7 @@
     "copy-public-assets": "rsync -rtu ./public/ ./dist",
     "coverage": "cross-env SOLIDITY_COVERAGE=true npm run ganache-cli:test",
     "frontend": "npm run sync-assets && parcel app/index.html --port 2222",
-    "ganache-cli:test": "../shared/test-helpers/ganache-cli.sh",
+    "ganache-cli:test": "sh ../../node_modules/@aragon/test-helpers/ganache-cli.sh",
     "lint": "solium --dir ./contracts",
     "precommit": "lint-staged",
     "prepublishOnly": "truffle compile",
