@@ -14,15 +14,15 @@ const compareBalancesByEthAndSymbol = (tokenA, tokenB) => {
 }
 
 const getTokenFromAddress = (tokenAddress, tokenList) => {
-  if (!tokenList || !tokenList.length) return tokenAddress
+  if (!tokenList || !tokenList.length) return null
   return tokenList.find(token => addressesEqual(token.address, tokenAddress))
 }
 
 function appStateReducer(state) {
-  const { accounts: budgets, balances , allocations, period } = state || {}
+  const { accounts: budgets, balances, allocations, period } = state || {}
   const { endDate } = period || {}
   const currentDate = new Date()
-
+  // TODO: convert balances to an object to decrease computational complexity on token lookups in script.js
   const balancesBn = balances
     ? balances
       .map(balance => ({
@@ -41,27 +41,33 @@ function appStateReducer(state) {
     : []
 
   const budgetsBn = budgets
-    ? budgets.map(budget => ({
-      ...budget,
-      active: budget.hasBudget && Number(budget.amount) > 0,
-      // get some extra info about the token
-      token: getTokenFromAddress(budget.token, balances),
-      // if current period end date is less than now, current period is over
-      // but not updated on chain. so we reset the remaining budget
-      remaining: endDate < currentDate ? budget.amount : budget.remaining,
+    ? budgets
+      // prevent any budgets missing token data from getting passed to the frontend
+      .filter(budget => getTokenFromAddress(budget.token, balances))
+      .map(budget => ({
+        ...budget,
+        active: budget.hasBudget && Number(budget.amount) > 0,
+        // get some extra info about the token
+        token: getTokenFromAddress(budget.token, balances),
+        // if current period end date is less than now, current period is over
+        // but not updated on chain. so we reset the remaining budget
+        remaining: endDate < currentDate ? budget.amount : budget.remaining,
       // amount: new BigNumber(budget.amount),
       // numData: {
       //   amount: parseInt(budget.amount, 10),
       // },
-    }))
+      }))
     : []
 
   const allocationsBn = allocations
-    ? allocations.map(allocation => ({
-      ...allocation,
-      // get some extra info about the token
-      tokenDecimal: getTokenFromAddress(allocation.token, balances).decimals
-    }))
+    ? allocations
+      // prevent any allocation details missing token data from getting passed to the frontend
+      .filter(allocation => getTokenFromAddress(allocation.token, balances))
+      .map(allocation => ({
+        ...allocation,
+        // get some extra info about the token
+        tokenDecimal: getTokenFromAddress(allocation.token, balances).decimals
+      }))
     : []
 
   const newState = {
