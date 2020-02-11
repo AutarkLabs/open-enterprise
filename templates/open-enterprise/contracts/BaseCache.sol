@@ -1,7 +1,7 @@
 pragma solidity 0.4.24;
 
 import "./BaseTemplate.sol";
-import { DotVoting } from "@tps/apps-dot-voting/contracts/DotVoting.sol";
+import "@tps/apps-dot-voting/contracts/DotVoting.sol";
 
 
 contract BaseCache is BaseTemplate {

@@ -30,18 +30,18 @@ contract ExecutionTarget {
     }
 
     function setDistribution(
-      address[] _candidateAddresses,
-      uint256[] _supports,
-      uint256[] /*_infoIndices*/,
-      string /*_candidateInfo*/,
-      string _description,
-      uint256[] /*level 1 Id*/,
-      uint256[] /*level 2 Id*/,
-      uint64 _accountId,
-      uint64 _recurrences,
-      uint64 _startTime,
-      uint64 _period,
-      uint256 _amount
+        address[] _candidateAddresses,
+        uint256[] _supports,
+        uint256[] /*_infoIndices*/,
+        string /*_candidateInfo*/,
+        string /*_description*/,
+        uint256[] /*level 1 Id*/,
+        uint256[] /*level 2 Id*/,
+        uint64 /*_accountId*/,
+        uint64 /*_recurrences*/,
+        uint64 /*_startTime*/,
+        uint64 /*_period*/,
+        uint256 _amount
     ) public
     {
         endValue = _amount;
@@ -49,21 +49,21 @@ contract ExecutionTarget {
     }
 
     function setLongTarget(
-      address[] /*_addr*/,
-      uint256[] /*_supports*/,
-      uint256[] /*_infoIndices*/,
-      string /*_candidateInfo*/,
-      string /*description*/,
-      uint256[] /*level 1 Id*/,
-      uint256[] /*level 2 Id*/,
-      uint256 /*external vote Identifier*/,
-      uint256 /*test param*/,
-      uint256 /*test param*/,
-      uint256 /*test param*/,
-      uint256 /*test param*/,
-      uint256 /*test param*/,
-      uint256 /*test param*/,
-      uint256 _endValue
+        address[] /*_addr*/,
+        uint256[] /*_supports*/,
+        uint256[] /*_infoIndices*/,
+        string /*_candidateInfo*/,
+        string /*description*/,
+        uint256[] /*level 1 Id*/,
+        uint256[] /*level 2 Id*/,
+        uint256 /*external vote Identifier*/,
+        uint256 /*test param*/,
+        uint256 /*test param*/,
+        uint256 /*test param*/,
+        uint256 /*test param*/,
+        uint256 /*test param*/,
+        uint256 /*test param*/,
+        uint256 _endValue
     ) public
     {
         endValue = _endValue;
@@ -81,7 +81,7 @@ contract ExecutionTarget {
     }
 
     function getEndValue() public view returns (uint256) {
-      return endValue;
+        return endValue;
     }
 
     event Executed(uint length);
