@@ -1,5 +1,5 @@
 /*
- * SPDX-License-Identitifer: GPL-3.0-or-later
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
 pragma solidity 0.4.24;
@@ -76,7 +76,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     *         `(_minQuorum - _minQuorum % 10^14)
     *         / 10^16`, minimal candidate acceptance of
     *         `(_candidateSupportPct - _candidateSupportPct % 10^14) / 10^16`
-    *         and vote duations of `(_voteTime - _voteTime % 86400) / 86400`
+    *         and vote durations of `(_voteTime - _voteTime % 86400) / 86400`
     *         day `_voteTime >= 172800 ? 's' : ''`
     * @param _token MiniMeToken address that will be used as governance token
     * @param _minQuorum Percentage of voters that must participate in
@@ -112,7 +112,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
 
 
     /**
-    * @notice Create a new dot vote for "`_metadata`". 
+    * @notice Create a new dot vote for "`_metadata`".
     * @param _executionScript EVM script to be executed on approval
     * @param _metadata Vote metadata
     * @return voteId Id for newly created vote
@@ -148,7 +148,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     * @notice `getCandidate` serves as a basic getter using the description
     *         to return the struct data.
     * @param _voteId id for vote structure this 'ballot action' is connected to
-    * @param _candidateIndex The candidate descrciption of the candidate.
+    * @param _candidateIndex The candidate description of the candidate.
     */
     function getCandidate(uint256 _voteId, uint256 _candidateIndex)
     external view isInitialized returns(address candidateAddress, uint256 voteSupport, string metadata, bytes32 externalId1, bytes32 externalId2)
@@ -172,7 +172,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     *        a voting option for it to be valid (expressed as a 10^18 percentage,
     *        e.g. 10^16 = 1%, 10^18 = 100%)
     */
-    function setglobalCandidateSupportPct(uint256 _globalCandidateSupportPct)
+    function setGlobalCandidateSupportPct(uint256 _globalCandidateSupportPct)
     external auth(ROLE_MODIFY_CANDIDATE_SUPPORT)
     {
         require(globalMinQuorum >= _globalCandidateSupportPct); // solium-disable-line error-reason
@@ -259,7 +259,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
 ///////////////////////
 
     /**
-    * @notice `canVote` is used to check whether an address is elligible to
+    * @notice `canVote` is used to check whether an address is eligible to
     *         cast a dot vote in a given dot vote action.
     * @param _voteId The ID of the Vote on which the vote would be cast.
     * @param _voter The address of the entity trying to vote
@@ -276,7 +276,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     *         and the vote has reached it's end before the execute function is
     *         called.
     * @param _voteId id for vote structure this 'ballot action' is connected to
-    * @return True if the vote is elligible for execution.
+    * @return True if the vote is eligible for execution.
     */
     function canExecute(uint256 _voteId) public view isInitialized returns (bool) {
         require(_voteId < voteLength, ERROR_VOTE_LENGTH);
@@ -383,7 +383,7 @@ contract DotVoting is ADynamicForwarder, AragonApp {
     *        The fifth array is used for description params (optional string)
     *        The sixth array is an array of identification keys (optional uint256)
     *        The seventh array is a second array of identification keys, usually mapping to a second level (optional uint256)
-    *        The eigth parameter is used as the identifier for this vote. (uint256)
+    *        The eighth parameter is used as the identifier for this vote. (uint256)
     *        See ExecutionTarget.sol in the test folder for an example  forwarded function (setSignal)
     * @param _metadata The metadata or vote information attached to the vote.
     * @return voteId The ID(or index) of this vote in the votes array.
@@ -428,8 +428,8 @@ contract DotVoting is ADynamicForwarder, AragonApp {
         Vote storage voteInstance = votes[_voteId];
         Action storage action = actions[voteInstance.actionId];
 
-        // this could re-enter, though we can asume the
-        // governance token is not maliciuous
+        // this could re-enter, though we can assume the
+        // governance token is not malicious
         uint256 voterStake = token.balanceOfAt(_voter, voteInstance.snapshotBlock);
         uint256 totalSupport = 0;
 
