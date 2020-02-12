@@ -1,7 +1,5 @@
 module.exports = {
     norpc: true,
-    copyPackages: [],
-    skipFiles: [
-        'test',
-    ]
-}
+    skipFiles: ['test'],
+    deepSkip: true
+  }

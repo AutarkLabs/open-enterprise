@@ -43,15 +43,13 @@
     "@aragon/apps-finance": "^3.0.0",
     "@aragon/apps-payroll": "^1.0.0",
     "@aragon/apps-token-manager": "^2.1.0",
-    "@aragon/apps-shared-minime": "1.0.1",
     "@aragon/templates-shared": "^1.0.0",
     "@tps/apps-address-book": "^0.0.1",
     "@tps/apps-allocations": "^0.0.1",
     "@tps/apps-discussions": "^1.0.0",
     "@tps/apps-dot-voting": "^0.0.1",
     "@tps/apps-projects": "^0.0.1",
-    "@tps/apps-rewards": "^0.0.1",
-    "@tps/test-helpers": "^0.0.1"
+    "@tps/apps-rewards": "^0.0.1"
   },
   "devDependencies": {
     "@aragon/apps-survey": "^1.0.0",
