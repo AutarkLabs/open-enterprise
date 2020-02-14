@@ -34,6 +34,7 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
   const githubCurrentUser = useGithubAuth()
   const {
     api: { reviewSubmission },
+    connectedAccount,
   } = useAragonApi()
   const { closePanel } = usePanelManagement()
   const theme = useTheme()
@@ -48,7 +49,10 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
       feedback,
       rating,
       accepted,
-      user: githubCurrentUser,
+      user: {
+        ...githubCurrentUser,
+        addr: connectedAccount,
+      },
       reviewDate: today.toISOString(),
     }
   }

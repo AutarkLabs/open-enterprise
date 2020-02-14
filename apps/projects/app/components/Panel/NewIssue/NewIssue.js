@@ -116,12 +116,14 @@ class NewIssue extends React.PureComponent {
       e.preventDefault()
       this.props.closePanel()
       const newIssueData = {
-        number: issues.filter(i => i.data.repoHexId === repoHexIds[selectedProject - 1]).length,
-        id: repoHexIds[selectedProject - 1] + '_' + issues.filter(i => i.data.repoHexId === repoHexIds[selectedProject - 1]).length,
+        number: issues.filter(i => i.data.repository && (i.data.repository.hexId === repoHexIds[selectedProject - 1])).length,
+        id: repoHexIds[selectedProject - 1] + '_' + issues.filter(i => i.data.repository && (i.data.repository.hexId === repoHexIds[selectedProject - 1])).length,
         title,
         body: description,
         author: {
           login: this.props.account,
+          avatarUrl: '',
+          url: '',
         },
         repository: reposManaged[selectedProject - 1],
         labels: { totalCount: 0, edges: Array(0) },
@@ -130,8 +132,7 @@ class NewIssue extends React.PureComponent {
         url: null,
         createdAt: new Date()
       }
-      console.table(newIssueData)
-      console.log('issueslist: ',issues)
+      newIssueData.issueId = newIssueData.id
       const hashedIssueData = await ipfsAdd(newIssueData)
       api.setIssue(repoHexIds[selectedProject - 1], newIssueData.number, hashedIssueData).toPromise()
     }

@@ -25,7 +25,7 @@ const prepareFilters = (issues, bountyIssues, repo) => {
     name: BOUNTY_STATUS['not-funded'],
   }
 
-  filters.labels = repo.metadata.labels
+  filters.labels = repo.metadata.labels || {}
 
   return filters
 }

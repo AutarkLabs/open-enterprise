@@ -10,7 +10,6 @@ import {
   REPO_REMOVED,
   REPO_UPDATED,
   ISSUE_UPDATED,
-  BOUNTY_ISSUED,
   ASSIGNMENT_REQUESTED,
   ASSIGNMENT_APPROVED,
   ASSIGNMENT_REJECTED,
@@ -42,7 +41,7 @@ import { app } from './app'
 
 export const handleEvent = async (state, action, vaultAddress, vaultContract, settings) => {
   const { event, returnValues, address } = action
-  console.log('event: ', action)
+
   switch (event) {
   case SYNC_STATUS_SYNCING: {
     return {
@@ -109,16 +108,6 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract, se
     }
     return syncIssues(state, returnValues, issueData)
   }
-  //case BOUNTY_ISSUED: {
-  //  console.log('issue: ',returnValues)
-  //  if(!returnValues) return state
-  //  const { repoId, issueNumber, ipfsHash } = returnValues
-  //  const ipfsData = await loadIpfsData(ipfsHash)
-  //  let issueData = await loadIssueData({ repoId, issueNumber })
-  //  issueData = { ...issueData, ...ipfsData }
-  //  issueData = determineWorkStatus(issueData)
-  //  return syncIssues(state, returnValues, issueData, [])
-  //}
   case ASSIGNMENT_REQUESTED: {
     if(!returnValues) return state
     const { repoId, issueNumber } = returnValues
@@ -146,7 +135,6 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract, se
   case BOUNTY_FULFILLED: {
     if(!returnValues) return state
     const { _bountyId, _fulfillmentId, _fulfillers, _submitter, _data } = returnValues
-    console.log('returned', returnValues)
     const issue = state.issues.find(i => i.data.standardBountyId === _bountyId)
     if (!issue) return state
 
@@ -159,7 +147,6 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract, se
       // and ACTION_PERFORMED has already marked this submission as reviewed
       return state
     }
-    console.log('found issue: ', issue)
     const issueNumber = String(issue.data.number)
     const submission = await buildSubmission({
       fulfillmentId: _fulfillmentId,
@@ -176,7 +163,6 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract, se
       workSubmissions,
       work: submission,
     }
-    console.log('before issue detail')
     issueData = await updateIssueDetail(issueData)
     issueData = determineWorkStatus(issueData)
     return syncIssues(state, { issueNumber }, issueData)

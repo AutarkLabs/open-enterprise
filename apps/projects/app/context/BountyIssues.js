@@ -28,21 +28,17 @@ export function BountyIssuesProvider(props) {
   const issueIds = React.useMemo(() => {
     // old versions of the Projects app did not store issueId on ipfs
     // we filter out such issues; they are not supported by this function
-    console.log('memoizing issueids: ', issues)
     return issues
       .filter(i => !i.data.repository || (i.data.repository && !i.data.repository.decoupled))
       .map(i => {
-        console.log('issue to query: ',i.data.issueId)
         return i.data.issueId
       }).filter(i => {
-        console.log('made it through: ', i)
         return i
       })
   }, [issues])
 
   const decoupledBounties = React.useMemo(() => {
     // bounties from decoupled repos must bypass GQL
-    console.log('memoizing decoupled issues: ', issues)
     return issues.filter(i => i.data.repository && i.data.repository.decoupled && i.data.hasBounty).map(i => i.data)
   }, [issues])
 
@@ -54,7 +50,6 @@ export function BountyIssuesProvider(props) {
         Authorization: 'Bearer ' + github.token,
       },
     })
-    console.log('issues to be gotten: ', issueIds)
     client.request(getIssues(issueIds))
       .then(({ nodes }) => {
         const now = new Date()

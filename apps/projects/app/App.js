@@ -26,8 +26,8 @@ import Routes from './Routes'
 let popupRef = null
 
 const App = () => {
-  const { api, appState } = useAragonApi()
-  const { appearance } = 'dark'
+  const { api, appState, guiStyle } = useAragonApi()
+  const { appearance } = guiStyle
   const [ githubLoading, setGithubLoading ] = useState(false)
   const [ panel, setPanel ] = useState(null)
   const [ panelProps, setPanelProps ] = useState(null)

@@ -30,7 +30,7 @@ export default function usePathHelpers() {
     const namedParameters = pattern.match(/(:[a-zA-Z]+)/g)
 
     // replace named paramaters with regex-compatible capture groups
-    console.log('regex: ', pattern, namedParameters, path)
+    //console.log('regex: ', pattern, namedParameters, path)
     namedParameters.forEach(x => {
       pattern = pattern.replace(x, '([a-zA-Z0-9=-_]+)')
     })

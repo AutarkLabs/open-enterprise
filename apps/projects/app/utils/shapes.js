@@ -30,10 +30,20 @@ const issueShape = PropTypes.shape({
 }).isRequired
 
 const userGitHubShape = PropTypes.shape({
-  avatarUrl: PropTypes.string.isRequired,
+  avatarUrl: PropTypes.string,
   url: PropTypes.string.isRequired,
   login: PropTypes.string.isRequired,
+  addr: PropTypes.string,
 }).isRequired
+
+const userDecoupledShape = PropTypes.shape({
+  addr: PropTypes.string.isRequired
+})
+
+const userShape = PropTypes.oneOfType([
+  PropTypes.objectOf(userGitHubShape),
+  PropTypes.objectOf(userDecoupledShape)
+])
 
 const repoShape = PropTypes.shape({
   data: PropTypes.shape({
@@ -46,4 +56,4 @@ const repoShape = PropTypes.shape({
   })
 }).isRequired
 
-export { issueShape, repoShape, userGitHubShape }
+export { issueShape, repoShape, userGitHubShape, userDecoupledShape, userShape }

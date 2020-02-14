@@ -17,11 +17,8 @@ export default () => {
   ), [appState.tokens])
 
   const shapeIssue = useCallback(issue => {
-    //console.log('issue to be shaped: ', issue)
-    console.log('bounties: ', bounties)
     const bounty = bounties[issue.number]
     const repoIdFromBounty = bounty && bounty.data.repoId
-    console.log('details: ', bounty, repoIdFromBounty, issue)
     if ((bounty && tokens[bounty.data.token]) && repoIdFromBounty === issue.repository.id) {
       const data = bounties[issue.number].data
       const balance = BigNumber(bounties[issue.number].data.balance)

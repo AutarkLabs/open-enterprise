@@ -200,7 +200,6 @@ export const buildSubmission = async ({ fulfillmentId, fulfillers, ipfsHash, sub
 
 export const updateIssueDetail = async data => {
   let returnData = { ...data }
-  console.log('return data: ', data)
   // keep hex conversion for compatibility with older issues
   const repoId = data.repoHexId || toHex(data.repoId)
   const issueNumber = String(data.number)

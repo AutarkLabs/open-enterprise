@@ -1382,6 +1382,16 @@ contract('Projects App', accounts => {
             )
           })
         })
+        it('reverts on calling fulfillBounty', async () => {
+          assertRevert(async () => {
+            await app.fulfillBounty(
+              root,
+              0,
+              [root],
+              ''
+            )
+          })
+        })
       })
     })
 

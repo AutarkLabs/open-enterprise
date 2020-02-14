@@ -20,10 +20,18 @@ import { usePanelManagement } from '../../Panel'
 import usePathHelpers from '../../../../../../shared/utils/usePathHelpers'
 import { useDecoratedRepos } from '../../../context/DecoratedRepos'
 import { toHex } from 'web3-utils'
+import { LoadingAnimation, EmptyWrapper } from '../../Shared'
 
 function Wrap({ children, repo }) {
   const { goBack } = usePathHelpers()
   const { setupNewIssue } = usePanelManagement()
+
+  const repoId = useMemo(() => {
+    if (!repo) return null
+    if (repo.decoupled) return repo.id
+    return repo.data._repo
+  }, [repo])
+
 
   return (
     <>
@@ -35,7 +43,7 @@ function Wrap({ children, repo }) {
       />
       <Bar>
         <BackButton onClick={() => {
-          if (repo) goBack({ fallback: '/projects/' + repo.data._repo })
+          if (repo) goBack({ fallback: '/projects/' + repoId })
         }} />
       </Bar>
       {children}
@@ -47,8 +55,10 @@ Wrap.propTypes = {
   children: PropTypes.node.isRequired,
   repo: PropTypes.shape({
     data: PropTypes.shape({
-      _repo: PropTypes.string.isRequired,
+      _repo: PropTypes.string,
     }).isRequired,
+    decoupled: PropTypes.bool,
+    id: PropTypes.string.isRequired,
     metadata: PropTypes.shape({
       name: PropTypes.string.isRequired,
     }).isRequired,
@@ -64,17 +74,25 @@ const IssueDetail = ({ issueId }) => {
   const storedIssue = useMemo(() => {
     return issues.find(i => issueId === i.data.issueId )
   }, [issues])
-  console.log('id: ', issueId)
-  console.log('stored Issue: ', storedIssue)
+
   let unshapedIssue, repo, queryDetails
   const repos = useDecoratedRepos()
-  if (storedIssue.data.repository) {
-    unshapedIssue = storedIssue.data
+  // test to see if the issue ID is composed like "repoHexID_issueNumber"
+  const decoupled = /0x[a-f0-9]{64}_[0-9]{1,}/.test(issueId)
+
+  if (decoupled) {
+    unshapedIssue = storedIssue && storedIssue.data
     repo = useMemo(() => {
       //if ()
-      //if (!data || !data.node) return null
-      return repos.find(repo => repo.id === unshapedIssue.repoHexId || repo.data._repo === toHex(unshapedIssue.repoId))
+      if (!storedIssue) return null
+      return repos.find(repo => repo.id === unshapedIssue.repository.hexId || repo.data._repo === toHex(unshapedIssue.repoId))
     }, [ storedIssue, repos ])
+
+    if (decoupled && !storedIssue) return (
+      <EmptyWrapper>
+        <LoadingAnimation />
+      </EmptyWrapper>
+    )
   } else {
     queryDetails = useQuery(GET_ISSUE, {
       client,
@@ -92,20 +110,14 @@ const IssueDetail = ({ issueId }) => {
     if (loading) return <Wrap>Loading...</Wrap>
     if (error) return <Wrap>{JSON.stringify(error)}</Wrap>
     
-    console.log('issue detail: ', data)
     unshapedIssue = data.node
 
     
   }
-  //repo = useMemo(() => {
-  //  if (!unshapedIssue) return null
-  //  return repos.find(repo => repo.id === unshapedIssue.data.repoHexId || repo.data._repo === toHex(unshapedIssue.data.repoId))
-  //}, [ unshapedIssue, repos ])
-  //const issue = shapeIssue(unshapedIssue)
+  
   const columnView = layoutName === 'small' || layoutName === 'medium'
-  //const repos = useDecoratedRepos()
+
   const issue = shapeIssue(unshapedIssue)
-  console.log('shaped issue: ', issue)
   
   return (
     <Wrap repo={repo}>

@@ -10,7 +10,6 @@ import { issueShape, repoShape } from '../../utils/shapes.js'
 const Filters = ({ filters, issues, bountyIssues, disableFilter, disableAllFilters, repo, style }) => {
   const theme = useTheme()
   const filterInformation = prepareFilters(issues, bountyIssues, repo)
-
   const generateFilterNamesAndPaths = (filterInformation, type, textFieldToUse) => {
     const appliedFilters = {}
     Object.keys(filterInformation[type]).map(id => {

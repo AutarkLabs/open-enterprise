@@ -10,7 +10,7 @@ import { compareAsc, compareDesc } from 'date-fns'
 import useShapedIssue from '../../hooks/useShapedIssue'
 import { useBountyIssues } from '../../context/BountyIssues'
 import { issueAttributes, SEARCH_ISSUES } from '../../utils/gql-queries.js'
-import { Issue } from '../Card'
+import { Issue, NoIssues } from '../Card'
 import { FilterBar, FilterBarDecoupled, LoadingAnimation } from '../Shared'
 import { usePanelManagement } from '../Panel'
 import usePathHelpers from '../../../../../shared/utils/usePathHelpers'
@@ -79,8 +79,7 @@ class ProjectDetail extends React.PureComponent {
   }
 
   applyFilters = allIssues => {
-    const { filters, bountyIssues } = this.props
-
+    const { filters, bountyIssues, repo: { decoupled = false } } = this.props
     // only filter locally if filtering by bounty status
     if (Object.keys(filters.statuses).length === 0) {
       return allIssues
@@ -90,11 +89,16 @@ class ProjectDetail extends React.PureComponent {
     if (filters.statuses['not-funded'] && Object.keys(filters.statuses).length > 1) {
       return []
     }
-
+    const decoupledBountyIssues = decoupled && allIssues.filter(i => i.workStatus)
     const bountyIssueObj = {}
-    bountyIssues.forEach(issue => {
-      bountyIssueObj[issue.issueId] = issue.data.workStatus
-    })
+    decoupled ?
+      decoupledBountyIssues.forEach(issue => {
+        bountyIssueObj[issue.issueId] = issue.data.workStatus
+      })
+      :
+      bountyIssues.forEach(issue => {
+        bountyIssueObj[issue.issueId] = issue.data.workStatus
+      })
 
     // if not funded, filter allIssues for those that have no bounty
     // other filtering happens via GitHub query
@@ -108,11 +112,11 @@ class ProjectDetail extends React.PureComponent {
 
     // if only 'all-funded' checked, we want all bountyIssues
     if (filters.statuses['all-funded'] && Object.keys(filters.statuses).length === 1) {
-      issuesByStatus = bountyIssues
+      issuesByStatus = decoupledBountyIssues || bountyIssues
     }
     // otherwise, check if issue's status is in selected filters
     else {
-      issuesByStatus = bountyIssues.filter(issue =>
+      issuesByStatus = (decoupledBountyIssues || bountyIssues).filter(issue =>
         bountyIssueObj[issue.issueId] in filters.statuses
       )
     }
@@ -181,6 +185,7 @@ class ProjectDetail extends React.PureComponent {
     )
   }
   filterBarDecoupled = (allIssues, filteredIssues) => {
+
     return (
       <FilterBarDecoupled
         setParentFilters={this.props.setFilters}
@@ -233,13 +238,12 @@ class ProjectDetail extends React.PureComponent {
     }
 
     const allIssues = dataSource ? dataSource.map(this.props.shapeIssue) : []
-    console.log('all shaped Issues: ', allIssues)
     const filteredIssues = this.applyFilters(allIssues)
 
     return (
       <StyledIssues>
         {this.props.repo.decoupled ? this.filterBarDecoupled(allIssues, filteredIssues): this.filterBar(allIssues, filteredIssues)}
-
+        {this.props.repo.decoupled && !this.props.issues.length && <NoIssues />}
         <IssuesScrollView>
           <ScrollWrapper>
             {filteredIssues.map(issue => (
@@ -318,14 +322,13 @@ const ProjectDetailWrap = ({ repo, ...props }) => {
   const bountyIssues = useBountyIssues().filter(issue =>
     issue.repoId === repo.data._repo
   )
-  console.log('bounties: ', useBountyIssues())
-  console.log('actual bounty issues: ', bountyIssues)
+
   const { appState } = useAragonApi()
-  console.log('contract state: ', appState)
+
   const issues = appState.issues
     .filter(issue => issue.data.repository && issue.data.repository.hexId === repo.id)
     .map(issue => issue.data)
-  console.log('issues: ', issues)
+
   const shapeIssue = useShapedIssue()
   const { setupNewIssue } = usePanelManagement()
   const [ query, setQueryRaw ] = useState({
