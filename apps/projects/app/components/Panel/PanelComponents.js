@@ -144,6 +144,13 @@ export const SubmissionDetails = styled.div`
   margin-bottom: ${2 * GU}px;
   border-radius: 3px;
 `
+export const PanelContent = styled.div`
+  margin-top: ${2 * GU}px;
+`
+export const TypeFilters = styled.div`
+  display: flex;
+  margin-bottom: ${3 * GU}px;
+`
 export const SwitchRow = styled.div`
   display: flex;
   justify-content: space-between;

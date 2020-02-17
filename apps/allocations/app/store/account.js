@@ -10,6 +10,7 @@ import { combineLatest } from 'rxjs'
 
 export const updateAccounts = async (accounts, id) => {
   const newAccounts = Array.from(accounts || [])
+  if (!id) return syncAccounts(newAccounts)
   const accountIdx = newAccounts.findIndex(a => a.id === id)
   if (accountIdx === -1) {
     newAccounts.push(await getAccount(id))
@@ -18,6 +19,11 @@ export const updateAccounts = async (accounts, id) => {
     newAccounts[accountIdx] = await getAccount(id)
   }
   return newAccounts
+}
+
+const syncAccounts = async (accounts = []) => {
+  const syncedAccounts = accounts.map(async account => await getAccount(account.id))
+  return Promise.all(syncedAccounts)
 }
 
 // const onNewPayout = async (payouts = [], { accountId, payoutId }) => {

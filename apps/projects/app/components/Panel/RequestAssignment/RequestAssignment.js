@@ -11,7 +11,7 @@ import { usePanelManagement } from '..'
 import { ipfsAdd } from '../../../utils/ipfs-helpers'
 import { toHex } from 'web3-utils'
 import { issueShape } from '../../../utils/shapes.js'
-import { IssueTitle } from '../PanelComponents'
+import { IssueTitle, PanelContent } from '../PanelComponents'
 
 const RequestAssignment = ({ issue }) => {
   const githubCurrentUser = useGithubAuth()
@@ -58,7 +58,7 @@ const RequestAssignment = ({ issue }) => {
   const canSubmit = () => !(ack1 && ack2 && workplan)
 
   return (
-    <div css={`margin: ${2 * GU}px 0`}>
+    <PanelContent>
       <Form
         onSubmit={onRequestAssignment}
         submitText="Submit application"
@@ -129,7 +129,7 @@ const RequestAssignment = ({ issue }) => {
           </AckText>
         </AckRow>
       </Form>
-    </div>
+    </PanelContent>
   )
 }
 

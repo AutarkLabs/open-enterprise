@@ -21,11 +21,14 @@ import {
   Avatar,
   FieldText,
   IssueTitle,
+  PanelContent,
   ReviewButtons,
   Status,
   SubmissionDetails,
+  TypeFilters,
   UserLink,
 } from '../PanelComponents'
+import useReviewFilters from '../../../hooks/useReviewFilters'
 
 const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
   const githubCurrentUser = useGithubAuth()
@@ -35,12 +38,20 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
   } = useAragonApi()
   const { closePanel } = usePanelManagement()
   const theme = useTheme()
-
   const [ feedback, setFeedback ] = useState('')
-  const [ index, setIndex ] = useState(requestIndex)
+
+  const canReview = issue.workStatus !== 'fulfilled' && !readOnly
+
+  const {
+    items,
+    filterNames,
+    selectedFilter,
+    setSelectedFilter,
+    selectedItem,
+    setSelectedItem,
+  } = useReviewFilters(issue.requestsData, issue.requestsData[requestIndex], canReview)
 
   const updateFeedback = e => setFeedback(e.target.value)
-
   const buildReturnData = approved => {
     const today = new Date()
     return {
@@ -56,25 +67,23 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
 
   const onAccept = () => onReviewApplication(true)
   const onReject = () => onReviewApplication(false)
-  const changeRequest = (index) => setIndex(index)
 
   const onReviewApplication = async (approved) => {
     closePanel()
     const review = buildReturnData(approved)
     // new IPFS data is old data plus state returned from the panel
-    const ipfsData = issue.requestsData[index]
+    const ipfsData = items[selectedFilter][selectedItem]
     const requestIPFSHash = await ipfsAdd({ ...ipfsData, review })
-
     reviewApplication(
       issue.repoHexId || toHex(issue.repoId),
       issue.number,
-      issue.requestsData[index].contributorAddr,
+      items[selectedFilter][selectedItem].contributorAddr,
       requestIPFSHash,
       approved
     ).toPromise()
   }
 
-  const request = issue.requestsData[index]
+  const request = items[selectedFilter][selectedItem]
   const application = {
     user: {
       login: request.user.login,
@@ -93,18 +102,31 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
   const applicationDateDistance = formatDistance(new Date(application.applicationDate), new Date())
 
   return (
-    <div css={`margin: ${2 * GU}px 0`}>
+    <PanelContent>
       <IssueTitle issue={issue} />
 
-      <FieldTitle>Applicant</FieldTitle>
-      <DropDown
-        name="Applicant"
-        items={issue.requestsData.map(request => request.user.login)}
-        onChange={changeRequest}
-        selected={index}
-        wide
-        css={`margin-bottom: ${3 * GU}px`}
-      />
+      <TypeFilters>
+        <DropDown
+          name="Type"
+          items={filterNames}
+          onChange={index => {
+            setSelectedFilter(index)
+            setSelectedItem(0)
+          }}
+          selected={selectedFilter}
+          wide
+          css={`margin-right: ${0.5 * GU}px`}
+        />
+
+        <DropDown
+          name="Applicant"
+          items={items[selectedFilter].map(i => i.user.login)}
+          onChange={index => setSelectedItem(index)}
+          selected={selectedItem}
+          wide
+          css={`margin-left: ${0.5 * GU}px`}
+        />
+      </TypeFilters>
 
       <SubmissionDetails background={`${theme.background}`} border={`${theme.border}`}>
         <UserLink>
@@ -141,7 +163,7 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
           </Text.Block>
         </React.Fragment>
       )}
-      {!readOnly && !request.review && (
+      {canReview && !request.review && (
         <React.Fragment>
           <FormField
             label="Feedback"
@@ -163,7 +185,7 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
         </React.Fragment>
       )}
 
-    </div>
+    </PanelContent>
   )
 }
 ReviewApplication.propTypes = {

@@ -27,6 +27,8 @@ import BudgetContextMenu from '../BudgetContextMenu'
 import { formatDate } from '../../utils/helpers'
 import * as types from '../../utils/prop-types'
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000
+
 const percentOf = (smaller, bigger) =>
   `${BigNumber(100 * smaller / bigger).dp(1).toString()}%`
 
@@ -36,6 +38,15 @@ const displayCurrency = (amount, decimals) => {
     .dp(3)
     .toNumber()
     .toLocaleString()
+}
+
+const processTime = ms => {
+  const days = Math.round(ms/MS_PER_DAY)
+  if(days%7 === 0){
+    const weeks = days/7
+    return `per ${weeks === 1 ? 'week' : `${String(weeks)} weeks`}`
+  }
+  return `per ${days === 1 ? 'day' : `${String(days)} days`}`
 }
 
 const Grid = styled.div`
@@ -100,7 +111,7 @@ export default function BudgetDetail({ budget }) {
                     title="Budget"
                     large={displayCurrency(budget.amount, budget.token.decimals)}
                     small={budget.token.symbol}
-                    context="per 30 days"
+                    context={processTime(period.duration)}
                   />
                   <InfoBlock
                     style={{ flex: 1 }}
