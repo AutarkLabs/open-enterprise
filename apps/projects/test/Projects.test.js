@@ -14,6 +14,14 @@ const getReceipt = (receipt, event, arg) => receipt.logs.filter(l => l.event ===
 const repoIdString = 'MDEwOIJlcG9zaXRvcnkxNjY3MjlyMjY='
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
 const ANY_ADDR = '0xffffffffffffffffffffffffffffffffffffffff'
+const bountyHash1 = 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC'
+const bountyHash2 = 'QmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWu'
+const bountyHash3 = 'QmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w'
+const requestHash = 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd'
+const reviewHash  = 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe'
+const reviewHash2 = 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl'
+const updateHash  = 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDm'
+const invalidHash = 'QmbUSy8HCn8J4TMD'
 
 const addedRepo = receipt =>
   web3.toAscii(receipt.logs.filter(x => x.event === 'RepoAdded')[0].args.repoId)
@@ -237,7 +245,7 @@ contract('Projects App', accounts => {
                 [ Date.now() + 86400, Date.now() + 86400, Date.now() + 86400 ],
                 [ 0, 0, 0 ],
                 [ 0, 0, 0 ],
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+                bountyHash1 + bountyHash2 + bountyHash3,
                 'something',
                 { from: bountyManager, value: 60 }
               )
@@ -264,8 +272,8 @@ contract('Projects App', accounts => {
                 new web3.BigNumber(0),
                 new web3.BigNumber(0),
                 new web3.BigNumber(10),
-                '0x0000000000000000000000000000000000000000',
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC'
+                ZERO_ADDR,
+                bountyHash1
               ]
             )
             const issueData2 = await app.getIssue(repoId, issueNumbers[1])
@@ -275,8 +283,8 @@ contract('Projects App', accounts => {
                 new web3.BigNumber(1),
                 new web3.BigNumber(0),
                 new web3.BigNumber(20),
-                '0x0000000000000000000000000000000000000000',
-                'QmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWu'
+                ZERO_ADDR,
+                bountyHash2
               ]
             )
             const issueData3 = await app.getIssue(repoId, issueNumbers[2])
@@ -286,8 +294,8 @@ contract('Projects App', accounts => {
                 new web3.BigNumber(2),
                 new web3.BigNumber(0),
                 new web3.BigNumber(30),
-                '0x0000000000000000000000000000000000000000',
-                'QmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w'
+                ZERO_ADDR,
+                bountyHash3
               ]
             )
           })
@@ -307,14 +315,14 @@ contract('Projects App', accounts => {
             await app.requestAssignment(
               repoId,
               issueNumber,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+              requestHash,
               { from: root }
             )
             const response = await app.getApplicant(repoId, issueNumber, 0)
             assert.strictEqual(response[0], root, 'applicant address incorrect')
             assert.strictEqual(
               response[1],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+              requestHash,
               'application IPFS hash incorrect'
             )
           })
@@ -323,14 +331,14 @@ contract('Projects App', accounts => {
             await app.requestAssignment(
               repoId,
               issueNumber,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+              requestHash,
               { from: root }
             )
             assertRevert(async () => {
               await app.requestAssignment(
                 repoId,
                 issueNumber,
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+                requestHash,
                 { from: root }
               )
             })
@@ -342,7 +350,7 @@ contract('Projects App', accounts => {
                 repoId,
                 issueNumber,
                 ZERO_ADDR,
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
+                reviewHash,
                 true,
                 { from: bountyManager }
               )
@@ -353,7 +361,7 @@ contract('Projects App', accounts => {
             await app.requestAssignment(
               repoId,
               issueNumber,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+              requestHash,
               { from: root }
             )
             const applicantQty = await app.getApplicantsLength(repoId, 1)
@@ -366,7 +374,7 @@ contract('Projects App', accounts => {
               repoId,
               issueNumber,
               applicant[0],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
+              reviewHash,
               true,
               { from: bountyManager }
             )
@@ -379,7 +387,7 @@ contract('Projects App', accounts => {
             await app.requestAssignment(
               repoId,
               issueNumber,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+              requestHash,
               { from: root }
             )
             const applicantQty = await app.getApplicantsLength(repoId, 1)
@@ -398,7 +406,7 @@ contract('Projects App', accounts => {
               repoId,
               issueNumber,
               applicant[0],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
+              reviewHash,
               true,
               { from: bountyManager }
             )
@@ -417,7 +425,7 @@ contract('Projects App', accounts => {
               repoId,
               issueNumber,
               applicant[0],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
+              reviewHash,
               false,
               { from: bountyManager }
             )
@@ -439,7 +447,7 @@ contract('Projects App', accounts => {
             await app.requestAssignment(
               repoId,
               issueNumber,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+              requestHash,
               { from: root }
             )
             const applicantQty = await app.getApplicantsLength(repoId, 1)
@@ -452,7 +460,7 @@ contract('Projects App', accounts => {
               repoId,
               issueNumber,
               applicant[0],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
+              reviewHash,
               true,
               { from: bountyManager }
             )
@@ -464,7 +472,7 @@ contract('Projects App', accounts => {
               issueNumber,
               0,
               false,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
+              reviewHash2,
               [0],
               { from: bountyManager }
             )
@@ -475,7 +483,7 @@ contract('Projects App', accounts => {
             await app.requestAssignment(
               repoId,
               issueNumber,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+              requestHash,
               { from: root }
             )
             const applicantQty = await app.getApplicantsLength(repoId, 1)
@@ -488,7 +496,7 @@ contract('Projects App', accounts => {
               repoId,
               issueNumber,
               applicant[0],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
+              reviewHash,
               true,
               { from: bountyManager }
             )
@@ -501,7 +509,7 @@ contract('Projects App', accounts => {
               issueNumber,
               0,
               true,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
+              reviewHash2,
               [10],
               { from: bountyManager }
             )
@@ -515,7 +523,7 @@ contract('Projects App', accounts => {
                 9999,
                 0,
                 true,
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
+                reviewHash2,
                 [10],
                 { from: bountyManager }
               )
@@ -526,7 +534,7 @@ contract('Projects App', accounts => {
             await app.requestAssignment(
               repoId,
               issueNumber,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+              requestHash,
               { from: root }
             )
             const applicantQty = await app.getApplicantsLength(repoId, 1)
@@ -539,7 +547,7 @@ contract('Projects App', accounts => {
               repoId,
               issueNumber,
               applicant[0],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
+              reviewHash,
               true,
               { from: bountyManager }
             )
@@ -552,7 +560,7 @@ contract('Projects App', accounts => {
               issueNumber,
               0,
               true,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
+              reviewHash2,
               [10],
               { from: bountyManager }
             )
@@ -563,7 +571,7 @@ contract('Projects App', accounts => {
                 issueNumber,
                 0,
                 true,
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
+                reviewHash2,
                 [10],
                 { from: bountyManager }
               )
@@ -591,7 +599,7 @@ contract('Projects App', accounts => {
                 [ Date.now() + 86400, Date.now() + 86400, Date.now() + 86400 ],
                 [ 20, 20, 20 ],
                 [ token.address, token.address, token.address ],
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+                bountyHash1 + bountyHash2 + bountyHash3,
                 'something',
                 { from: bountyManager, }
               )
@@ -620,7 +628,7 @@ contract('Projects App', accounts => {
                 [ Date.now() + 86400, Date.now() + 86400, Date.now() + 86400 ],
                 Array(3).fill(1),
                 Array(3).fill(0),
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+                bountyHash1 + bountyHash2 + bountyHash3,
                 'something',
                 { from: bountyManager, }
               )
@@ -646,7 +654,7 @@ contract('Projects App', accounts => {
               await app.requestAssignment(
                 repoId,
                 issueNumber,
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+                requestHash,
                 { from: root }
               )
             })
@@ -655,7 +663,7 @@ contract('Projects App', accounts => {
               await app.updateBounty(
                 repoId,
                 issueNumber,
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDm',
+                updateHash,
                 Date.now() + 86400,
                 'Update',
                 { from: bountyManager }
@@ -672,7 +680,7 @@ contract('Projects App', accounts => {
                 [Date.now() + 86400],
                 [0],
                 [0],
-                'QmbUSy8HCn8J4TMD',
+                invalidHash,
                 'something',
                 { from: bountyManager, value: 60 }
               )
@@ -688,7 +696,7 @@ contract('Projects App', accounts => {
                 [Date.now() + 86400],
                 [0],
                 [0],
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+                requestHash,
                 'something',
                 { from: bountyManager, value: 60 }
               )
@@ -703,7 +711,7 @@ contract('Projects App', accounts => {
               [Date.now() + 86400],
               [0],
               [0],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+              requestHash,
               'something',
               { from: bountyManager, value: 60 }
             )
@@ -712,7 +720,7 @@ contract('Projects App', accounts => {
               await app.requestAssignment(
                 repoId,
                 issueNumber,
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+                requestHash,
                 { from: root }
               )
             })
@@ -726,7 +734,7 @@ contract('Projects App', accounts => {
               [Date.now() + 86400],
               [0],
               [0],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+              requestHash,
               'something',
               { from: bountyManager, value: 60 }
             )
@@ -739,7 +747,7 @@ contract('Projects App', accounts => {
                 [Date.now() + 86400],
                 [0],
                 [0],
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+                requestHash,
                 'something',
                 { from: bountyManager, value: 60 }
               )
@@ -748,7 +756,7 @@ contract('Projects App', accounts => {
             await app.requestAssignment(
               repoId,
               issueNumber,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+              requestHash,
               { from: root }
             )
 
@@ -756,7 +764,7 @@ contract('Projects App', accounts => {
               repoId,
               issueNumber,
               root,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
+              reviewHash,
               true,
               { from: bountyManager }
             )
@@ -768,17 +776,16 @@ contract('Projects App', accounts => {
               issueNumber,
               0,
               true,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
+              reviewHash2,
               [10],
               { from: bountyManager }
             )
-            //assert(false, 'log events')
 
             assertRevert(async () => {
               await app.requestAssignment(
                 repoId,
                 issueNumber,
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
+                reviewHash2,
                 { from: root }
               )
             })
@@ -787,7 +794,7 @@ contract('Projects App', accounts => {
               await app.updateBounty(
                 repoId,
                 issueNumber,
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDm',
+                updateHash,
                 Date.now() + 86400,
                 'Update',
                 { from: bountyManager }
@@ -809,7 +816,7 @@ contract('Projects App', accounts => {
               [ Date.now() + 86400, Date.now() + 86400, Date.now() + 86400 ],
               [ 0, 0, 0 ],
               [ 0, 0, 0 ],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+              bountyHash1 + bountyHash2 + bountyHash3,
               'something',
               { from: bountyManager, value: 60 }
             )
@@ -836,7 +843,7 @@ contract('Projects App', accounts => {
               repoId,
               1,
               0,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
+              reviewHash,
               true,
               { from: bountyManager }
             )
@@ -860,7 +867,7 @@ contract('Projects App', accounts => {
             1,
             0,
             true,
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
+            reviewHash2,
             [9],
             { from: bountyManager }
           )
@@ -870,7 +877,7 @@ contract('Projects App', accounts => {
             1,
             1,
             true,
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
+            reviewHash2,
             [6],
             { from: bountyManager }
           )
@@ -882,8 +889,8 @@ contract('Projects App', accounts => {
               new web3.BigNumber(56),
               new web3.BigNumber(15),
               new web3.BigNumber(0),
-              '0xffffffffffffffffffffffffffffffffffffffff',
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC' 
+              ANY_ADDR,
+              bountyHash1 
             ]
           )
 
@@ -901,7 +908,7 @@ contract('Projects App', accounts => {
             [Date.now() + 86400],
             [0],
             [0],
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+            bountyHash1,
             'test description',
             { from: bountyManager, value: 10 }
           )
@@ -930,7 +937,7 @@ contract('Projects App', accounts => {
             [Date.now() + 86400],
             [0],
             [0],
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+            bountyHash1,
             'test description',
             { from: bountyManager, value: 10 }
           )
@@ -972,7 +979,7 @@ contract('Projects App', accounts => {
               [Date.now() + 86400],
               [20],
               [token.address],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+              bountyHash1,
               'something',
               { from: bountyManager, }
             )
@@ -1030,7 +1037,7 @@ contract('Projects App', accounts => {
             [ Date.now() + 86400, Date.now() + 86400 ],
             [ 0, 0 ],
             [ 0, 0 ],
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWu',
+            bountyHash1 + bountyHash2,
             'test description', { from: bountyManager, value: value })
           await truffleAssert.fails(
             app.removeBounties([ repoId, repoId ], [6], 'reasons', { from: bountyManager }),
@@ -1048,7 +1055,7 @@ contract('Projects App', accounts => {
             [Date.now() + 86400],
             [0],
             [0],
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+            bountyHash1,
             'test description', { from: bountyManager, value: 10 })
           await app.removeBounties([repoId], [issueNumber], 'reasons', {
             from: bountyManager
@@ -1076,12 +1083,12 @@ contract('Projects App', accounts => {
             [Date.now() + 86400],
             [0],
             [0],
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+            bountyHash1,
             'test description', { from: bountyManager, value: 10 })
           await app.requestAssignment(
             repoId,
             issueNumber,
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+            requestHash,
             { from: root }
           )
           const applicantQty = await app.getApplicantsLength(repoId, issueNumber)
@@ -1094,7 +1101,7 @@ contract('Projects App', accounts => {
             repoId,
             issueNumber,
             applicant[0],
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
+            reviewHash,
             true,
             { from: bountyManager }
           )
@@ -1107,7 +1114,7 @@ contract('Projects App', accounts => {
             issueNumber,
             0,
             true,
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
+            reviewHash2,
             [10],
             { from: bountyManager }
           )
@@ -1128,7 +1135,7 @@ contract('Projects App', accounts => {
               [Date.now() + 86400],
               [721],
               [0],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+              bountyHash1,
               'something',
               { from: bountyManager, }
             )
@@ -1145,7 +1152,7 @@ contract('Projects App', accounts => {
               [Date.now() + 86400],
               [1],
               [1],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+              bountyHash1,
               'something',
               { from: bountyManager, }
             )
@@ -1161,7 +1168,7 @@ contract('Projects App', accounts => {
               [Date.now() + 86400],
               [0],
               [1],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+              bountyHash1,
               'something',
               { from: bountyManager, }
             )
@@ -1212,7 +1219,7 @@ contract('Projects App', accounts => {
             new web3.BigNumber(0),
             new web3.BigNumber(0),
             new web3.BigNumber(0),
-            '0x0000000000000000000000000000000000000000',
+            ZERO_ADDR,
             'doesn\'t work'
           ]
         )
@@ -1230,7 +1237,7 @@ contract('Projects App', accounts => {
             new web3.BigNumber(0),
             new web3.BigNumber(0),
             new web3.BigNumber(0),
-            '0x0000000000000000000000000000000000000000',
+            ZERO_ADDR,
             'doesn\'t work; let\'s get this fixed'
           ]
         )
@@ -1250,7 +1257,7 @@ contract('Projects App', accounts => {
           [Date.now() + 86400],
           [0],
           [0],
-          'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+          bountyHash1,
           'adding project to existing issue',
           { from: bountyManager, value: 1 }
         )
@@ -1262,8 +1269,8 @@ contract('Projects App', accounts => {
             new web3.BigNumber(66),
             new web3.BigNumber(0),
             new web3.BigNumber(1),
-            '0x0000000000000000000000000000000000000000',
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC'
+            ZERO_ADDR,
+            bountyHash1
           ]
         )
       })
@@ -1453,7 +1460,7 @@ contract('Projects App', accounts => {
         )
         assert.strictEqual(
           response[4],
-          '0x0000000000000000000000000000000000000000',
+          ZERO_ADDR,
           'Token Address incorrect'
         )
         assert.strictEqual(

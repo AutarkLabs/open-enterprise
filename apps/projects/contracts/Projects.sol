@@ -275,6 +275,7 @@ contract Projects is AragonApp, DepositableStorage {
     /**
      * @notice Get issue data from the registry.
      * @param _repoId The id of the repo in the projects registry
+     * @param _issueNumber The issue number used to uniquely identify the issue within the repo
      */
     function getIssue(bytes32 _repoId, uint256 _issueNumber) external view isInitialized
     returns(uint standardBountyId, uint256 fulfilled, uint balance, address assignee, string data)
@@ -297,7 +298,10 @@ contract Projects is AragonApp, DepositableStorage {
     /**
      * @notice Get an entry from the registry.
      * @param _repoId The id of the repo in the projects registry
-     * @return index the repo registry index, number of open bounties, decoupled bool, repo metadata
+     * @return index: The index value of the repo
+     * @return openIssueCount: number of currently open issues
+     * @return decoupled: whether or not the repo is linked to an external repository
+     * @return repoData: ipfs hash containing information about the repo
      */
     function getRepo(bytes32 _repoId) external view isInitialized
     returns (uint256 index, uint256 openIssueCount, bool decoupled, string repoData)
@@ -339,8 +343,10 @@ contract Projects is AragonApp, DepositableStorage {
 // Repository functions
 ///////////////////////
     /**
-     * @notice Update Project: `_projectData`.
+     * @notice Add or Update Project: `_projectData`.
      * @param _repoId The id of the repo in the projects registry
+     * @param _decoupled Whether or not the repo is decoupled from a centralized repository
+     * @param _projectData The metadata of the repository
      */
     function setRepo(
         bytes32 _repoId,
@@ -351,6 +357,12 @@ contract Projects is AragonApp, DepositableStorage {
         _setRepo(_repoId, _decoupled, _projectData);
     }
 
+    /**
+     * @notice Add or update Issue: `_issueData`
+     * @param _repoId The id of the repo in the projects registry
+     * @param _issueNumber the number uniquely identifying the issue within the repo
+     * @param _issueData The metadata of the issue
+     */
     function setIssue(
         bytes32 _repoId,
         uint256 _issueNumber,
@@ -377,7 +389,7 @@ contract Projects is AragonApp, DepositableStorage {
             repoIndex[rowToDelete] = repoToMove;
             repos[repoToMove].index = rowToDelete;
         }
-
+        // no need for SafeMath here since existence is verufed a above
         repoIndexLength--;
         emit RepoRemoved(_repoId, rowToDelete);
     }
@@ -570,7 +582,8 @@ contract Projects is AragonApp, DepositableStorage {
     /**
      * @notice Submit a fulfillment for bounty #`_bountyId` with the following info: `_data`
      * @dev This is a noop function implemented so the client can display the radspec
-     *      for this external contract call
+     *      for this external contract call. It should never execute because it serves no
+     *      functional purpose here.
      * @param _sender address of the user submitting the fulfillment
      * @param _bountyId Standard Bounty Identifier
      * @param _fulfillers array of users who contributed to the fulfillment of the bounty
@@ -581,7 +594,7 @@ contract Projects is AragonApp, DepositableStorage {
         uint _bountyId,
         address[] _fulfillers,
         string _data
-    ) external
+    ) external pure
     {
         revert();
     }
@@ -763,7 +776,8 @@ contract Projects is AragonApp, DepositableStorage {
         repos[_repoId].repoData = _repoData;
         if (!isRepoAdded(_repoId)) {
             repoIndex[repoIndexLength] = _repoId;
-            repos[_repoId].index = repoIndexLength++;
+            repos[_repoId].index = repoIndexLength;
+            repoIndexLength = repoIndexLength.add(1);
             repos[_repoId].decoupled = _decoupled;
             emit RepoAdded(_repoId, repos[_repoId].index, _decoupled);
         } else {
@@ -783,8 +797,6 @@ contract Projects is AragonApp, DepositableStorage {
         bool _open
     ) internal
     {
-        // ensure the transvalue passed equals transaction value
-        //checkTransValueEqualsMessageValue(msg.value, _bountySizes,_tokenBounties);
         string memory ipfsHash;
         uint standardBountyId;
         require(bytes(_ipfsAddresses).length == (CID_LENGTH * _bountySizes.length), ERROR_CID_LENGTH);
@@ -928,8 +940,6 @@ contract Projects is AragonApp, DepositableStorage {
         string _ipfsHash
     ) internal
     {
-        //Issue storage issue = repos[_repoId].issues[_issueNumber];
-        //require(isRepoAdded(_repoId), ERROR_REPO_MISSING);
         openBounties[_repoId] = openBounties[_repoId].add(1);
 
         _setIssue(
@@ -952,7 +962,6 @@ contract Projects is AragonApp, DepositableStorage {
     ) internal
     {
         address[] memory emptyAddressArray = new address[](0);
-        //Issue storage issue = repos[_repoId].issues[_issueNumber];
         require(isRepoAdded(_repoId), ERROR_REPO_MISSING);
         require(repos[_repoId].issues[_issueNumber].bountySize == 0, ERROR_ISSUE_ACTIVE);
 
