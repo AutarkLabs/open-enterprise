@@ -19,7 +19,9 @@ const getTokenFromAddress = (tokenAddress, tokenList) => {
 }
 
 function appStateReducer(state) {
-  const { accounts: budgets, balances , allocations } = state || {}
+  const { accounts: budgets, balances , allocations, period } = state || {}
+  const { endDate } = period || {}
+  const currentDate = new Date()
 
   const balancesBn = balances
     ? balances
@@ -43,7 +45,10 @@ function appStateReducer(state) {
       ...budget,
       active: budget.hasBudget && Number(budget.amount) > 0,
       // get some extra info about the token
-      token: getTokenFromAddress(budget.token, balances)
+      token: getTokenFromAddress(budget.token, balances),
+      // if current period end date is less than now, current period is over
+      // but not updated on chain. so we reset the remaining budget
+      remaining: endDate < currentDate ? budget.amount : budget.remaining,
       // amount: new BigNumber(budget.amount),
       // numData: {
       //   amount: parseInt(budget.amount, 10),
