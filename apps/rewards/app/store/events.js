@@ -39,6 +39,10 @@ export const handleEvent = async (state, event, settings) => {
   }
 
   nextState = { ...state, ...nextState }
-  nextState.convertRates = await updateConvertedRates(state)
+  // check if fetch is accessible to script.js
+  // if not we can fallback on getting conversion rates
+  // in the frontend
+  if (typeof fetch === 'function') 
+    nextState.convertRates = await updateConvertedRates(state)
   return nextState
 }
