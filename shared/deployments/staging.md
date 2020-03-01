@@ -11,7 +11,7 @@
 ℹ Transaction hash: 0x4231262285244a475668e8dda953917a64cb9367885c822ca02eea3cae69bac4
 ```
 
-- command: `./node_modules/.bin/lerna exec --scope="@tps/apps-address-book" --stream aragon apm publish patch -- --files dist/ --environment staging`
+- command: `./node_modules/.bin/lerna exec --scope="@autarklabs/apps-address-book" --stream aragon apm publish patch -- --files dist/ --environment staging`
 
 ### 8.0.0
 
@@ -22,7 +22,7 @@
 ℹ Transaction hash: 0x0b4bef766abb49543810a242902fe9cea3d534184f8001ade47f341559982c2b
 ```
 
-- command: `./node_modules/.bin/lerna exec --scope="@tps/apps-address-book" --stream aragon apm publish major -- --files dist/ --environment staging`
+- command: `./node_modules/.bin/lerna exec --scope="@autarklabs/apps-address-book" --stream aragon apm publish major -- --files dist/ --environment staging`
 
 ### 6.0.2
 
@@ -144,7 +144,7 @@
 ℹ Transaction hash: 0xc361863e7ccdde3d6d04d26494ba276d863b1025cebfea15b345c95a1fab7cbe
 ```
 
-- command: `./node_modules/.bin/lerna exec --scope="@tps/apps-address-book" --stream aragon apm publish major -- --files dist/ --environment staging`
+- command: `./node_modules/.bin/lerna exec --scope="@autarklabs/apps-address-book" --stream aragon apm publish major -- --files dist/ --environment staging`
 
 ---
 
@@ -170,7 +170,7 @@
 ℹ Transaction hash: 0x3ef749fd7e2442e6b79704ed1e964a620bf6c5f89e3e6c9285b8bc9735a94e7a
 ```
 
-`./node_modules/.bin/lerna exec --scope="@tps/apps-rewards" --stream aragon apm publish patch -- --files dist/ --environment staging`
+`./node_modules/.bin/lerna exec --scope="@autarklabs/apps-rewards" --stream aragon apm publish patch -- --files dist/ --environment staging`
 
 
 ### 3.0.1
@@ -202,4 +202,4 @@
 ℹ Transaction hash: 0x3073d4685701245cb1a9f2693afbe786f7f3e93fe118981c03815bdc7f8503fc
 ```
 
-- command: `./node_modules/.bin/lerna exec --scope="@tps/kits-*" --stream ENS=0x98Df287B6C145399Aaa709692c8D308357bC085D aragon apm publish major 0x3fa2934a61c1dcc080da2a0535a678c3a5d070ad -- --environment staging`
+- command: `./node_modules/.bin/lerna exec --scope="@autarklabs/kits-*" --stream ENS=0x98Df287B6C145399Aaa709692c8D308357bC085D aragon apm publish major 0x3fa2934a61c1dcc080da2a0535a678c3a5d070ad -- --environment staging`

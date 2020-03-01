@@ -1,5 +1,5 @@
 {
-  "name": "@tps/apps-allocations",
+  "name": "@autarklabs/apps-allocations",
   "version": "0.0.1",
   "description": "Allocations app from Planning Suite",
   "scripts": {

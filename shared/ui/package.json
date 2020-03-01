@@ -1,5 +1,5 @@
 {
-  "name": "@tps/ui",
+  "name": "@autarklabs/ui",
   "version": "0.0.1",
   "description": "Shared UI components and utils from Planning Suite",
   "private": true,
