@@ -4,7 +4,7 @@ import {
   getTransferable,
   isTokenVerified,
 } from '../utils/token-utils'
-import { 
+import {
   getPresetTokens,
   getTokenDecimals,
   getTokenName,

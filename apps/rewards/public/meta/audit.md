@@ -52,20 +52,20 @@ Stages of the audit were as follows:
 ## Detected Issues
 
 ### CRITICAL
- 
+
 1\. [Rewards.sol#L84](https://github.com/AutarkLabs/planning-suite/blob/1508acf91ebfd31472cd3cb527ea3e8fa1330757/apps/rewards/contracts/Rewards.sol#L84)
 
-There is no check that the user has not already claimed his reward. As a result, anybody with some reference token amount can claim all reward tokens from the vault. 
+There is no check that the user has not already claimed his reward. As a result, anybody with some reference token amount can claim all reward tokens from the vault.
 We recommend adding the check.
 
 *Fixed at [7dab770](https://github.com/AutarkLabs/planning-suite/blob/7dab770e5bcf758268e51429e3702eb8305ce242/apps/rewards/contracts/Rewards.sol)*
- 
+
 
 ### MAJOR
 
 Not found
 
- 
+
 ### WARNINGS
 
 1\. [Rewards.sol#L211](https://github.com/AutarkLabs/planning-suite/blob/1508acf91ebfd31472cd3cb527ea3e8fa1330757/apps/rewards/contracts/Rewards.sol#L211)
@@ -74,7 +74,7 @@ There are no blockchain-enforced guarantees that the vault will be able to distr
 
 *Acknowledged*
 
-2\. [Rewards.sol#L252](https://github.com/AutarkLabs/planning-suite/blob/1508acf91ebfd31472cd3cb527ea3e8fa1330757/apps/rewards/contracts/Rewards.sol#L252) 
+2\. [Rewards.sol#L252](https://github.com/AutarkLabs/planning-suite/blob/1508acf91ebfd31472cd3cb527ea3e8fa1330757/apps/rewards/contracts/Rewards.sol#L252)
 
 The current implementation of one-time rewards would work only if the balances of the reference token holders and the total supply were monotonically increasing functions. This requirement is not provided by the MiniMeToken.
 Strictly speaking, the code does not adhere to the Aragon Planning App paper.
@@ -84,7 +84,7 @@ The simplest way to solve the problem is to implement an ancestor of the MiniMeT
 [Rewards.sol#L213-L215](https://github.com/AutarkLabs/planning-suite/blob/7dab770e5bcf758268e51429e3702eb8305ce242/apps/rewards/contracts/Rewards.sol#L213-L215)*
 
 
-3\. [Rewards.sol#L256](https://github.com/AutarkLabs/planning-suite/blob/1508acf91ebfd31472cd3cb527ea3e8fa1330757/apps/rewards/contracts/Rewards.sol#L256) 
+3\. [Rewards.sol#L256](https://github.com/AutarkLabs/planning-suite/blob/1508acf91ebfd31472cd3cb527ea3e8fa1330757/apps/rewards/contracts/Rewards.sol#L256)
 
 As an example of the previous warning: suppose a user received newly minted reference tokens, but the total supply remains unchanged (some tokens were destroyed). As a result, the user will get zero payout.
 
@@ -105,7 +105,7 @@ Check that end balance >= start balance and end supply >= start supply must be u
 
 5\. [Rewards.sol#L94](https://github.com/AutarkLabs/planning-suite/blob/1508acf91ebfd31472cd3cb527ea3e8fa1330757/apps/rewards/contracts/Rewards.sol#L94)
 
-Even if the vault held enough tokens to send a payout, the payout would not be performed. This issue can affect the last receiver of the reward. 
+Even if the vault held enough tokens to send a payout, the payout would not be performed. This issue can affect the last receiver of the reward.
 We recommend changing the condition to `>=`.
 
 *Fixed at [7dab770](https://github.com/AutarkLabs/planning-suite/blob/7dab770e5bcf758268e51429e3702eb8305ce242/apps/rewards/contracts/Rewards.sol)*
@@ -144,7 +144,7 @@ Duration is not a timestamp or time, but a number of blocks.
 
 *Fixed at [7dab770](https://github.com/AutarkLabs/planning-suite/blob/7dab770e5bcf758268e51429e3702eb8305ce242/apps/rewards/contracts/Rewards.sol)*
 
-4\. [Rewards.sol#L125](https://github.com/AutarkLabs/planning-suite/blob/1508acf91ebfd31472cd3cb527ea3e8fa1330757/apps/rewards/contracts/Rewards.sol#L125) , [Rewards.sol#L186](https://github.com/AutarkLabs/planning-suite/blob/1508acf91ebfd31472cd3cb527ea3e8fa1330757/apps/rewards/contracts/Rewards.sol#L186) 
+4\. [Rewards.sol#L125](https://github.com/AutarkLabs/planning-suite/blob/1508acf91ebfd31472cd3cb527ea3e8fa1330757/apps/rewards/contracts/Rewards.sol#L125) , [Rewards.sol#L186](https://github.com/AutarkLabs/planning-suite/blob/1508acf91ebfd31472cd3cb527ea3e8fa1330757/apps/rewards/contracts/Rewards.sol#L186)
 
 Delay is not a timestamp or time, but a number of blocks.
 
@@ -170,7 +170,7 @@ Check that _duration > 0 could be added.
 
 8\. [Rewards.sol#L109](https://github.com/AutarkLabs/planning-suite/blob/1508acf91ebfd31472cd3cb527ea3e8fa1330757/apps/rewards/contracts/Rewards.sol#L109) ,
 
-[Rewards.sol#L131](https://github.com/AutarkLabs/planning-suite/blob/1508acf91ebfd31472cd3cb527ea3e8fa1330757/apps/rewards/contracts/Rewards.sol#L131) 
+[Rewards.sol#L131](https://github.com/AutarkLabs/planning-suite/blob/1508acf91ebfd31472cd3cb527ea3e8fa1330757/apps/rewards/contracts/Rewards.sol#L131)
 
 We recommend adding the explicit check `isInitialized`.
 
@@ -238,7 +238,7 @@ Similarly to dividend payouts in stock assets, after reward creation (at the mom
 
 16\. [Rewards.sol#L90](https://github.com/AutarkLabs/planning-suite/blob/1508acf91ebfd31472cd3cb527ea3e8fa1330757/apps/rewards/contracts/Rewards.sol#L90) ,
 
-[Rewards.sol#L100](https://github.com/AutarkLabs/planning-suite/blob/1508acf91ebfd31472cd3cb527ea3e8fa1330757/apps/rewards/contracts/Rewards.sol#L100) 
+[Rewards.sol#L100](https://github.com/AutarkLabs/planning-suite/blob/1508acf91ebfd31472cd3cb527ea3e8fa1330757/apps/rewards/contracts/Rewards.sol#L100)
 
 We recommend reverting the transaction as soon as it is known that the reward amount is zero. Otherwise, the blockchain is polluted with the excess state and event.
 

@@ -16,11 +16,11 @@ context('Allocations', () => {
     cy.on("window:load", async (win) => {
       if (win.web3) {
         console.log(win.web3)
-        await win.web3.eth.sendTransaction({ 
-          from: root,  
+        await win.web3.eth.sendTransaction({
+          from: root,
           to: finance, // needs to be updated when aragonCLI or aragen are updated
-          value: 2.5e17, 
-          gas: 350000 
+          value: 2.5e17,
+          gas: 350000
         })
       }
     })
@@ -81,7 +81,7 @@ context('Allocations', () => {
                 console.log('+!!!+', el[0])
               }
             })
-            
+
           })
         }
       })

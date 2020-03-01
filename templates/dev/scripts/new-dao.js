@@ -16,7 +16,7 @@ module.exports = async function newDao({
     votingSettings,
   } = settings
 
-  
+
 
   const { getEventArgument } = require('@aragon/test-helpers/events')
   const { getTemplateAddress } = require('../../open-enterprise/temp/lib/ens')(web3, artifacts)
@@ -38,7 +38,7 @@ module.exports = async function newDao({
       0,
       { from: members[0] }
     )
-      
+
     const dao = Kernel.at(getEventArgument(baseDAO, 'DeployDao', 'dao'))
     const baseOpenEnterprise = await template.newOpenEnterprise(
       dotVotingSettings,

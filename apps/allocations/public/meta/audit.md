@@ -57,7 +57,7 @@ Not found
 
 ### MAJOR
 Not found
- 
+
 ### WARNINGS
 
 1\. [Allocations.sol#L463](https://github.com/AutarkLabs/planning-suite/blob/5be80e35f6e8e2c58f2b1b0f95f43baf40886507/apps/allocations/contracts/Allocations.sol#L463)
@@ -96,7 +96,7 @@ The cycle will be aborted and the transaction will be rolled back if there are `
 
 5\. [Allocations.sol#L358](https://github.com/AutarkLabs/planning-suite/blob/5be80e35f6e8e2c58f2b1b0f95f43baf40886507/apps/allocations/contracts/Allocations.sol#L358)
 
-New periods are not being initialized. We suggest adding the `transitionsPeriod` modifier.  
+New periods are not being initialized. We suggest adding the `transitionsPeriod` modifier.
 
 *Fixed at
 [26e6d37](https://github.com/AutarkLabs/open-enterprise/commit/26e6d3766393ed2d12fc57471b56d42c4a680fef)*
@@ -121,7 +121,7 @@ When calling `runPayout`, `paid` should be passed externally, otherwise this var
 
 ### COMMENTS
 
-1\. [Allocations.sol#L40-L45](https://github.com/AutarkLabs/planning-suite/blob/5be80e35f6e8e2c58f2b1b0f95f43baf40886507/apps/allocations/contracts/Allocations.sol#L40-L45) 
+1\. [Allocations.sol#L40-L45](https://github.com/AutarkLabs/planning-suite/blob/5be80e35f6e8e2c58f2b1b0f95f43baf40886507/apps/allocations/contracts/Allocations.sol#L40-L45)
 
 Constants can be calculated in advance.
 
@@ -149,7 +149,7 @@ Gas consumption required to save `Account` can be reduced. Place `uint64 payouts
 
 There’s no need to use the `uint64` key instead of the `uint` one as element adding requires the same amount of gas as `uint`.
 
-*Acknowledged* 
+*Acknowledged*
 
 5\. [Allocations.sol#L95](https://github.com/AutarkLabs/planning-suite/blob/5be80e35f6e8e2c58f2b1b0f95f43baf40886507/apps/allocations/contracts/Allocations.sol#L95)
 
@@ -314,7 +314,7 @@ This check should also involve `_recurrences`, as at the moment it does not refl
 [26e6d37](https://github.com/AutarkLabs/open-enterprise/commit/26e6d3766393ed2d12fc57471b56d42c4a680fef)*
 
 
-23\. [Allocations.sol#L76](https://github.com/AutarkLabs/planning-suite/blob/5be80e35f6e8e2c58f2b1b0f95f43baf40886507/apps/allocations/contracts/Allocations.sol#L76) 
+23\. [Allocations.sol#L76](https://github.com/AutarkLabs/planning-suite/blob/5be80e35f6e8e2c58f2b1b0f95f43baf40886507/apps/allocations/contracts/Allocations.sol#L76)
 
 If it is not planned to set the budget for the account equal to 0, then `hasBudget` can be omitted, as the `budget != 0` comparison will be equivalent to `hasBudget`.
 
@@ -368,7 +368,7 @@ We recommend adding extra checks:
 
 Zero initialization is unnecessary.
 
-*Fixed at 
+*Fixed at
 [26e6d37](https://github.com/AutarkLabs/open-enterprise/commit/26e6d3766393ed2d12fc57471b56d42c4a680fef)*
 
 

@@ -122,7 +122,7 @@ const getRecipientData = (_accountId, _payoutId) => {
   return app.call('getNumberOfCandidates', _accountId, _payoutId)
     .pipe(
       first(),
-      mergeMap(candidateLength => 
+      mergeMap(candidateLength =>
         range(0, candidateLength)
       ),
       mergeMap(candidateIndex => (

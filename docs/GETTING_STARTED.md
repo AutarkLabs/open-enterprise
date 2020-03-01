@@ -13,7 +13,7 @@ The basic command to install an app is:
 #### App with no initialization parameters
 
 ```
-dao install <dao-addr> <app-apm-repo> 
+dao install <dao-addr> <app-apm-repo>
 ```
 
 #### App with initialization parameters (two for example)
@@ -21,7 +21,7 @@ dao install <dao-addr> <app-apm-repo>
 dao install <dao-addr> <app-apm-repo> --app-init-args <param1> <param2>
 ```
 
-Be sure to also pass the `--environment aragon:rinkeby` flag if you are working with a rinkeby organization. 
+Be sure to also pass the `--environment aragon:rinkeby` flag if you are working with a rinkeby organization.
 
 ### Permissions
 In order to make the apps appear in the UI, you need to initialize at least one permission per app via the cli. Once you setup at least one permission via the cli, you can do the rest in the UI via Permissions.
@@ -106,7 +106,7 @@ The Rewards app requires the following initialization parameter:
 
 #### Sample install command
 ```
-dao install <dao-address> rewards.aragonpm.eth --app-init-args [Vault] 
+dao install <dao-address> rewards.aragonpm.eth --app-init-args [Vault]
 ```
 
 ## Install the Allocations app

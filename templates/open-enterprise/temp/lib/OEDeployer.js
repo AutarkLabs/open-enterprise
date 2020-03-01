@@ -6,7 +6,7 @@ module.exports = class OEDeployer extends TemplateDeployer {
   constructor(web3, artifacts, owner, options = { verbose: false }) {
     super(web3, artifacts, owner, options)
   }
-  
+
   async deploy(templateName, contractName) {
     // console.log('deployed!', this.options)
     await this._fetchOrDeployStandardBounties()

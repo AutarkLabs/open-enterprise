@@ -68,7 +68,7 @@
 ### 8.0.2
 
 ```sh
-✔ Successfully published projects-staging.open.aragonpm.eth v8.0.2: 
+✔ Successfully published projects-staging.open.aragonpm.eth v8.0.2:
 ℹ Contract address: 0xD4e2b5Dbb7264c1DaE2A20a28b4E3E99D7ea78bf
 ℹ Content (ipfs): QmWwL1ViZvCJViMMdDxHHMfJ3RLkCCAHQQsxcPAoAUiykk
 ℹ TTransaction hash: 0xc93b6c07eb27c229cecc50bde3da9d06102164416a433739eba961913f32f8e6
@@ -112,7 +112,7 @@
 ### 5.0.4
 
 ```sh
-✔ Successfully published dot-voting-staging.open.aragonpm.eth v5.0.4: 
+✔ Successfully published dot-voting-staging.open.aragonpm.eth v5.0.4:
 ℹ Contract address: 0x67f9E279f1eC6C126fA2Db3A51204583cE3A72AB
 ℹ Content (ipfs): QmVKwco5AHw5nPz2iWn43PE8hx1mccmkyzhmveXYoDbbLR
 ℹ Transaction hash: 0x2502298f3576e88dd28d6f6995e45cd2b56c2d916ffe970f499e69255b2eb09f
@@ -164,7 +164,7 @@
 
 
 ```sh
-✔ Successfully published rewards-staging.open.aragonpm.eth v3.0.2: 
+✔ Successfully published rewards-staging.open.aragonpm.eth v3.0.2:
 ℹ Contract address: 0xB5ab72EBF552fC4B32c80616410b2b28D33b715b
 ℹ Content (ipfs): QmQzaRbM7Dwk2Ab7UqZwTH1jvgJy5MLchN5sdgEXc3igq6
 ℹ Transaction hash: 0x3ef749fd7e2442e6b79704ed1e964a620bf6c5f89e3e6c9285b8bc9735a94e7a

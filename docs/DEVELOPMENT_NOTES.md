@@ -89,7 +89,7 @@ require a republish to view changes in the browser.
 If you get a
 
     TypeError [ERR_INVALID_ARG_TYPE]: The "path" argument must be of type string. Received type object
-    
+
 , install Aragon CLI globally with `npm i -g @aragon/cli@5.6.2`.
 
 ### Backend
