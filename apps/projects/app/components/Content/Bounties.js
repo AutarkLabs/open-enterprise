@@ -189,8 +189,11 @@ IssueColumns.propTypes = {
 
 const Bounties = () => {
   const issues = useBountyIssues()
+  const unfulfilledIssues = issues.filter(issue =>
+    issue.workStatus !== 'fulfilled'
+  )
 
-  if (issues.length === 0) {
+  if (unfulfilledIssues.length === 0) {
     return (
       <Wrap>
         <EmptyWrapper>
@@ -213,7 +216,7 @@ const Bounties = () => {
 
   return (
     <Wrap>
-      <IssueColumns issues={issues} />
+      <IssueColumns issues={unfulfilledIssues} />
     </Wrap>
   )
 }
