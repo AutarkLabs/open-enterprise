@@ -12,7 +12,7 @@ import {
 import { formatDistance } from 'date-fns'
 import { usePanelManagement } from '../../Panel'
 import { Avatar } from '../../Panel/PanelComponents'
-import { issueShape, userGitHubShape } from '../../../utils/shapes.js'
+import { issueShape, userGitHubShape, userDecoupledShape } from '../../../utils/shapes.js'
 
 const calculateAgo = pastDate => formatDistance(pastDate, Date.now(), { addSuffix: true })
 
@@ -43,7 +43,10 @@ const IssueEvent = ({ user, decoupled, ...props }) => {
 }
 
 IssueEvent.propTypes = {
-  user: userGitHubShape,
+  user: PropTypes.oneOfType([
+    userGitHubShape,
+    userDecoupledShape
+  ]),
   eventDescription: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.object,

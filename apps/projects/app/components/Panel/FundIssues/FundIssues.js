@@ -48,8 +48,8 @@ const errorMessages = {
 
 const bountiesFor = ({ bountySettings, issues, tokens }) => issues.reduce(
   (bounties, issue) => {
-    const data = issue.repository.decoupled ? issue : undefined
-    //const issueId = issue.repository.decoupled ? issue.id : issue.repoId + issue.number
+    const data = issue.repository.decoupled ? issue : {}
+
     bounties[issue.id] = {
       ...data,
       fundingHistory: issue.fundingHistory || [],

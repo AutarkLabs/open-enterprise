@@ -33,13 +33,16 @@ class ProjectDetail extends React.PureComponent {
     bountyIssues: PropTypes.array.isRequired,
     issues: PropTypes.array.isRequired,
     filters: PropTypes.object.isRequired,
-    graphqlQuery: PropTypes.shape({
-      data: PropTypes.object,
-      error: PropTypes.string,
-      loading: PropTypes.bool.isRequired,
-      refetch: PropTypes.func,
-      fetchMore: PropTypes.func,
-    }).isRequired,
+    graphqlQuery: PropTypes.oneOfType([
+      PropTypes.bool,
+      PropTypes.shape({
+        data: PropTypes.object,
+        error: PropTypes.string,
+        loading: PropTypes.bool.isRequired,
+        refetch: PropTypes.func,
+        fetchMore: PropTypes.func,
+      }).isRequired
+    ]).isRequired,
     viewIssue: PropTypes.func.isRequired,
     setFilters: PropTypes.func.isRequired,
     setQuery: PropTypes.func.isRequired,
@@ -230,7 +233,7 @@ class ProjectDetail extends React.PureComponent {
 
     let dataSource
     let pageInfo
-    if (data && !this.props.repo.decoupled) {
+    if (data) {
       pageInfo = data.repository ? data.repository.issues.pageInfo : data.search.pageInfo
       dataSource = data.repository ? data.repository.issues.nodes : data.search.issues
     } else {
@@ -335,8 +338,8 @@ const ProjectDetailWrap = ({ repo, ...props }) => {
     repo: repo.decoupled ? repo.id : `${repo.metadata.owner}/${repo.metadata.name}`,
     search: '',
     sort: 'updated-desc',
-    owner: repo.decoupled ? 'AutarkLabs' : repo.metadata.owner,
-    name: repo.decoupled ? 'open-enterprise' : repo.metadata.name,
+    owner: repo.metadata.owner,
+    name: repo.metadata.name,
     labels: [],
   })
   const updateTextSearch = text => {
@@ -384,7 +387,8 @@ const ProjectDetailWrap = ({ repo, ...props }) => {
   `
 
   // text filter takes precedence
-  const graphqlQuery = query.search ?
+  // short-circuits if the repo is not linked to Github
+  const graphqlQuery = !repo.decoupled && (query.search ?
     useQuery(SEARCH_ISSUES, {
       notifyOnNetworkStatusChange: true,
       onError: console.error,
@@ -407,6 +411,7 @@ const ProjectDetailWrap = ({ repo, ...props }) => {
         labels: query.labels,
       },
     })
+  )
 
   const [ sortBy, setSortByRaw ] = useState(Object.keys(sortOptions)[0])
 

@@ -127,7 +127,6 @@ class NewIssue extends React.PureComponent {
         },
         repository: reposManaged[selectedProject - 1],
         labels: { totalCount: 0, edges: Array(0) },
-        milestone: null,
         state: 'OPEN',
         url: null,
         createdAt: new Date()

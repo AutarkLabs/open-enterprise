@@ -15,8 +15,6 @@ import { useDecoratedRepos } from '../../../context/DecoratedRepos'
 import { ipfsAdd } from '../../../../../../shared/utils/ipfs'
 
 
-const disableDecoupledProjects = false
-
 const RepoList = ({
   filter,
   handleClearSearch,
@@ -292,13 +290,6 @@ const NewProject = ({ handleGithubSignIn }) => {
       api.setRepo(toHex(sha3(title + repoIndex)), true, cId).toPromise()
     })
   }
-  
-
-  if (disableDecoupledProjects) return (
-    <PanelContent>
-      <GitHubRepoList handleGithubSignIn={handleGithubSignIn} />
-    </PanelContent>
-  )
 
   return (
     <PanelContent>
@@ -363,7 +354,7 @@ const ScrollableList = styled.div`
   padding-right: 10px;
   margin: 16px 0;
   /* Hack needed to make the scrollable list, since the whole SidePanel is a scrollable container */
-  height: calc(100vh - 242px);
+  height: calc(100vh - 500px);
 `
 const StyledRadioList = styled(RadioList)`
   > * {

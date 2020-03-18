@@ -73,7 +73,7 @@ const IssueDetail = ({ issueId }) => {
 
   const storedIssue = useMemo(() => {
     return issues.find(i => issueId === i.data.issueId )
-  }, [issues])
+  }, [ issues, issueId ])
 
   let unshapedIssue, repo, queryDetails
   const repos = useDecoratedRepos()

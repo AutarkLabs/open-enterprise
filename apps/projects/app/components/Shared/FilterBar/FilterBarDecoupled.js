@@ -254,7 +254,7 @@ const Overflow = ({ children, filtersDisplayNumber }) => {
   return elements
 }
 Overflow.propTypes = {
-  children: PropTypes.array.isRequired,
+  children: PropTypes.object.isRequired,
   filtersDisplayNumber: PropTypes.number.isRequired,
 }
 

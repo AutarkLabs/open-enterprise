@@ -30,7 +30,7 @@ const issueShape = PropTypes.shape({
 }).isRequired
 
 const userGitHubShape = PropTypes.shape({
-  avatarUrl: PropTypes.string,
+  avatarUrl: PropTypes.string.isRequired,
   url: PropTypes.string.isRequired,
   login: PropTypes.string.isRequired,
   addr: PropTypes.string,
@@ -52,7 +52,7 @@ const repoShape = PropTypes.shape({
   metadata: PropTypes.shape({
     name: PropTypes.string,
     owner: PropTypes.string,
-    labels: PropTypes.object.isRequired,
+    labels: PropTypes.object,
   })
 }).isRequired
 
