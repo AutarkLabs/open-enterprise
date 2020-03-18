@@ -1,10 +1,10 @@
 pragma solidity 0.4.24;
 
-import "@tps/apps-address-book/contracts/AddressBook.sol";
-import "@tps/apps-allocations/contracts/Allocations.sol";
-import "@tps/apps-discussions/contracts/DiscussionApp.sol";
-import "@tps/apps-projects/contracts/Projects.sol";
-import "@tps/apps-rewards/contracts/Rewards.sol";
+import "@autarklabs/apps-address-book/contracts/AddressBook.sol";
+import "@autarklabs/apps-allocations/contracts/Allocations.sol";
+import "@autarklabs/apps-discussions/contracts/DiscussionApp.sol";
+import "@autarklabs/apps-projects/contracts/Projects.sol";
+import "@autarklabs/apps-rewards/contracts/Rewards.sol";
 import "./BaseCache.sol";
 
 

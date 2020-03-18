@@ -1,1 +1,1 @@
-module.exports = require('@tps/test-helpers/truffle-config')
+module.exports = require('@autarklabs/test-helpers/truffle-config')
