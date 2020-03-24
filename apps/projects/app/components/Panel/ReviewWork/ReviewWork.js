@@ -97,7 +97,7 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
     reviewSubmission(
       issue.repoHexId || toHex(issue.repoId),
       issue.number,
-      issue.workSubmissions.length - 1,
+      work.fulfillmentId,
       accepted,
       requestIPFSHash,
       fulfillmentAmounts
