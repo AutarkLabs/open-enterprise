@@ -78,7 +78,7 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
     const data = buildReturnData(accepted)
 
     // new IPFS data is old data plus state returned from the panel
-    const ipfsData = issue.workSubmissions[issue.workSubmissions.length - 1]
+    const ipfsData = issue.workSubmissions[work.fulfillmentId]
     const requestIPFSHash = await ipfsAdd({ ...ipfsData, review: data })
 
     const total = new BN(issue.data.balance, 10)
@@ -92,7 +92,7 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
     reviewSubmission(
       toHex(issue.repoId),
       issue.number,
-      issue.workSubmissions.length - 1,
+      work.fulfillmentId,
       accepted,
       requestIPFSHash,
       fulfillmentAmounts
