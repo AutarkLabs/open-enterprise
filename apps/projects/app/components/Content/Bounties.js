@@ -188,10 +188,23 @@ IssueColumns.propTypes = {
 }
 
 const Bounties = () => {
+  const now = new Date()
   const issues = useBountyIssues()
-  const unfulfilledIssues = issues.filter(issue =>
-    issue.workStatus !== 'fulfilled'
-  )
+  const unfulfilledIssues = issues
+    .filter(issue =>
+      issue.workStatus !== 'fulfilled'
+    )
+    .sort((a, b) => {
+      //If a deadline has expired, most recent deadline first
+      //If a deadline upcoming, closest to the deadline first
+      let aDate = new Date(a.deadline)
+      let bDate = new Date(b.deadline)
+      if (aDate < now || bDate < now) {
+        aDate = now - aDate
+        bDate = now - bDate
+      }
+      return aDate - bDate
+    })
 
   if (unfulfilledIssues.length === 0) {
     return (

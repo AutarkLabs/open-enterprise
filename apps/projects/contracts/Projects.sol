@@ -14,27 +14,6 @@ import "@aragon/os/contracts/lib/math/SafeMath.sol";
   * @dev Defines a minimal interface blueprint for the StandardBounties contract
   */
 interface Bounties {
-    /**
-     * @notice Submit a fulfillment for issue #`_bountyId` with the following info: `_data`
-     */
-    function fulfillBounty(
-        address _sender,
-        uint _bountyId,
-        address[] _fulfillers,
-        string _data
-    ) external; //{}
-
-    /**
-     * @notice Update fulfillment for issue #`_bountyId` with the following info: `_data`
-     */
-    function updateFulfillment(
-        address _sender,
-        uint _bountyId,
-        uint _fulfillmentId,
-        address[] _fulfillers,
-        string _data
-    ) external; //{}
-
     function issueBounty(
         address sender,
         address[] _issuers,
@@ -122,6 +101,7 @@ contract Projects is AragonApp, DepositableStorage {
     BountySettings public settings;
     Vault public vault;
     // Auth roles
+    bytes32 public constant CREATE_ISSUES_ROLE =  keccak256("CREATE_ISSUES_ROLE");
     bytes32 public constant FUND_ISSUES_ROLE =  keccak256("FUND_ISSUES_ROLE");
     bytes32 public constant REMOVE_ISSUES_ROLE = keccak256("REMOVE_ISSUES_ROLE");
     bytes32 public constant ADD_REPO_ROLE = keccak256("ADD_REPO_ROLE");
@@ -145,7 +125,6 @@ contract Projects is AragonApp, DepositableStorage {
     string private constant ERROR_INVALID_AMOUNT = "INVALID_TOKEN_AMOUNT";
     string private constant ERROR_ETH_CONTRACT = "WRONG_ETH_TOKEN";
     string private constant ERROR_REPO_MISSING = "REPO_NOT_ADDED";
-    string private constant ERROR_REPO_EXISTS = "REPO_ALREADY_ADDED";
     string private constant ERROR_USER_APPLIED = "USER_ALREADY_APPLIED";
     string private constant ERROR_NO_APPLICATION = "USER_APPLICATION_MISSING";
     string private constant ERROR_NO_ERC721 = "ERC_721_FORBIDDEN";
@@ -175,8 +154,10 @@ contract Projects is AragonApp, DepositableStorage {
     }
 
     struct Repo {
-        mapping(uint256 => Issue) issues;
         uint index;
+        mapping(uint256 => Issue) issues;
+        bool decoupled;
+        string repoData;
     }
 
     struct AssignmentRequest {
@@ -188,28 +169,25 @@ contract Projects is AragonApp, DepositableStorage {
     struct Issue {
         bytes32 repo;  // This is the internal repo identifier
         uint256 number; // May be redundant tracking this
-        bool hasBounty;
-        bool fulfilled;
         address tokenContract;
         uint256 bountySize;
+        uint256 fulfilledAmount;
         uint256 priority;
-        address bountyWallet; // Not sure if we'll have a way to "retrieve" this value from status open bounties
         uint standardBountyId;
         address assignee;
+        string issueData;
         address[] applicants;
         //uint256 submissionQty;
-        uint256[] submissionIndices;
         mapping(address => AssignmentRequest) assignmentRequests;
     }
 
     // Fired when a repository is added to the registry.
-    event RepoAdded(bytes32 indexed repoId, uint index);
+    event RepoAdded(bytes32 indexed repoId, uint index, bool decoupled);
+    event RepoUpdated(bytes32 indexed repoId, uint index, string repoData);
     // Fired when a repository is removed from the registry.
     event RepoRemoved(bytes32 indexed repoId, uint index);
-    // Fired when a repo is updated in the registry
-    event RepoUpdated(bytes32 indexed repoId, uint newIndex);
     // Fired when a bounty is added to a repo
-    event BountyAdded(bytes32 repoId, uint256 issueNumber, uint256 bountySize, uint256 registryId, string ipfsHash);
+    event IssueUpdated(bytes32 repoId, uint256 issueNumber, uint256 bountySize, uint256 registryId, string ipfsHash);
     // Fired when a bounty is removed
     event BountyRemoved(bytes32 repoId, uint256 issueNumber, uint256 oldBountySize);
     // Fired when an issue is curated
@@ -281,7 +259,7 @@ contract Projects is AragonApp, DepositableStorage {
     ) external auth(CHANGE_SETTINGS_ROLE)
     {
         require(_expMultipliers.length == _expLevels.length, ERROR_LENGTH_MISMATCH);
-        require(_isBountiesContractValid(_bountyAllocator), ERROR_STANDARD_BOUNTIES_NOT_CONTRACT);
+        require(isContract(_bountyAllocator), ERROR_STANDARD_BOUNTIES_NOT_CONTRACT);
         settings.expLevels.length = 0;
         settings.expMultipliers.length = 0;
         for (uint i = 0; i < _expLevels.length; i++) {
@@ -297,16 +275,17 @@ contract Projects is AragonApp, DepositableStorage {
     /**
      * @notice Get issue data from the registry.
      * @param _repoId The id of the repo in the projects registry
+     * @param _issueNumber The issue number used to uniquely identify the issue within the repo
      */
     function getIssue(bytes32 _repoId, uint256 _issueNumber) external view isInitialized
-    returns(bool hasBounty, uint standardBountyId, bool fulfilled, uint balance, address assignee)
+    returns(uint standardBountyId, uint256 fulfilled, uint balance, address assignee, string data)
     {
         Issue storage issue = repos[_repoId].issues[_issueNumber];
-        hasBounty = issue.hasBounty;
-        fulfilled = issue.fulfilled;
+        fulfilled = issue.fulfilledAmount;
         standardBountyId = issue.standardBountyId;
         balance = issue.bountySize;
         assignee = issue.assignee;
+        data = issue.issueData;
     }
 
     /**
@@ -319,12 +298,19 @@ contract Projects is AragonApp, DepositableStorage {
     /**
      * @notice Get an entry from the registry.
      * @param _repoId The id of the repo in the projects registry
-     * @return index the repo registry index
+     * @return index: The index value of the repo
+     * @return openIssueCount: number of currently open issues
+     * @return decoupled: whether or not the repo is linked to an external repository
+     * @return repoData: ipfs hash containing information about the repo
      */
-    function getRepo(bytes32 _repoId) external view isInitialized returns (uint256 index, uint256 openIssueCount) {
+    function getRepo(bytes32 _repoId) external view isInitialized
+    returns (uint256 index, uint256 openIssueCount, bool decoupled, string repoData)
+    {
         require(isRepoAdded(_repoId), ERROR_REPO_MISSING);
         index = repos[_repoId].index;
         openIssueCount = openBounties[_repoId];
+        decoupled = repos[_repoId].decoupled;
+        repoData = repos[_repoId].repoData;
     }
 
     /**
@@ -357,20 +343,33 @@ contract Projects is AragonApp, DepositableStorage {
 // Repository functions
 ///////////////////////
     /**
-     * @notice Add repository
+     * @notice Add or Update Project: `_projectData`.
      * @param _repoId The id of the repo in the projects registry
-     * @return index for the added repo at the registry
+     * @param _decoupled Whether or not the repo is decoupled from a centralized repository
+     * @param _projectData The metadata of the repository
      */
-    function addRepo(
-        bytes32 _repoId
-    ) external auth(ADD_REPO_ROLE) returns (uint index)
+    function setRepo(
+        bytes32 _repoId,
+        bool _decoupled,
+        string _projectData
+    ) external auth(ADD_REPO_ROLE)
     {
-        require(!isRepoAdded(_repoId), ERROR_REPO_EXISTS);
-        repoIndex[repoIndexLength] = _repoId;
-        repos[_repoId].index = repoIndexLength++;
-        //repos[_repoId].index = repoIndex.push(_repoId) - 1;
-        emit RepoAdded(_repoId, repos[_repoId].index);
-        return repoIndexLength - 1;
+        _setRepo(_repoId, _decoupled, _projectData);
+    }
+
+    /**
+     * @notice Add or update Issue: `_issueData`
+     * @param _repoId The id of the repo in the projects registry
+     * @param _issueNumber the number uniquely identifying the issue within the repo
+     * @param _issueData The metadata of the issue
+     */
+    function setIssue(
+        bytes32 _repoId,
+        uint256 _issueNumber,
+        string _issueData
+    ) external auth(CREATE_ISSUES_ROLE)
+    {
+        _setIssue(_repoId, _issueNumber, 0, address(0), 0, _issueData);
     }
 
     /**
@@ -379,7 +378,7 @@ contract Projects is AragonApp, DepositableStorage {
      */
     function removeRepo(
         bytes32 _repoId
-    ) external auth(REMOVE_REPO_ROLE) returns (bool success)
+    ) external auth(REMOVE_REPO_ROLE)
     {
         require(isRepoAdded(_repoId), ERROR_REPO_MISSING);
         require(openBounties[_repoId] == 0, ERROR_PENDING_BOUNTIES);
@@ -390,10 +389,9 @@ contract Projects is AragonApp, DepositableStorage {
             repoIndex[rowToDelete] = repoToMove;
             repos[repoToMove].index = rowToDelete;
         }
-
+        // no need for SafeMath here since existence is verufed a above
         repoIndexLength--;
         emit RepoRemoved(_repoId, rowToDelete);
-        return true;
     }
 
 ///////////////////
@@ -414,8 +412,7 @@ contract Projects is AragonApp, DepositableStorage {
     {
         Issue storage issue = repos[_repoId].issues[_issueNumber];
 
-        require(!issue.fulfilled,ERROR_BOUNTY_FULFILLED);
-        require(issue.hasBounty, ERROR_ISSUE_INACTIVE);
+        require(issue.bountySize > 0, ERROR_ISSUE_INACTIVE);
         require(issue.assignee != address(-1), ERROR_OPEN_BOUNTY);
         require(issue.assignmentRequests[msg.sender].exists == false, ERROR_USER_APPLIED);
 
@@ -490,17 +487,22 @@ contract Projects is AragonApp, DepositableStorage {
     {
         Issue storage issue = repos[_repoId].issues[_issueNumber];
 
-        require(!issue.fulfilled,ERROR_BOUNTY_FULFILLED);
         require(issue.assignee != address(0), ERROR_ISSUE_INACTIVE);
 
         if (_approved) {
-            uint256 tokenTotal;
             for (uint256 i = 0; i < _tokenAmounts.length; i++) {
-                tokenTotal = tokenTotal.add(_tokenAmounts[i]);
+                issue.fulfilledAmount = issue.fulfilledAmount.add(_tokenAmounts[i]);
+                if (_tokenAmounts[i] > issue.bountySize) {
+                    // This condition exists to allow for the bounty total beyond the initial size
+                    // to be awarded, so the "full" bounty can be awarded when 3rd parties have contributed.
+                    // The standard bounties contract will revert if the amount exceeds the total bounty
+                    issue.bountySize = 0;
+                } else {
+                    // don't need safemath because of the condition check
+                    issue.bountySize -= _tokenAmounts[i];
+                }
             }
-            require(tokenTotal >= issue.bountySize, ERROR_INVALID_AMOUNT);
 
-            issue.fulfilled = true;
             bountiesRegistry.acceptFulfillment(
                 address(this),
                 issue.standardBountyId,
@@ -540,9 +542,8 @@ contract Projects is AragonApp, DepositableStorage {
     {
         Issue storage issue = repos[_repoId].issues[_issueNumber];
 
-        require(!issue.fulfilled,ERROR_BOUNTY_FULFILLED);
-        require(issue.hasBounty, ERROR_ISSUE_INACTIVE);
-
+        require(issue.bountySize > 0, ERROR_ISSUE_INACTIVE);
+        issue.issueData = _data;
         bountiesRegistry.changeData(
             address(this),
             issue.standardBountyId,
@@ -576,6 +577,26 @@ contract Projects is AragonApp, DepositableStorage {
         for (uint8 i = 0; i < _issueNumbers.length; i++) {
             _removeBounty(_repoIds[i], _issueNumbers[i]);
         }
+    }
+
+    /**
+     * @notice Submit a fulfillment for bounty #`_bountyId` with the following info: `_data`
+     * @dev This is a noop function implemented so the client can display the radspec
+     *      for this external contract call. It should never execute because it serves no
+     *      functional purpose here.
+     * @param _sender address of the user submitting the fulfillment
+     * @param _bountyId Standard Bounty Identifier
+     * @param _fulfillers array of users who contributed to the fulfillment of the bounty
+     * @param _data the provided proof of fulfillment
+     */
+    function fulfillBounty(
+        address _sender,
+        uint _bountyId,
+        address[] _fulfillers,
+        string _data
+    ) external pure
+    {
+        revert();
     }
 
 ///////////////////////
@@ -641,34 +662,17 @@ contract Projects is AragonApp, DepositableStorage {
         string _description
     ) public payable auth(FUND_ISSUES_ROLE)
     {
-        // ensure the transvalue passed equals transaction value
-        //checkTransValueEqualsMessageValue(msg.value, _bountySizes,_tokenBounties);
-        string memory ipfsHash;
-        uint standardBountyId;
-        require(bytes(_ipfsAddresses).length == (CID_LENGTH * _bountySizes.length), ERROR_CID_LENGTH);
-
-        for (uint i = 0; i < _bountySizes.length; i++) {
-            ipfsHash = getHash(_ipfsAddresses, i);
-
-            // submit the bounty to the StandardBounties contract
-            standardBountyId = _issueBounty(
-                ipfsHash,
-                _deadlines[i],
-                _tokenContracts[i],
-                _tokenTypes[i],
-                _bountySizes[i]
-            );
-
-            //Add bounty to local registry
-            _addBounty(
-                _repoIds[i],
-                _issueNumbers[i],
-                standardBountyId,
-                _tokenContracts[i],
-                _bountySizes[i],
-                ipfsHash
-            );
-        }
+        _addBounties(
+            _repoIds,
+            _issueNumbers,
+            _bountySizes,
+            _deadlines,
+            _tokenTypes,
+            _tokenContracts,
+            _ipfsAddresses,
+            _description,
+            false
+        );
     }
 
     /**
@@ -693,35 +697,17 @@ contract Projects is AragonApp, DepositableStorage {
         string _description
     ) public payable auth(FUND_OPEN_ISSUES_ROLE)
     {
-        string memory ipfsHash;
-        uint standardBountyId;
-
-        for (uint i = 0; i < _bountySizes.length; i++) {
-            ipfsHash = getHash(_ipfsAddresses, i);
-
-            // submit the bounty to the StandardBounties contract
-            standardBountyId = _issueBounty(
-                ipfsHash,
-                _deadlines[i],
-                _tokenContracts[i],
-                _tokenTypes[i],
-                _bountySizes[i]
-            );
-
-            //Add bounty to local registry
-            _addBounty(
-                _repoIds[i],
-                _issueNumbers[i],
-                standardBountyId,
-                _tokenContracts[i],
-                _bountySizes[i],
-                ipfsHash
-            );
-
-            repos[_repoIds[i]].issues[_issueNumbers[i]].assignee = address(-1);
-            emit AwaitingSubmissions(_repoIds[i], _issueNumbers[i]);
-        }
-
+        _addBounties(
+            _repoIds,
+            _issueNumbers,
+            _bountySizes,
+            _deadlines,
+            _tokenTypes,
+            _tokenContracts,
+            _ipfsAddresses,
+            _description,
+            true
+        );
     }
 
     /**
@@ -781,40 +767,67 @@ contract Projects is AragonApp, DepositableStorage {
 // Internal functions
 ///////////////////////
 
-    /**
-     * @dev checks the hashed contract code to ensure it matches the provided hash
-     */
-    function _isBountiesContractValid(address _bountyRegistry) internal view returns(bool) {
-        if (_bountyRegistry == address(0)) {
-            return false;
+    function _setRepo(
+        bytes32 _repoId,
+        bool _decoupled,
+        string _repoData
+    ) internal
+    {
+        repos[_repoId].repoData = _repoData;
+        if (!isRepoAdded(_repoId)) {
+            repoIndex[repoIndexLength] = _repoId;
+            repos[_repoId].index = repoIndexLength;
+            repoIndexLength = repoIndexLength.add(1);
+            repos[_repoId].decoupled = _decoupled;
+            emit RepoAdded(_repoId, repos[_repoId].index, _decoupled);
+        } else {
+            emit RepoUpdated(_repoId, repos[_repoId].index, _repoData);
         }
-        if (_bountyRegistry == address(bountiesRegistry)) {
-            return true;
-        }
-        uint256 size;
-        // solium-disable-next-line security/no-inline-assembly
-        assembly { size := extcodesize(_bountyRegistry) }
-        if (size != 23406) {
-            return false;
-        }
-        uint256 segments = 4;
-        uint256 segmentLength = size / segments;
-        bytes memory registryCode = new bytes(segmentLength);
-        bytes32[4] memory validRegistryHashes = [
-            bytes32(0x9904de0ff2a8144b30f80f0de9184731b7c39116b1f021bad12dcbb740f8371d),
-            bytes32(0xd2319fa5b8b5614a3634c84ff340d27fa6e5921162e44bc2256f379ad86608f3),
-            bytes32(0x0fd4c8d32b2c21b41989666a6d19f7a5f4987ae6d915dd96698de62db8a79643),
-            bytes32(0x6af9efdc22f9352086c68a7b5c270db4f0fdc2b5ab18984a2d17b92ae327e144)
-        ];
-        for (uint256 i = 0; i < segments; i++) {
-            // solium-disable-next-line security/no-inline-assembly
-            assembly{ extcodecopy(_bountyRegistry,add(0x20,registryCode),div(mul(i,segmentLength),segments),segmentLength) }
-            if (validRegistryHashes[i] != keccak256(registryCode)) {
-                return false;
+    }
+
+    function _addBounties(
+        bytes32[] _repoIds,
+        uint256[] _issueNumbers,
+        uint256[] _bountySizes,
+        uint256[] _deadlines,
+        uint256[] _tokenTypes,
+        address[] _tokenContracts,
+        string _ipfsAddresses,
+        string _description,
+        bool _open
+    ) internal
+    {
+        string memory ipfsHash;
+        uint standardBountyId;
+        require(bytes(_ipfsAddresses).length == (CID_LENGTH * _bountySizes.length), ERROR_CID_LENGTH);
+
+        for (uint i = 0; i < _bountySizes.length; i++) {
+            ipfsHash = getHash(_ipfsAddresses, i);
+
+            // submit the bounty to the StandardBounties contract
+            standardBountyId = _issueBounty(
+                ipfsHash,
+                _deadlines[i],
+                _tokenContracts[i],
+                _tokenTypes[i],
+                _bountySizes[i]
+            );
+
+            //Add bounty to local registry
+            _addBounty(
+                _repoIds[i],
+                _issueNumbers[i],
+                standardBountyId,
+                _tokenContracts[i],
+                _bountySizes[i],
+                ipfsHash
+            );
+
+            if (_open) {
+                repos[_repoIds[i]].issues[_issueNumbers[i]].assignee = address(-1);
+                emit AwaitingSubmissions(_repoIds[i], _issueNumbers[i]);
             }
         }
-
-        return true;
     }
 
     /**
@@ -927,30 +940,44 @@ contract Projects is AragonApp, DepositableStorage {
         string _ipfsHash
     ) internal
     {
+        openBounties[_repoId] = openBounties[_repoId].add(1);
+
+        _setIssue(
+            _repoId,
+            _issueNumber,
+            _standardBountyId,
+            _tokenContract,
+            _bountySize,
+            _ipfsHash
+        );
+    }
+
+    function _setIssue(
+        bytes32 _repoId,
+        uint256 _issueNumber,
+        uint _standardBountyId,
+        address _tokenContract,
+        uint256 _bountySize,
+        string _ipfsHash
+    ) internal
+    {
         address[] memory emptyAddressArray = new address[](0);
-        uint256[] memory emptySubmissionIndexArray = new uint256[](0);
-        //Issue storage issue = repos[_repoId].issues[_issueNumber];
         require(isRepoAdded(_repoId), ERROR_REPO_MISSING);
-        require(!repos[_repoId].issues[_issueNumber].hasBounty, ERROR_ISSUE_ACTIVE);
+        require(repos[_repoId].issues[_issueNumber].bountySize == 0, ERROR_ISSUE_ACTIVE);
 
         repos[_repoId].issues[_issueNumber] = Issue(
             _repoId,
             _issueNumber,
-            true,
-            false,
             _tokenContract,
             _bountySize,
+            0,
             999,
-            ETH,
             _standardBountyId,
             ETH,
-            emptyAddressArray,
-            //address(0),
-            //0,
-            emptySubmissionIndexArray
+            _ipfsHash,
+            emptyAddressArray
         );
-        openBounties[_repoId] = openBounties[_repoId].add(1);
-        emit BountyAdded(
+        emit IssueUpdated(
             _repoId,
             _issueNumber,
             _bountySize,
@@ -974,9 +1001,7 @@ contract Projects is AragonApp, DepositableStorage {
     ) internal
     {
         Issue storage issue = repos[_repoId].issues[_issueNumber];
-        require(issue.hasBounty, ERROR_BOUNTY_REMOVED);
-        require(!issue.fulfilled, ERROR_BOUNTY_FULFILLED);
-        issue.hasBounty = false;
+        require(issue.bountySize > 0, ERROR_BOUNTY_REMOVED);
         uint256[] memory originalAmount = new uint256[](1);
         originalAmount[0] = issue.bountySize;
         bountiesRegistry.drainBounty(

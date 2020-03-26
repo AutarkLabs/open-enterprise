@@ -22,6 +22,7 @@ const OpenedAgo = ({ date }) =>
 const Dot = () => <span css="margin: 0px 10px">&middot;</span>
 
 const Title = ({ issue }) => {
+  const decoupled = issue.repository && issue.repository.decoupled
   const theme = useTheme()
 
   return (
@@ -36,9 +37,9 @@ const Title = ({ issue }) => {
         {issue.title}
       </Text.Block>
       <div css="display: flex">
-        <IssueTitleLink issue={issue} />
+        {!decoupled && <IssueTitleLink issue={issue} />}
         <div css={`display: flex; align-items: center; margin-bottom: ${1.5 * GU}px`}>
-          <Dot />
+          {!decoupled && <Dot />}
           <IconInfo
             color={`${theme.positiveSurfaceContent}`}
             css={`margin-top: -${.5 * GU}px; margin-right: ${.6 * GU}px`}

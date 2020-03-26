@@ -35,14 +35,12 @@ const General = () => {
 
   const projectsCards = useCallback(repos.map(repo => (
     <Project
-      key={repo.id}
-      label={repo.metadata.name}
+      decoupled={repo.decoupled}
       description={repo.metadata.description}
-      id={repo.id}
-      repoId={repo.data._repo}
-      commits={repo.metadata.commits}
-      // TODO: Disabled for now
-      // contributors={repo.metadata.collaborators}
+      key={repo.id}
+      repoId={repo.id}
+      label={repo.metadata.name}
+      repoKey={repo.id}
       url={repo.metadata.url}
     />
   ), [repos]

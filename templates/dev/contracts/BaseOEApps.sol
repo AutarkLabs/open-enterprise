@@ -156,6 +156,7 @@ contract BaseOEApps is BaseCache, TokenCache {
         _acl.createPermission(_grantee, _projects, _projects.REMOVE_REPO_ROLE(), _manager);
         _acl.createPermission(_grantee, _projects, _projects.REVIEW_APPLICATION_ROLE(), _manager);
         _acl.createPermission(_grantee, _projects, _projects.WORK_REVIEW_ROLE(), _manager);
+        _acl.createPermission(ANY_ENTITY, _projects, _projects.CREATE_ISSUES_ROLE(), _manager);
     }
 
     /* REWARDS */

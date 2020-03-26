@@ -34,6 +34,7 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
   const githubCurrentUser = useGithubAuth()
   const {
     api: { reviewApplication },
+    connectedAccount,
   } = useAragonApi()
   const { closePanel } = usePanelManagement()
   const theme = useTheme()
@@ -56,7 +57,10 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
     return {
       feedback,
       approved,
-      user: githubCurrentUser,
+      user: {
+        ...githubCurrentUser,
+        addr: connectedAccount,
+      },
       reviewDate: today.toISOString(),
     }
   }
@@ -71,7 +75,7 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
     const ipfsData = items[selectedFilter][selectedItem]
     const requestIPFSHash = await ipfsAdd({ ...ipfsData, review })
     reviewApplication(
-      toHex(issue.repoId),
+      issue.repoHexId || toHex(issue.repoId),
       issue.number,
       items[selectedFilter][selectedItem].contributorAddr,
       requestIPFSHash,

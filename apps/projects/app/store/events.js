@@ -8,7 +8,8 @@ import {
   REQUESTED_GITHUB_DISCONNECT,
   REPO_ADDED,
   REPO_REMOVED,
-  BOUNTY_ADDED,
+  REPO_UPDATED,
+  ISSUE_UPDATED,
   ASSIGNMENT_REQUESTED,
   ASSIGNMENT_APPROVED,
   ASSIGNMENT_REJECTED,
@@ -30,7 +31,8 @@ import {
   updateIssueDetail,
   syncIssues,
   syncTokens,
-  syncSettings
+  syncSettings,
+  loadDecoupledIssueData
 } from './helpers'
 
 import { STATUS } from '../utils/github'
@@ -39,6 +41,7 @@ import { app } from './app'
 
 export const handleEvent = async (state, action, vaultAddress, vaultContract, settings) => {
   const { event, returnValues, address } = action
+
   switch (event) {
   case SYNC_STATUS_SYNCING: {
     return {
@@ -77,6 +80,7 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract, se
     app.cache('github', state.github).toPromise()
     return state
   }
+  case REPO_UPDATED:
   case REPO_ADDED: {
     return await syncRepos(state, returnValues)
   }
@@ -87,14 +91,22 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract, se
     state.repos.splice(repoIndex,1)
     return state
   }
-  case BOUNTY_ADDED: {
-    if(!returnValues) return state
-    const { repoId, issueNumber, ipfsHash } = returnValues
-    const ipfsData = await loadIpfsData(ipfsHash)
-    let issueData = await loadIssueData({ repoId, issueNumber })
-    issueData = { ...issueData, ...ipfsData }
-    issueData = determineWorkStatus(issueData)
-    return syncIssues(state, returnValues, issueData, [])
+  case ISSUE_UPDATED: {
+    if(!returnValues || !returnValues.repoId) return state
+    const id = returnValues.repoId
+    const repoIndex = state.repos.findIndex(repo => repo.id === id)
+    if(repoIndex === -1) return state
+    //if(!state.repos[repoIndex].data.decoupled) return state
+    let issueData
+    if(!state.repos[repoIndex].data.decoupled || returnValues.bountySize > 0) {
+      const ipfsData = await loadIpfsData(returnValues)
+      issueData = await loadIssueData(returnValues)
+      issueData = { ...issueData, ...ipfsData }
+      issueData = determineWorkStatus(issueData)
+    } else {
+      issueData = await loadDecoupledIssueData(returnValues)
+    }
+    return syncIssues(state, returnValues, issueData)
   }
   case ASSIGNMENT_REQUESTED: {
     if(!returnValues) return state
@@ -135,7 +147,6 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract, se
       // and ACTION_PERFORMED has already marked this submission as reviewed
       return state
     }
-
     const issueNumber = String(issue.data.number)
     const submission = await buildSubmission({
       fulfillmentId: _fulfillmentId,

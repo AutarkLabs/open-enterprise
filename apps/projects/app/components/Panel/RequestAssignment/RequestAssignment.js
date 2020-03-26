@@ -15,7 +15,7 @@ import { IssueTitle, PanelContent } from '../PanelComponents'
 
 const RequestAssignment = ({ issue }) => {
   const githubCurrentUser = useGithubAuth()
-  const { api } = useAragonApi()
+  const { api, connectedAccount } = useAragonApi()
   const theme = useTheme()
 
   const { closePanel } = usePanelManagement()
@@ -45,11 +45,14 @@ const RequestAssignment = ({ issue }) => {
       eta: date,
       ack1,
       ack2,
-      user: githubCurrentUser,
+      user: {
+        ...githubCurrentUser,
+        addr: connectedAccount,
+      },
       applicationDate: today.toISOString(),
     }
     const hash = await ipfsAdd(data)
-    api.requestAssignment(toHex(issue.repoId), issue.number, hash).toPromise()
+    api.requestAssignment(issue.repoHexId || toHex(issue.repoId), issue.number, hash).toPromise()
   }
 
   const canSubmit = () => !(ack1 && ack2 && workplan)

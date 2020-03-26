@@ -5,12 +5,12 @@ import standardBounties from '../../abi/StandardBounties.json'
 
 export const loadIssueData = async ({ repoId, issueNumber }) => {
   const {
-    hasBounty,
     standardBountyId,
     balance,
     assignee,
+    fulfilled
   } = await app.call('getIssue', repoId, issueNumber).toPromise()
-
+  const hasBounty = !!balance
   const bountiesRegistry = await app.call('bountiesRegistry').toPromise()
   const bountyContract = app.external(bountiesRegistry, standardBounties.abi)
   const {
@@ -46,22 +46,23 @@ export const loadIssueData = async ({ repoId, issueNumber }) => {
     // passed in
     number: Number(issueNumber),
     repoId: hexToAscii(repoId),
-
+    repoHexId: repoId,
     // from Projects.sol
     assignee,
     balance,
+    fulfilled,
     hasBounty,
     standardBountyId,
+    openSubmission: /^0xf{40}$/i.test(assignee),
 
     // from StandardBounties.sol
     deadline: new Date(Number(deadline)).toISOString(),
     token,
     workStatus,
-    openSubmission: /^0xf{40}$/i.test(assignee),
   }
 }
 
-export const loadIpfsData = async ipfsHash => {
+export const loadIpfsData = async ({ ipfsHash }) => {
   const {
     issueId,
     exp,
@@ -77,6 +78,14 @@ export const loadIpfsData = async ipfsHash => {
     repo,
   }
 }
+
+export const loadDecoupledIssueData = 
+  async ({ repoId, issueNumber }) => {
+    const {
+      data: ipfsHash
+    } = await app.call('getIssue', repoId, issueNumber).toPromise()
+    return ipfsGet(ipfsHash)
+  }
 
 const existPendingApplications = issue => {
   if (!('requestsData' in issue) || issue.requestsData.length === 0) return false
@@ -191,7 +200,8 @@ export const buildSubmission = async ({ fulfillmentId, fulfillers, ipfsHash, sub
 
 export const updateIssueDetail = async data => {
   let returnData = { ...data }
-  const repoId = toHex(data.repoId)
+  // keep hex conversion for compatibility with older issues
+  const repoId = data.repoHexId || toHex(data.repoId)
   const issueNumber = String(data.number)
   const requestsData = await loadRequestsData({ repoId, issueNumber })
   returnData.requestsData = requestsData
