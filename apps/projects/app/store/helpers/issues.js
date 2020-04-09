@@ -219,12 +219,13 @@ export const updateIssueDetail = async data => {
 }
 
 const checkIssuesLoaded = (issues, issueNumber, data) => {
-  const issueIndex = issues.findIndex(issue => issue.issueNumber === issueNumber)
+  const issueIndex = issues.findIndex(issue => issue.issueId === data.issueId)
 
   if (issueIndex === -1) {
     // If we can't find it, load its data, perform the transformation, and concat
     return issues.concat({
       issueNumber,
+      issueId: data.issueId,
       data: data
     })
   }
@@ -232,6 +233,7 @@ const checkIssuesLoaded = (issues, issueNumber, data) => {
   const nextIssues = Array.from(issues)
   nextIssues[issueIndex] = {
     issueNumber,
+    issueId: data.issueId,
     data: {
       ...nextIssues[issueIndex].data,
       ...data,
