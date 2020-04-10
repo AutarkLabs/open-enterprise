@@ -63,9 +63,7 @@ export const loadIssueData = async ({ repoId, issueNumber }) => {
 }
 
 export const loadIpfsData = async ({ ipfsHash }) => {
-  console.log('ipfs hash: ', ipfsHash)
   const res = await app.datastore('cat', ipfsHash).toPromise()
-  console.log('response: ', res)
   const {
     issueId,
     exp,
