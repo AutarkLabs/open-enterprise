@@ -8,6 +8,7 @@ const camel2title = camelCase =>
     .replace(/^ (.)/, match => match.toUpperCase())
 
 const dynamicImport = Object.freeze({
+  EditProject: () => import('./EditProject'),
   FundIssues: () => import('./FundIssues'),
   NewIssueCuration: () => import('./NewIssueCuration'),
   NewIssue: () => import('./NewIssue'),

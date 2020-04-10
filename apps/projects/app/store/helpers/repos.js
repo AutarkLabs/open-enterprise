@@ -10,9 +10,12 @@ const loadRepoData = id => {
       app.call('getRepo', id).subscribe(response => {
         // handle repo removed case
         if (!response) return resolve({ repoRemoved: true })
-
         return resolve({
           _repo: hexToAscii(id),
+          index: response.index,
+          decoupled: response.decoupled,
+          openIssueCount: response.openIssueCount,
+          repoData: response.repoData,
           repoRemoved: false,
         })
       })

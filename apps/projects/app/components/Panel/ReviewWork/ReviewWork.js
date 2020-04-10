@@ -34,7 +34,10 @@ import useReviewFilters from '../../../hooks/useReviewFilters'
 
 const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
   const githubCurrentUser = useGithubAuth()
-  const { api } = useAragonApi()
+  const {
+    api,
+    connectedAccount,
+  } = useAragonApi()
   const reviewSubmission = api.reviewSubmission
   const { closePanel } = usePanelManagement()
   const theme = useTheme()
@@ -60,7 +63,10 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
       feedback,
       rating,
       accepted,
-      user: githubCurrentUser,
+      user: {
+        ...githubCurrentUser,
+        addr: connectedAccount,
+      },
       reviewDate: today.toISOString(),
     }
   }
@@ -89,7 +95,7 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
     closePanel()
 
     reviewSubmission(
-      toHex(issue.repoId),
+      issue.repoHexId || toHex(issue.repoId),
       issue.number,
       issue.workSubmissions.length - 1,
       accepted,

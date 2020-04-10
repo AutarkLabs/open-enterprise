@@ -13,18 +13,27 @@ const getReceipt = (receipt, event, arg) => receipt.logs.filter(l => l.event ===
 /** Useful constants */
 const repoIdString = 'MDEwOIJlcG9zaXRvcnkxNjY3MjlyMjY='
 const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
+const ANY_ADDR = '0xffffffffffffffffffffffffffffffffffffffff'
+const bountyHash1 = 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC'
+const bountyHash2 = 'QmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWu'
+const bountyHash3 = 'QmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w'
+const requestHash = 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd'
+const reviewHash  = 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe'
+const reviewHash2 = 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl'
+const updateHash  = 'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDm'
+const invalidHash = 'QmbUSy8HCn8J4TMD'
 
 const addedRepo = receipt =>
   web3.toAscii(receipt.logs.filter(x => x.event === 'RepoAdded')[0].args.repoId)
 //const addedBounties = receipt =>
 //  receipt.logs.filter(x => x.event === 'BountyAdded')[2]
 const addedBountyInfo = receipt =>
-  receipt.logs.filter(x => x.event === 'BountyAdded').map(event => event.args)
+  receipt.logs.filter(x => x.event === 'IssueUpdated').map(event => event.args)
 //const fulfilledBounty = receipt =>
 //  receipt.logs.filter(x => x.event === 'BountyFulfilled')[0].args
 
 contract('Projects App', accounts => {
-  let APP_MANAGER_ROLE, ADD_REPO_ROLE, CHANGE_SETTINGS_ROLE, CURATE_ISSUES_ROLE
+  let APP_MANAGER_ROLE, ADD_REPO_ROLE, CHANGE_SETTINGS_ROLE, CURATE_ISSUES_ROLE, CREATE_ISSUES_ROLE
   let FUND_ISSUES_ROLE, FUND_OPEN_ISSUES_ROLE, REMOVE_ISSUES_ROLE, REMOVE_REPO_ROLE
   let REVIEW_APPLICATION_ROLE, TRANSFER_ROLE, UPDATE_BOUNTIES_ROLE, WORK_REVIEW_ROLE
   let daoFact, alternateBounties, bounties, bountiesEvents, app, vaultBase, vault
@@ -51,6 +60,7 @@ contract('Projects App', accounts => {
     APP_MANAGER_ROLE = await kernelBase.APP_MANAGER_ROLE()
     ADD_REPO_ROLE = await appBase.ADD_REPO_ROLE()
     CHANGE_SETTINGS_ROLE = await appBase.CHANGE_SETTINGS_ROLE()
+    CREATE_ISSUES_ROLE = await appBase.CREATE_ISSUES_ROLE()
     CURATE_ISSUES_ROLE = await appBase.CURATE_ISSUES_ROLE()
     FUND_ISSUES_ROLE = await appBase.FUND_ISSUES_ROLE()
     FUND_OPEN_ISSUES_ROLE = await appBase.FUND_OPEN_ISSUES_ROLE()
@@ -92,6 +102,7 @@ contract('Projects App', accounts => {
     await acl.createPermission(root, app.address, ADD_REPO_ROLE, root)
     await acl.createPermission(root, app.address, CURATE_ISSUES_ROLE, root)
     await acl.createPermission(root, app.address, CHANGE_SETTINGS_ROLE, root)
+    await acl.createPermission(ANY_ADDR, app.address, CREATE_ISSUES_ROLE, root)
 
     /** Setup permission to transfer funds */
     await acl.grantPermission(app.address, vault.address, TRANSFER_ROLE)
@@ -136,8 +147,10 @@ contract('Projects App', accounts => {
 
       beforeEach(async () => {
         repoId = addedRepo(
-          await app.addRepo(
+          await app.setRepo(
             repoIdString, // repoId
+            false,
+            '',
             { from: root }
           )
         )
@@ -174,14 +187,18 @@ contract('Projects App', accounts => {
 
       it('can remove repos', async () => {
         let repoId2 = addedRepo(
-          await app.addRepo(
+          await app.setRepo(
             'MDawOlJlcG9zaXRvcnk3NTM5NTIyNA==', // repoId
+            false,
+            '',
             { from: root }
           )
         )
         let repoId3 = addedRepo(
-          await app.addRepo(
-            'DRawOlJlcG9zaXRvcnk3NTM5NTIyNA==', // repoId
+          await app.setRepo(
+            'DRawOlJlcG9zaXRvcnk3NTM5NTIyNA==', // repoId,
+            false,
+            '',
             { from: root }
           )
         )
@@ -190,8 +207,10 @@ contract('Projects App', accounts => {
         assert.isTrue(await app.isRepoAdded(repoId2), 'repo2 should still be accessible')
 
         repoId3 = addedRepo(
-          await app.addRepo(
-            'DRawOlJlcG9zaXRvcnk3NTM5NTIyNA==', // repoId
+          await app.setRepo(
+            'DRawOlJlcG9zaXRvcnk3NTM5NTIyNA==', // repoId,
+            false,
+            '',
             { from: root }
           )
         )
@@ -200,8 +219,10 @@ contract('Projects App', accounts => {
         assert.isTrue(await app.isRepoAdded(repoId3), 'repo3 should still be accessible')
 
         repoId2 = addedRepo(
-          await app.addRepo(
+          await app.setRepo(
             'MDawOlJlcG9zaXRvcnk3NTM5NTIyNA==', // repoId
+            false,
+            '',
             { from: root }
           )
         )
@@ -224,7 +245,7 @@ contract('Projects App', accounts => {
                 [ Date.now() + 86400, Date.now() + 86400, Date.now() + 86400 ],
                 [ 0, 0, 0 ],
                 [ 0, 0, 0 ],
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+                bountyHash1 + bountyHash2 + bountyHash3,
                 'something',
                 { from: bountyManager, value: 60 }
               )
@@ -246,36 +267,36 @@ contract('Projects App', accounts => {
             const issueNumbers = issueReceipt.map(bounty => bounty.issueNumber)
             const issueData1 = await app.getIssue(repoId, issueNumbers[0])
             assert.deepEqual(
+              issueData1,
               [
-                true,
                 new web3.BigNumber(0),
-                false,
+                new web3.BigNumber(0),
                 new web3.BigNumber(10),
-                '0x0000000000000000000000000000000000000000'
-              ],
-              issueData1
+                ZERO_ADDR,
+                bountyHash1
+              ]
             )
             const issueData2 = await app.getIssue(repoId, issueNumbers[1])
             assert.deepEqual(
+              issueData2,
               [
-                true,
                 new web3.BigNumber(1),
-                false,
+                new web3.BigNumber(0),
                 new web3.BigNumber(20),
-                '0x0000000000000000000000000000000000000000'
-              ],
-              issueData2
+                ZERO_ADDR,
+                bountyHash2
+              ]
             )
             const issueData3 = await app.getIssue(repoId, issueNumbers[2])
             assert.deepEqual(
+              issueData3,
               [
-                true,
                 new web3.BigNumber(2),
-                false,
+                new web3.BigNumber(0),
                 new web3.BigNumber(30),
-                '0x0000000000000000000000000000000000000000'
-              ],
-              issueData3
+                ZERO_ADDR,
+                bountyHash3
+              ]
             )
           })
 
@@ -294,14 +315,14 @@ contract('Projects App', accounts => {
             await app.requestAssignment(
               repoId,
               issueNumber,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+              requestHash,
               { from: root }
             )
             const response = await app.getApplicant(repoId, issueNumber, 0)
             assert.strictEqual(response[0], root, 'applicant address incorrect')
             assert.strictEqual(
               response[1],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+              requestHash,
               'application IPFS hash incorrect'
             )
           })
@@ -310,14 +331,14 @@ contract('Projects App', accounts => {
             await app.requestAssignment(
               repoId,
               issueNumber,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+              requestHash,
               { from: root }
             )
             assertRevert(async () => {
               await app.requestAssignment(
                 repoId,
                 issueNumber,
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+                requestHash,
                 { from: root }
               )
             })
@@ -329,7 +350,7 @@ contract('Projects App', accounts => {
                 repoId,
                 issueNumber,
                 ZERO_ADDR,
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
+                reviewHash,
                 true,
                 { from: bountyManager }
               )
@@ -340,7 +361,7 @@ contract('Projects App', accounts => {
             await app.requestAssignment(
               repoId,
               issueNumber,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+              requestHash,
               { from: root }
             )
             const applicantQty = await app.getApplicantsLength(repoId, 1)
@@ -353,20 +374,20 @@ contract('Projects App', accounts => {
               repoId,
               issueNumber,
               applicant[0],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
+              reviewHash,
               true,
               { from: bountyManager }
             )
 
             const issue = await app.getIssue(repoId, 1)
-            assert.strictEqual(issue[4], root, 'assignee address incorrect')
+            assert.strictEqual(issue[3], root, 'assignee address incorrect')
           })
 
           it('approve and reject assignment request', async () => {
             await app.requestAssignment(
               repoId,
               issueNumber,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+              requestHash,
               { from: root }
             )
             const applicantQty = await app.getApplicantsLength(repoId, 1)
@@ -385,7 +406,7 @@ contract('Projects App', accounts => {
               repoId,
               issueNumber,
               applicant[0],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
+              reviewHash,
               true,
               { from: bountyManager }
             )
@@ -404,7 +425,7 @@ contract('Projects App', accounts => {
               repoId,
               issueNumber,
               applicant[0],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
+              reviewHash,
               false,
               { from: bountyManager }
             )
@@ -421,12 +442,12 @@ contract('Projects App', accounts => {
           })
 
           it('work can be rejected', async () => {
-            const bountyId = (await app.getIssue(repoId, issueNumber))[1].toString()
+            const bountyId = (await app.getIssue(repoId, issueNumber))[0].toString()
             //console.log(bountyId)
             await app.requestAssignment(
               repoId,
               issueNumber,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+              requestHash,
               { from: root }
             )
             const applicantQty = await app.getApplicantsLength(repoId, 1)
@@ -439,7 +460,7 @@ contract('Projects App', accounts => {
               repoId,
               issueNumber,
               applicant[0],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
+              reviewHash,
               true,
               { from: bountyManager }
             )
@@ -451,7 +472,7 @@ contract('Projects App', accounts => {
               issueNumber,
               0,
               false,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
+              reviewHash2,
               [0],
               { from: bountyManager }
             )
@@ -462,7 +483,7 @@ contract('Projects App', accounts => {
             await app.requestAssignment(
               repoId,
               issueNumber,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+              requestHash,
               { from: root }
             )
             const applicantQty = await app.getApplicantsLength(repoId, 1)
@@ -475,11 +496,11 @@ contract('Projects App', accounts => {
               repoId,
               issueNumber,
               applicant[0],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
+              reviewHash,
               true,
               { from: bountyManager }
             )
-            const bountyId = (await app.getIssue(repoId, issueNumber))[1].toString()
+            const bountyId = (await app.getIssue(repoId, issueNumber))[0].toString()
             //console.log(bountyId)
             await bountiesEvents.fulfillBounty(root, bountyId, [root], 'test')
 
@@ -488,7 +509,7 @@ contract('Projects App', accounts => {
               issueNumber,
               0,
               true,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
+              reviewHash2,
               [10],
               { from: bountyManager }
             )
@@ -502,45 +523,8 @@ contract('Projects App', accounts => {
                 9999,
                 0,
                 true,
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
+                reviewHash2,
                 [10],
-                { from: bountyManager }
-              )
-            })
-          })
-
-          it('work cannot be accepted without awarding all staked tokens', async () => {
-            await app.requestAssignment(
-              repoId,
-              issueNumber,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
-              { from: root }
-            )
-            const applicantQty = await app.getApplicantsLength(repoId, 1)
-            const applicant = await app.getApplicant(
-              repoId,
-              issueNumber,
-              applicantQty.toNumber() - 1
-            )
-            await app.reviewApplication(
-              repoId,
-              issueNumber,
-              applicant[0],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
-              true,
-              { from: bountyManager }
-            )
-            const bountyId = (await app.getIssue(repoId, issueNumber))[1].toString()
-            //console.log(bountyId)
-            await bountiesEvents.fulfillBounty(root, bountyId, [root], 'test')
-            return assertRevert(async () => {
-              await app.reviewSubmission(
-                repoId,
-                issueNumber,
-                0,
-                true,
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
-                [9],
                 { from: bountyManager }
               )
             })
@@ -550,7 +534,7 @@ contract('Projects App', accounts => {
             await app.requestAssignment(
               repoId,
               issueNumber,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+              requestHash,
               { from: root }
             )
             const applicantQty = await app.getApplicantsLength(repoId, 1)
@@ -563,11 +547,11 @@ contract('Projects App', accounts => {
               repoId,
               issueNumber,
               applicant[0],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
+              reviewHash,
               true,
               { from: bountyManager }
             )
-            const bountyId = (await app.getIssue(repoId, issueNumber))[1].toString()
+            const bountyId = (await app.getIssue(repoId, issueNumber))[0].toString()
             //console.log(bountyId)
             await bountiesEvents.fulfillBounty(root, bountyId, [root], 'test')
 
@@ -576,7 +560,7 @@ contract('Projects App', accounts => {
               issueNumber,
               0,
               true,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
+              reviewHash2,
               [10],
               { from: bountyManager }
             )
@@ -587,7 +571,7 @@ contract('Projects App', accounts => {
                 issueNumber,
                 0,
                 true,
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
+                reviewHash2,
                 [10],
                 { from: bountyManager }
               )
@@ -615,7 +599,7 @@ contract('Projects App', accounts => {
                 [ Date.now() + 86400, Date.now() + 86400, Date.now() + 86400 ],
                 [ 20, 20, 20 ],
                 [ token.address, token.address, token.address ],
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+                bountyHash1 + bountyHash2 + bountyHash3,
                 'something',
                 { from: bountyManager, }
               )
@@ -644,7 +628,7 @@ contract('Projects App', accounts => {
                 [ Date.now() + 86400, Date.now() + 86400, Date.now() + 86400 ],
                 Array(3).fill(1),
                 Array(3).fill(0),
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+                bountyHash1 + bountyHash2 + bountyHash3,
                 'something',
                 { from: bountyManager, }
               )
@@ -670,7 +654,7 @@ contract('Projects App', accounts => {
               await app.requestAssignment(
                 repoId,
                 issueNumber,
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+                requestHash,
                 { from: root }
               )
             })
@@ -679,7 +663,7 @@ contract('Projects App', accounts => {
               await app.updateBounty(
                 repoId,
                 issueNumber,
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDm',
+                updateHash,
                 Date.now() + 86400,
                 'Update',
                 { from: bountyManager }
@@ -696,7 +680,7 @@ contract('Projects App', accounts => {
                 [Date.now() + 86400],
                 [0],
                 [0],
-                'QmbUSy8HCn8J4TMD',
+                invalidHash,
                 'something',
                 { from: bountyManager, value: 60 }
               )
@@ -712,7 +696,7 @@ contract('Projects App', accounts => {
                 [Date.now() + 86400],
                 [0],
                 [0],
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+                requestHash,
                 'something',
                 { from: bountyManager, value: 60 }
               )
@@ -727,7 +711,7 @@ contract('Projects App', accounts => {
               [Date.now() + 86400],
               [0],
               [0],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+              requestHash,
               'something',
               { from: bountyManager, value: 60 }
             )
@@ -736,7 +720,7 @@ contract('Projects App', accounts => {
               await app.requestAssignment(
                 repoId,
                 issueNumber,
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+                requestHash,
                 { from: root }
               )
             })
@@ -750,7 +734,7 @@ contract('Projects App', accounts => {
               [Date.now() + 86400],
               [0],
               [0],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+              requestHash,
               'something',
               { from: bountyManager, value: 60 }
             )
@@ -763,7 +747,7 @@ contract('Projects App', accounts => {
                 [Date.now() + 86400],
                 [0],
                 [0],
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+                requestHash,
                 'something',
                 { from: bountyManager, value: 60 }
               )
@@ -772,7 +756,7 @@ contract('Projects App', accounts => {
             await app.requestAssignment(
               repoId,
               issueNumber,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+              requestHash,
               { from: root }
             )
 
@@ -780,11 +764,11 @@ contract('Projects App', accounts => {
               repoId,
               issueNumber,
               root,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
+              reviewHash,
               true,
               { from: bountyManager }
             )
-            const bountyId = (await app.getIssue(repoId, issueNumber))[1].toString()
+            const bountyId = (await app.getIssue(repoId, issueNumber))[0].toString()
             await bountiesEvents.fulfillBounty(root, bountyId, [root], 'test')
 
             await app.reviewSubmission(
@@ -792,17 +776,16 @@ contract('Projects App', accounts => {
               issueNumber,
               0,
               true,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
+              reviewHash2,
               [10],
               { from: bountyManager }
             )
-            //assert(false, 'log events')
 
             assertRevert(async () => {
               await app.requestAssignment(
                 repoId,
                 issueNumber,
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
+                reviewHash2,
                 { from: root }
               )
             })
@@ -811,7 +794,7 @@ contract('Projects App', accounts => {
               await app.updateBounty(
                 repoId,
                 issueNumber,
-                'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDm',
+                updateHash,
                 Date.now() + 86400,
                 'Update',
                 { from: bountyManager }
@@ -833,7 +816,7 @@ contract('Projects App', accounts => {
               [ Date.now() + 86400, Date.now() + 86400, Date.now() + 86400 ],
               [ 0, 0, 0 ],
               [ 0, 0, 0 ],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWuQmR45FmbVVrixReBwJkhEKde2qwHYaQzGxu4ZoDeswuF9w',
+              bountyHash1 + bountyHash2 + bountyHash3,
               'something',
               { from: bountyManager, value: 60 }
             )
@@ -860,7 +843,7 @@ contract('Projects App', accounts => {
               repoId,
               1,
               0,
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
+              reviewHash,
               true,
               { from: bountyManager }
             )
@@ -871,6 +854,46 @@ contract('Projects App', accounts => {
           return assertRevert(async () => {
             await app.removeRepo(repoId, { from: repoRemover })
           })
+        })
+
+        it('work can be accepted multiple times', async () => {
+          const bountyId = (await app.getIssue(repoId, 1))[0].toString()
+          //console.log(bountyId)
+          await bountiesEvents.contribute(root, bountyId, 5, { value: 5 })
+          await bountiesEvents.fulfillBounty(root, bountyId, [root], 'test')
+          await bountiesEvents.fulfillBounty(bountyManager, bountyId, [bountyManager], 'test2', { from: bountyManager })
+          await app.reviewSubmission(
+            repoId,
+            1,
+            0,
+            true,
+            reviewHash2,
+            [9],
+            { from: bountyManager }
+          )
+
+          await app.reviewSubmission(
+            repoId,
+            1,
+            1,
+            true,
+            reviewHash2,
+            [6],
+            { from: bountyManager }
+          )
+          
+          const bounty1 = await app.getIssue(repoId, 1)
+          assert.deepEqual(
+            bounty1,
+            [ 
+              new web3.BigNumber(56),
+              new web3.BigNumber(15),
+              new web3.BigNumber(0),
+              ANY_ADDR,
+              bountyHash1 
+            ]
+          )
+
         })
       })
 
@@ -885,13 +908,13 @@ contract('Projects App', accounts => {
             [Date.now() + 86400],
             [0],
             [0],
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+            bountyHash1,
             'test description',
             { from: bountyManager, value: 10 }
           )
           const liveIssue = await app.getIssue(repoId, issueNumber)
-          let hasBounty = liveIssue[0]
-          assert.isTrue(hasBounty)
+          let liveBountySize = liveIssue[2]
+          assert.equal(10, liveBountySize.toNumber())
           await app.removeBounties(
             [repoId],
             [issueNumber],
@@ -899,10 +922,8 @@ contract('Projects App', accounts => {
             { from: bountyManager }
           )
           const deadIssue = await app.getIssue(repoId, issueNumber)
-          hasBounty = deadIssue[0]
-          assert.isFalse(hasBounty)
-          const bountySize = deadIssue[3]
-          assert.equal(bountySize, 0)
+          const bountySize = deadIssue[2]
+          assert.equal(0, bountySize.toNumber())
           //assert(false, 'log events')
         })
 
@@ -916,13 +937,13 @@ contract('Projects App', accounts => {
             [Date.now() + 86400],
             [0],
             [0],
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+            bountyHash1,
             'test description',
             { from: bountyManager, value: 10 }
           )
           const liveIssue = await app.getIssue(repoId, issueNumber)
-          let hasBounty = liveIssue[0]
-          assert.isTrue(hasBounty)
+          let bountySize = liveIssue[2]
+          assert.equal(10, bountySize)
           await app.removeBounties(
             [repoId],
             [issueNumber],
@@ -958,14 +979,14 @@ contract('Projects App', accounts => {
               [Date.now() + 86400],
               [20],
               [token.address],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+              bountyHash1,
               'something',
               { from: bountyManager, }
             )
           )
           const liveIssue = await app.getIssue(repoId, issueNumber)
-          let hasBounty = liveIssue[0]
-          assert.isTrue(hasBounty)
+          let bountySize = liveIssue[2]
+          assert.equal(5, bountySize)
           await app.removeBounties(
             [repoId],
             [issueNumber],
@@ -1016,7 +1037,7 @@ contract('Projects App', accounts => {
             [ Date.now() + 86400, Date.now() + 86400 ],
             [ 0, 0 ],
             [ 0, 0 ],
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDCQmVtYjNij3KeyGmcgg7yVXWskLaBtov3UYL9pgcGK3MCWu',
+            bountyHash1 + bountyHash2,
             'test description', { from: bountyManager, value: value })
           await truffleAssert.fails(
             app.removeBounties([ repoId, repoId ], [6], 'reasons', { from: bountyManager }),
@@ -1034,7 +1055,7 @@ contract('Projects App', accounts => {
             [Date.now() + 86400],
             [0],
             [0],
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+            bountyHash1,
             'test description', { from: bountyManager, value: 10 })
           await app.removeBounties([repoId], [issueNumber], 'reasons', {
             from: bountyManager
@@ -1062,12 +1083,12 @@ contract('Projects App', accounts => {
             [Date.now() + 86400],
             [0],
             [0],
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+            bountyHash1,
             'test description', { from: bountyManager, value: 10 })
           await app.requestAssignment(
             repoId,
             issueNumber,
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDd',
+            requestHash,
             { from: root }
           )
           const applicantQty = await app.getApplicantsLength(repoId, issueNumber)
@@ -1080,11 +1101,11 @@ contract('Projects App', accounts => {
             repoId,
             issueNumber,
             applicant[0],
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDe',
+            reviewHash,
             true,
             { from: bountyManager }
           )
-          const bountyId = (await app.getIssue(repoId, issueNumber))[1].toString()
+          const bountyId = (await app.getIssue(repoId, issueNumber))[0].toString()
           //console.log(bountyId)
           await bountiesEvents.fulfillBounty(root, bountyId, [root], 'test')
 
@@ -1093,7 +1114,7 @@ contract('Projects App', accounts => {
             issueNumber,
             0,
             true,
-            'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDl',
+            reviewHash2,
             [10],
             { from: bountyManager }
           )
@@ -1114,7 +1135,7 @@ contract('Projects App', accounts => {
               [Date.now() + 86400],
               [721],
               [0],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+              bountyHash1,
               'something',
               { from: bountyManager, }
             )
@@ -1131,7 +1152,7 @@ contract('Projects App', accounts => {
               [Date.now() + 86400],
               [1],
               [1],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+              bountyHash1,
               'something',
               { from: bountyManager, }
             )
@@ -1147,13 +1168,129 @@ contract('Projects App', accounts => {
               [Date.now() + 86400],
               [0],
               [1],
-              'QmbUSy8HCn8J4TMDRRdxCbK2uCCtkQyZtY6XYv3y7kLgDC',
+              bountyHash1,
               'something',
               { from: bountyManager, }
             )
           })
         })
       })
+    })
+
+    context('decoupled project', () => {
+      let repoId
+      beforeEach(async () => {
+        await app.setRepo('1', true, 'abc')
+        repoId = '1'
+      })
+      it('can add a decoupled Project', async () => {
+        const projectInfo = await app.getRepo('1')
+
+        assert.deepEqual(
+          projectInfo,
+          [ 
+            new web3.BigNumber(0),
+            new web3.BigNumber(0),
+            true,
+            'abc'
+          ]
+        )
+      })
+      it('can remove a decoupled Project', async () => {
+        await app.removeRepo('1', { from: repoRemover })
+        await truffleAssert.fails(
+          app.getRepo('1'),
+          truffleAssert.ErrorType.REVERT,
+          //'REPO_NOT_ADDED'
+        )
+      })
+
+      it('can log and update issues for the project', async () => {
+        await app.setIssue(
+          repoId,
+          1,
+          'doesn\'t work'
+        )
+
+        let issue = await app.getIssue(repoId, 1)
+        assert.deepEqual(
+          issue,
+          [
+            new web3.BigNumber(0),
+            new web3.BigNumber(0),
+            new web3.BigNumber(0),
+            ZERO_ADDR,
+            'doesn\'t work'
+          ]
+        )
+
+        await app.setIssue(
+          repoId,
+          1,
+          'doesn\'t work; let\'s get this fixed'
+        )
+
+        issue = await app.getIssue(repoId, 1)
+        assert.deepEqual(
+          issue,
+          [
+            new web3.BigNumber(0),
+            new web3.BigNumber(0),
+            new web3.BigNumber(0),
+            ZERO_ADDR,
+            'doesn\'t work; let\'s get this fixed'
+          ]
+        )
+      })
+
+
+      it('can log bounty against existing issue', async () => {
+        await app.setIssue(
+          repoId,
+          1,
+          'doesn\'t work; let\'s get this fixed'
+        )
+        await app.addBounties(
+          [repoId],
+          [1],
+          [1],
+          [Date.now() + 86400],
+          [0],
+          [0],
+          bountyHash1,
+          'adding project to existing issue',
+          { from: bountyManager, value: 1 }
+        )
+
+        let issue = await app.getIssue(repoId, 1)
+        assert.deepEqual(
+          issue,
+          [
+            new web3.BigNumber(66),
+            new web3.BigNumber(0),
+            new web3.BigNumber(1),
+            ZERO_ADDR,
+            bountyHash1
+          ]
+        )
+      })
+
+      it('can update projects details', async () => {
+        await app.setRepo('1', true, 'abc123')
+
+        const projectInfo = await app.getRepo('1')
+
+        assert.deepEqual(
+          projectInfo,
+          [ 
+            new web3.BigNumber(0),
+            new web3.BigNumber(0),
+            true,
+            'abc123'
+          ]
+        )
+      })
+
     })
 
     context('issue curation', () => {
@@ -1252,6 +1389,16 @@ contract('Projects App', accounts => {
             )
           })
         })
+        it('reverts on calling fulfillBounty', async () => {
+          assertRevert(async () => {
+            await app.fulfillBounty(
+              root,
+              0,
+              [root],
+              ''
+            )
+          })
+        })
       })
     })
 
@@ -1313,7 +1460,7 @@ contract('Projects App', accounts => {
         )
         assert.strictEqual(
           response[4],
-          '0x0000000000000000000000000000000000000000',
+          ZERO_ADDR,
           'Token Address incorrect'
         )
         assert.strictEqual(
@@ -1342,25 +1489,6 @@ contract('Projects App', accounts => {
         })
       })
 
-      it('cannot update bounties contract with contract of invalid size', async () => {
-        return assertRevert(async () => {
-          await app.changeBountySettings(
-            [ 100, 300, 500, 1000 ], // xp multipliers
-            [
-              // Experience Levels
-              web3.fromAscii('Beginner'),
-              web3.fromAscii('Intermediate'),
-              web3.fromAscii('Advanced'),
-              web3.fromAscii('Expert'),
-            ],
-            1, // baseRate
-            336, // bountyDeadline
-            ZERO_ADDR, // bountyCurrency
-            app.address // bountyAllocator
-          )
-        })
-      })
-
       it('can update bounties contract with a new valid contract instance', async () => {
         await app.changeBountySettings(
           [ 100, 300, 500, 1000 ], // xp multipliers
@@ -1380,13 +1508,6 @@ contract('Projects App', accounts => {
     })
 
     context('invalid operations', () => {
-      it('cannot add a repo that is already present', async () => {
-        await app.addRepo('abc', { from: root })
-
-        assertRevert(async () => {
-          await app.addRepo('abc', { from: root })
-        })
-      })
       it('cannot remove a repo that was never added', async () => {
         assertRevert(async () => {
           await app.removeRepo('99999', { from: repoRemover })
@@ -1394,7 +1515,7 @@ contract('Projects App', accounts => {
       })
       it('cannot retrieve a removed Repo', async () => {
         const repoId = addedRepo(
-          await app.addRepo('abc', { from: root })
+          await app.setRepo('abc', false, '', { from: root })
         )
         await app.removeRepo(repoId, { from: repoRemover })
         // const result = await app.getRepo(repoId)

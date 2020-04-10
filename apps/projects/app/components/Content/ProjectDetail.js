@@ -1,140 +1,126 @@
 import PropTypes from 'prop-types'
-import React, { useEffect, useMemo, useState, useCallback } from 'react'
+import React, { useState, useCallback } from 'react'
 import styled from 'styled-components'
 import { useQuery } from '@apollo/react-hooks'
+import { gql } from 'apollo-boost'
 
-import { useAragonApi } from '../../api-react'
 import { Button, GU, Header, IconPlus, Text } from '@aragon/ui'
 import { compareAsc, compareDesc } from 'date-fns'
 
-import { initApolloClient } from '../../utils/apollo-client'
 import useShapedIssue from '../../hooks/useShapedIssue'
-import { STATUS } from '../../utils/github'
-import { getIssuesGQL } from '../../utils/gql-queries.js'
-import { Issue } from '../Card'
-import { EmptyWrapper, FilterBar, LoadingAnimation } from '../Shared'
-import { useDecoratedRepos } from '../../context/DecoratedRepos'
+import { useBountyIssues } from '../../context/BountyIssues'
+import { issueAttributes, SEARCH_ISSUES } from '../../utils/gql-queries.js'
+import { Issue, NoIssues } from '../Card'
+import { FilterBar, FilterBarDecoupled, LoadingAnimation } from '../Shared'
 import { usePanelManagement } from '../Panel'
 import usePathHelpers from '../../../../../shared/utils/usePathHelpers'
+import { repoShape } from '../../utils/shapes.js'
+import { useAragonApi } from '../../api-react'
 
-const sorters = {
-  'Name ascending': (i1, i2) =>
-    i1.title.toUpperCase() > i2.title.toUpperCase() ? 1 : -1,
-  'Name descending': (i1, i2) =>
-    i1.title.toUpperCase() > i2.title.toUpperCase() ? -1 : 1,
-  'Newest': (i1, i2) =>
-    compareDesc(new Date(i1.createdAt), new Date(i2.createdAt)),
-  'Oldest': (i1, i2) =>
-    compareAsc(new Date(i1.createdAt), new Date(i2.createdAt)),
+const sortOptions = {
+  'updated-desc': {
+    name: 'Recently updated',
+    func: (a, b) => compareDesc(new Date(a.updatedAt), new Date(b.updatedAt))
+  },
+  'updated-asc': {
+    name: 'Least recently updated',
+    func: (a, b) => compareAsc(new Date(a.updatedAt), new Date(b.updatedAt))
+  },
 }
-
-const ISSUES_PER_CALL = 100
 
 class ProjectDetail extends React.PureComponent {
   static propTypes = {
     bountyIssues: PropTypes.array.isRequired,
+    issues: PropTypes.array.isRequired,
     filters: PropTypes.object.isRequired,
-    graphqlQuery: PropTypes.shape({
-      data: PropTypes.object,
-      error: PropTypes.string,
-      loading: PropTypes.bool.isRequired,
-      refetch: PropTypes.func,
-    }).isRequired,
+    graphqlQuery: PropTypes.oneOfType([
+      PropTypes.bool,
+      PropTypes.shape({
+        data: PropTypes.object,
+        error: PropTypes.string,
+        loading: PropTypes.bool.isRequired,
+        refetch: PropTypes.func,
+        fetchMore: PropTypes.func,
+      }).isRequired
+    ]).isRequired,
     viewIssue: PropTypes.func.isRequired,
-    setQuery: PropTypes.func.isRequired,
     setFilters: PropTypes.func.isRequired,
+    setQuery: PropTypes.func.isRequired,
+    setSortBy: PropTypes.func.isRequired,
     shapeIssue: PropTypes.func.isRequired,
+    sortBy: PropTypes.string.isRequired,
+    repo: repoShape,
+    updateTextSearch: PropTypes.func.isRequired,
   }
 
   state = {
     selectedIssues: {},
-    sortBy: 'Newest',
     textFilter: '',
     reload: false,
-    cachedIssues: [],
   }
 
   deselectAllIssues = () => {
     this.setState({ selectedIssues: {} })
   }
 
-  handleFiltering = filters => {
+  updateQuery = (filters, filtersData) => {
+    const queryFilters = {
+      labels: Object.keys(filters.labels).map(labelId => filtersData.labels[labelId].name),
+      search: '',
+    }
+    this.props.setQuery(queryFilters)
+  }
+
+
+  handleFiltering = (filters, filtersData) => {
     this.props.setFilters(filters)
+    this.updateQuery(filters, filtersData)
     // TODO: why is reload necessary?
     this.setState(prevState => ({
       reload: !prevState.reload,
     }))
   }
 
-  handleSorting = sortBy => {
-    // TODO: why is reload necessary?
-    this.setState(prevState => ({ sortBy, reload: !prevState.reload }))
-  }
-
   applyFilters = allIssues => {
-    const { textFilter } = this.state
-    const { filters, bountyIssues } = this.props
+    const { filters, bountyIssues, repo: { decoupled = false } } = this.props
+    // only filter locally if filtering by bounty status
+    if (Object.keys(filters.statuses).length === 0) {
+      return allIssues
+    }
 
+    // no issue can be "not funded" and have some other funding state
+    if (filters.statuses['not-funded'] && Object.keys(filters.statuses).length > 1) {
+      return []
+    }
+    const decoupledBountyIssues = decoupled && allIssues.filter(i => i.workStatus)
     const bountyIssueObj = {}
-    bountyIssues.forEach(issue => {
-      bountyIssueObj[issue.issueNumber] = issue.data.workStatus
-    })
+    decoupled ?
+      decoupledBountyIssues.forEach(issue => {
+        bountyIssueObj[issue.issueId] = issue.data.workStatus
+      })
+      :
+      bountyIssues.forEach(issue => {
+        bountyIssueObj[issue.issueId] = issue.data.workStatus
+      })
 
-    const issuesByLabel = allIssues.filter(issue => {
-      // if there are no labels to filter by, pass all
-      if (Object.keys(filters.labels).length === 0) return true
-      // if labelless issues are allowed, let them pass
-      if ('labelless' in filters.labels && issue.labels.totalCount === 0)
-        return true
-      // otherwise, fail all issues without labels
-      if (issue.labels.totalCount === 0) return false
+    // if not funded, filter allIssues for those that have no bounty
+    // other filtering happens via GitHub query
+    if (filters.statuses['not-funded']) {
+      return allIssues.filter(i => !bountyIssueObj[i.issueId])
+    }
 
-      const labelsIds = issue.labels.edges.map(label => label.node.id)
+    // otherwise, we want some subset of bountyIssues
+    // now we need to filter locally
+    let issuesByStatus
 
-      if (
-        Object.keys(filters.labels).filter(id => labelsIds.indexOf(id) !== -1)
-          .length > 0
-      )
-        return true
-      return false
-    })
-
-    const issuesByMilestone = issuesByLabel.filter(issue => {
-      // if there are no MS filters, all issues pass
-      if (Object.keys(filters.milestones).length === 0) return true
-      // should issues without milestones pass?
-      if ('milestoneless' in filters.milestones && issue.milestone === null)
-        return true
-      // if issues without milestones should not pass, they are rejected below
-      if (issue.milestone === null) return false
-      if (Object.keys(filters.milestones).indexOf(issue.milestone.id) !== -1)
-        return true
-      return false
-    })
-
-    const issuesByStatus = issuesByMilestone.filter(issue => {
-      // if there are no Status filters, all issues pass
-      if (Object.keys(filters.statuses).length === 0) return true
-      // should bountyless issues pass?
-      const status = bountyIssueObj[issue.number]
-        ? bountyIssueObj[issue.number]
-        : 'not-funded'
-      // if we look for all funded issues, regardless of stage...
-      let filterPass =
-        status in filters.statuses ||
-        ('all-funded' in filters.statuses && status !== 'not-funded')
-          ? true
-          : false
-      // ...or at specific stages
-      return filterPass
-    })
-
-    // last but not least, if there is any text in textFilter...
-    if (textFilter) {
-      return issuesByStatus.filter(
-        issue =>
-          issue.title.toUpperCase().indexOf(textFilter) !== -1 ||
-          String(issue.number).indexOf(textFilter) !== -1
+    // if only 'all-funded' checked, we want all bountyIssues
+    if (filters.statuses['all-funded'] && Object.keys(filters.statuses).length === 1) {
+      issuesByStatus = decoupledBountyIssues || bountyIssues
+    }
+    // otherwise, check if issue's status is in selected filters
+    else {
+      issuesByStatus = (decoupledBountyIssues || bountyIssues).filter(issue =>
+        bountyIssueObj[issue.issueId] in filters.statuses
       )
     }
 
@@ -154,25 +140,27 @@ class ProjectDetail extends React.PureComponent {
   }
 
   handleTextFilter = e => {
+    this.props.updateTextSearch(e.target.value.toUpperCase())
     this.setState({
       textFilter: e.target.value.toUpperCase(),
       reload: !this.state.reload,
     })
   }
 
-  disableFilter = pathToFilter => {
+  disableFilter = (pathToFilter, filtersData) => {
     let newFilters = { ...this.props.filters }
     recursiveDeletePathFromObject(pathToFilter, newFilters)
     this.props.setFilters(newFilters)
+    this.updateQuery(newFilters, filtersData)
   }
 
   disableAllFilters = () => {
     this.props.setFilters({
       labels: {},
-      milestones: {},
-      deadlines: {},
-      experiences: {},
       statuses: {},
+    })
+    this.props.setQuery({
+      labels: [],
     })
   }
 
@@ -181,11 +169,10 @@ class ProjectDetail extends React.PureComponent {
       <FilterBar
         setParentFilters={this.props.setFilters}
         filters={this.props.filters}
-        sortBy={this.state.sortBy}
         issues={allIssues}
         issuesFiltered={filteredIssues}
         handleFiltering={this.handleFiltering}
-        handleSorting={this.handleSorting}
+        handleSorting={this.props.setSortBy}
         bountyIssues={this.props.bountyIssues}
         disableFilter={this.disableFilter}
         disableAllFilters={this.disableAllFilters}
@@ -194,22 +181,36 @@ class ProjectDetail extends React.PureComponent {
         selectedIssues={Object.keys(this.state.selectedIssues).map(
           id => this.state.selectedIssues[id]
         )}
+        sortBy={this.props.sortBy}
+        sortOptions={sortOptions}
+        repo={this.props.repo}
       />
     )
   }
+  filterBarDecoupled = (allIssues, filteredIssues) => {
 
-  queryLoading = () => (
-    <StyledIssues>
-      {this.filterBar([], [])}
-      <EmptyWrapper>
-        <Text size="large" css={`margin-bottom: ${3 * GU}px`}>
-          Loading...
-        </Text>
-        <LoadingAnimation />
-      </EmptyWrapper>
-    </StyledIssues>
-  )
-
+    return (
+      <FilterBarDecoupled
+        setParentFilters={this.props.setFilters}
+        filters={this.props.filters}
+        issues={allIssues}
+        issuesFiltered={filteredIssues}
+        handleFiltering={this.handleFiltering}
+        handleSorting={this.props.setSortBy}
+        bountyIssues={this.props.bountyIssues}
+        disableFilter={this.disableFilter}
+        disableAllFilters={this.disableAllFilters}
+        deselectAllIssues={this.deselectAllIssues}
+        onSearchChange={this.handleTextFilter}
+        selectedIssues={Object.keys(this.state.selectedIssues).map(
+          id => this.state.selectedIssues[id]
+        )}
+        sortBy={this.props.sortBy}
+        sortOptions={sortOptions}
+        repo={this.props.repo}
+      />
+    )
+  }
   queryError = (error, refetch) => (
     <StyledIssues>
       {this.filterBar([], [])}
@@ -227,43 +228,86 @@ class ProjectDetail extends React.PureComponent {
   )
 
   render() {
-    const { cachedIssues } = this.state
-    const { data, loading, error, refetch } = this.props.graphqlQuery
-
-    if (loading) return this.queryLoading()
+    const { data, loading, error, refetch, fetchMore } = this.props.repo.decoupled ? {} : this.props.graphqlQuery
     if (error) return this.queryError(error, refetch)
 
-    const allIssues = [ ...cachedIssues, ...data.repository.issues.nodes ]
+    let dataSource
+    let pageInfo
+    if (data) {
+      pageInfo = data.repository ? data.repository.issues.pageInfo : data.search.pageInfo
+      dataSource = data.repository ? data.repository.issues.nodes : data.search.issues
+    } else {
+      dataSource = this.props.issues
+    }
+
+    const allIssues = dataSource ? dataSource.map(this.props.shapeIssue) : []
     const filteredIssues = this.applyFilters(allIssues)
 
     return (
       <StyledIssues>
-        {this.filterBar(allIssues, filteredIssues)}
-
+        {this.props.repo.decoupled ? this.filterBarDecoupled(allIssues, filteredIssues): this.filterBar(allIssues, filteredIssues)}
+        {this.props.repo.decoupled && !this.props.issues.length && <NoIssues />}
         <IssuesScrollView>
           <ScrollWrapper>
-            {filteredIssues.map(this.props.shapeIssue)
-              .sort(sorters[this.state.sortBy])
-              .map(issue => (
-                <Issue
-                  isSelected={issue.id in this.state.selectedIssues}
-                  key={issue.id}
-                  {...issue}
-                  onClick={this.props.viewIssue}
-                  onSelect={this.handleIssueSelection}
-                />
-              ))}
+            {filteredIssues.map(issue => (
+              <Issue
+                isSelected={issue.id in this.state.selectedIssues}
+                key={issue.id}
+                {...issue}
+                onClick={this.props.viewIssue}
+                onSelect={this.handleIssueSelection}
+              />
+            ))}
           </ScrollWrapper>
 
           <div style={{ textAlign: 'center' }}>
-            {data.repository.issues.pageInfo.hasNextPage && (
+            {loading ? (
+              <div css={`
+                align-items: center;
+                display: flex;
+                flex-direction: column;
+                margin: 25px;
+              `}>
+                <Text size="large" css={`margin-bottom: ${3 * GU}px`}>
+                  Loading...
+                </Text>
+                <LoadingAnimation />
+              </div>
+            ) : data && pageInfo.hasNextPage && (
               <Button
                 style={{ margin: '12px 0 30px 0' }}
                 mode="secondary"
                 onClick={() => {
-                  this.setState({ cachedIssues: allIssues })
-                  this.props.setQuery({
-                    after: data.repository.issues.pageInfo.endCursor,
+                  fetchMore({
+                    variables: { after: pageInfo.endCursor },
+                    updateQuery: (prev, { fetchMoreResult }) => {
+
+                      if (!fetchMoreResult) return prev
+
+                      return data.repository ? {
+                        ...fetchMoreResult,
+                        repository: {
+                          ...fetchMoreResult.repository,
+                          issues: {
+                            ...fetchMoreResult.repository.issues,
+                            nodes: [
+                              ...prev.repository.issues.nodes,
+                              ...fetchMoreResult.repository.issues.nodes,
+                            ]
+                          },
+                        }
+                      } : {
+
+                        ...fetchMoreResult,
+                        search: {
+                          ...fetchMoreResult.search,
+                          issues: [
+                            ...prev.search.issues,
+                            ...fetchMoreResult.search.issues,
+                          ],
+                        }
+                      }
+                    },
                   })
                 }}
               >
@@ -277,34 +321,36 @@ class ProjectDetail extends React.PureComponent {
   }
 }
 
-const ProjectDetailQuery = ({ client, query, ...props }) => {
-  const graphqlQuery = useQuery(
-    getIssuesGQL(query),
-    { client, onError: console.error }
+const ProjectDetailWrap = ({ repo, ...props }) => {
+  const bountyIssues = useBountyIssues().filter(issue =>
+    issue.repoId === repo.data._repo
   )
-  return <ProjectDetail graphqlQuery={graphqlQuery} {...props} />
-}
 
-ProjectDetailQuery.propTypes = {
-  client: PropTypes.object.isRequired,
-  query: PropTypes.object.isRequired,
-}
-
-const ProjectDetailWrap = ({ repoId, ...props }) => {
   const { appState } = useAragonApi()
-  const {
-    issues = [],
-    github = { status : STATUS.INITIAL },
-  } = appState
+
+  const issues = appState.issues
+    .filter(issue => issue.data.repository && issue.data.repository.hexId === repo.id)
+    .map(issue => issue.data)
+
   const shapeIssue = useShapedIssue()
   const { setupNewIssue } = usePanelManagement()
-  const [ client, setClient ] = useState(null)
-  const [ query, setQueryRaw ] = useState({ repoId, count: ISSUES_PER_CALL })
+  const [ query, setQueryRaw ] = useState({
+    repo: repo.decoupled ? repo.id : `${repo.metadata.owner}/${repo.metadata.name}`,
+    search: '',
+    sort: 'updated-desc',
+    owner: repo.metadata.owner,
+    name: repo.metadata.name,
+    labels: [],
+  })
+  const updateTextSearch = text => {
+    setQuery({ search: text ? text + ' in:title' : '' })
+  }
+  const setQuery = params => {
+    setQueryRaw({ ...query, ...params })
+  }
+
   const [ filters, setFilters ] = useState({
     labels: {},
-    milestones: {},
-    deadlines: {},
-    experiences: {},
     statuses: {},
   })
   const { requestPath } = usePathHelpers()
@@ -312,19 +358,67 @@ const ProjectDetailWrap = ({ repoId, ...props }) => {
     requestPath('/issues/' + id)
   })
 
-  const repos = useDecoratedRepos()
-  const repo = useMemo(() => {
-    return repos.find(({ data }) => data._repo === repoId)
-  }, [repos])
+  const SEARCH_ISSUES_2 = gql`
+  query SearchIssues($after: String, $owner: String!, $name: String!) {
+    repository(owner: $owner, name: $name) {
+      issues(
+        first: 25,
+        after: $after,
+        filterBy: {
+          ${query.labels.length ? 'labels: [' + query.labels.map(l => `"${l}"`) + '],' : ''}
+          states: [OPEN]
+        },
+        orderBy: {
+          field: UPDATED_AT, direction: ${query.sort === 'updated-desc' ? 'DESC' : 'ASC'}
+        }) {
+          totalCount
+          pageInfo {
+            startCursor
+            hasNextPage
+            endCursor
+          }
 
-  const setQuery = useCallback(({ after }) => {
-    setQueryRaw({ ...query, after })
-  }, [])
+        nodes {
+          ${ issueAttributes }
+        }
+      }
+    }
+  }
+  `
 
-  useEffect(() => {
-    setClient(github.token ? initApolloClient(github.token) : null)
-  }, [github.token])
+  // text filter takes precedence
+  // short-circuits if the repo is not linked to Github
+  const graphqlQuery = !repo.decoupled && (query.search ?
+    useQuery(SEARCH_ISSUES, {
+      notifyOnNetworkStatusChange: true,
+      onError: console.error,
+      variables: {
+        after: query.after,
+        query: 'is:issue state:open ' +
+          `repo:${query.repo} ` +
+          `sort:${query.sort} ` +
+          `${query.search}`,
+      },
+    })
+    :
+    useQuery(SEARCH_ISSUES_2, {
+      notifyOnNetworkStatusChange: true,
+      onError: console.error,
+      variables: {
+        after: query.after,
+        owner: query.owner,
+        name: query.name,
+        labels: query.labels,
+      },
+    })
+  )
 
+  const [ sortBy, setSortByRaw ] = useState(Object.keys(sortOptions)[0])
+
+  const setSortBy = sort => {
+    setSortByRaw(sort)
+    setQuery({ sort })
+  }
   return (
     <>
       <Header
@@ -333,30 +427,26 @@ const ProjectDetailWrap = ({ repoId, ...props }) => {
           <Button mode="strong" icon={<IconPlus />} onClick={setupNewIssue} label="New issue" />
         }
       />
-      {!query ? (
-        'Loading...'
-      ) : !client ? (
-        'You must sign into GitHub to view issues.'
-      ) : (
-        <ProjectDetailQuery
-          bountyIssues={issues}
-          client={client}
-          filters={filters}
-          query={query}
-          viewIssue={viewIssue}
-          setQuery={setQuery}
-          setFilters={setFilters}
-          shapeIssue={shapeIssue}
-          {...props}
-        />
-      )}
+      <ProjectDetail
+        bountyIssues={bountyIssues}
+        issues={issues}
+        filters={filters}
+        graphqlQuery={graphqlQuery}
+        viewIssue={viewIssue}
+        setFilters={setFilters}
+        setQuery={setQuery}
+        shapeIssue={shapeIssue}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        repo={repo}
+        updateTextSearch={updateTextSearch}
+        {...props}
+      />
     </>
   )
 }
 
-ProjectDetailWrap.propTypes = {
-  repoId: PropTypes.string.isRequired,
-}
+ProjectDetailWrap.propTypes = repoShape
 
 const StyledIssues = styled.div`
   display: flex;

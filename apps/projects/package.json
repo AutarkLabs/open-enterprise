@@ -1,5 +1,5 @@
 {
-  "name": "@tps/apps-projects",
+  "name": "@autarklabs/apps-projects",
   "version": "0.0.1",
   "description": "Project management app from Planning Suite",
   "scripts": {
@@ -64,7 +64,7 @@
     "@babel/plugin-transform-runtime": "^7.6.0",
     "@babel/preset-env": "^7.4.5",
     "@babel/preset-react": "^7.0.0",
-    "@tps/test-helpers": "^0.0.1",
+    "@autarklabs/test-helpers": "^0.0.1",
     "babel-eslint": "^10.0.1",
     "babel-plugin-styled-components": "^1.10.0",
     "cross-env": "^5.2.0",

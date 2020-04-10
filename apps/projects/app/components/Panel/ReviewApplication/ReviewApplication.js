@@ -31,7 +31,10 @@ import useReviewFilters from '../../../hooks/useReviewFilters'
 
 const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
   const githubCurrentUser = useGithubAuth()
-  const { api } = useAragonApi()
+  const {
+    api,
+    connectedAccount,
+  } = useAragonApi()
   const reviewApplication = api.reviewApplication
   const { closePanel } = usePanelManagement()
   const theme = useTheme()
@@ -54,7 +57,10 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
     return {
       feedback,
       approved,
-      user: githubCurrentUser,
+      user: {
+        ...githubCurrentUser,
+        addr: connectedAccount,
+      },
       reviewDate: today.toISOString(),
     }
   }
@@ -71,7 +77,7 @@ const ReviewApplication = ({ issue, requestIndex, readOnly }) => {
     const requestIPFSHash = await api.datastore('add', val).toPromise()
 
     reviewApplication(
-      toHex(issue.repoId),
+      issue.repoHexId || toHex(issue.repoId),
       issue.number,
       items[selectedFilter][selectedItem].contributorAddr,
       requestIPFSHash,

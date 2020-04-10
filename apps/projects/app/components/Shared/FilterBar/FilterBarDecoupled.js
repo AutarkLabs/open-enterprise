@@ -11,7 +11,6 @@ import {
   IconSearch,
   IconCheck,
   Popover,
-  Tag,
   Text,
   TextInput,
   useLayout,
@@ -255,11 +254,11 @@ const Overflow = ({ children, filtersDisplayNumber }) => {
   return elements
 }
 Overflow.propTypes = {
-  children: PropTypes.array.isRequired,
+  children: PropTypes.object.isRequired,
   filtersDisplayNumber: PropTypes.number.isRequired,
 }
 
-const FilterBar = ({
+const FilterBarDecoupled = ({
   filters,
   bountyIssues,
   issues,
@@ -289,7 +288,7 @@ const FilterBar = ({
   const rightFBRef = useRef(null)
   const activeFilters = () => {
     let count = 0
-    const types = [ 'labels', 'statuses' ]
+    const types = ['statuses']
     types.forEach(t => count += Object.keys(filters[t]).length)
     return count
   }
@@ -342,57 +341,6 @@ const FilterBar = ({
   const updateSortBy = way => () => {
     handleSorting(way)
     setSortMenuVisible(false)
-  }
-
-  const FilterByLabel = ({ filters, filtersData }) => (
-    <FilterDropDown
-      caption="Labels"
-      enabled={Object.keys(filtersData.labels).length > 0}
-    >
-      {Object.keys(filtersData.labels)
-        .sort((l1, l2) => {
-          if (l1 === 'labelless') return -1
-          if (l2 === 'labelless') return 1
-          return filtersData.labels[l1].name < filtersData.labels[l2].name
-            ? -1
-            : 1
-        })
-        .map(id => {
-          const decoration = filtersData.labels[id].color ?
-            { background: '#' + filtersData.labels[id].color + '99' }
-            :
-            {
-              style: { border: `1px solid ${theme.border}` },
-              background: `#${theme.white}`
-            }
-          return (
-            <FilterMenuItem
-              key={id}
-              onClick={filter('labels', id)}
-            >
-              <div>
-                <Checkbox
-                  onChange={noop}
-                  checked={id in filters.labels}
-                />
-              </div>
-              <ActionLabel>
-                <Tag
-                  {...decoration}
-                  color={`${theme.surfaceContent}`}
-                  uppercase={false}
-                >
-                  {filtersData.labels[id].name}
-                </Tag>
-              </ActionLabel>
-            </FilterMenuItem>
-          )}
-        )}
-    </FilterDropDown>
-  )
-  FilterByLabel.propTypes = {
-    filters: PropTypes.object.isRequired,
-    filtersData: PropTypes.object.isRequired,
   }
 
   const FilterByStatus = ({ filters, filtersData, allFundedIssues, allIssues }) => (
@@ -473,7 +421,6 @@ const FilterBar = ({
                   allFundedIssues={allFundedIssues}
                   allIssues={allIssues}
                 />
-                <FilterByLabel filters={filters} filtersData={filtersData} />
               </Overflow>
             </FilterBarMainLeft>
           </>
@@ -529,7 +476,7 @@ const FilterBar = ({
   )
 }
 
-FilterBar.propTypes = {
+FilterBarDecoupled.propTypes = {
   filters: PropTypes.object.isRequired,
   bountyIssues: PropTypes.arrayOf(issueShape).isRequired,
   issues: PropTypes.arrayOf(issueShape).isRequired,
@@ -576,4 +523,4 @@ const FilterBarActives = styled.div`
   margin-bottom: ${2 * GU}px;
   width: 100%;
 `
-export default FilterBar
+export default FilterBarDecoupled

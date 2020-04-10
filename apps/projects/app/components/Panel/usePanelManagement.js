@@ -30,6 +30,14 @@ const usePanelManagement = () => {
         mode: 'update',
       })
     },
+    editProject: (repoId, label, description) => {
+      setActivePanel(PANELS.EditProject)
+      setPanelProps({
+        repoId,
+        label,
+        description,
+      })
+    },
     requestAssignment: issue => {
       setActivePanel(PANELS.RequestAssignment)
       setPanelProps({

@@ -14,7 +14,7 @@ import { IssueTitle, PanelContent } from '../PanelComponents'
 
 const RequestAssignment = ({ issue }) => {
   const githubCurrentUser = useGithubAuth()
-  const { api } = useAragonApi()
+  const { api, connectedAccount } = useAragonApi()
   const theme = useTheme()
 
   const { closePanel } = usePanelManagement()
@@ -44,7 +44,10 @@ const RequestAssignment = ({ issue }) => {
       eta: date,
       ack1,
       ack2,
-      user: githubCurrentUser,
+      user: {
+        ...githubCurrentUser,
+        addr: connectedAccount,
+      },
       applicationDate: today.toISOString(),
     }
 

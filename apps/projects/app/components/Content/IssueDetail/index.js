@@ -19,10 +19,19 @@ import BountyCard from './BountyCard'
 import { usePanelManagement } from '../../Panel'
 import usePathHelpers from '../../../../../../shared/utils/usePathHelpers'
 import { useDecoratedRepos } from '../../../context/DecoratedRepos'
+import { toHex } from 'web3-utils'
+import { LoadingAnimation, EmptyWrapper } from '../../Shared'
 
 function Wrap({ children, repo }) {
   const { goBack } = usePathHelpers()
   const { setupNewIssue } = usePanelManagement()
+
+  const repoId = useMemo(() => {
+    if (!repo) return null
+    if (repo.decoupled) return repo.id
+    return repo.data._repo
+  }, [repo])
+
 
   return (
     <>
@@ -34,7 +43,7 @@ function Wrap({ children, repo }) {
       />
       <Bar>
         <BackButton onClick={() => {
-          if (repo) goBack({ fallback: '/projects/' + repo.data._repo })
+          if (repo) goBack({ fallback: '/projects/' + repoId })
         }} />
       </Bar>
       {children}
@@ -46,8 +55,10 @@ Wrap.propTypes = {
   children: PropTypes.node.isRequired,
   repo: PropTypes.shape({
     data: PropTypes.shape({
-      _repo: PropTypes.string.isRequired,
+      _repo: PropTypes.string,
     }).isRequired,
+    decoupled: PropTypes.bool,
+    id: PropTypes.string.isRequired,
     metadata: PropTypes.shape({
       name: PropTypes.string.isRequired,
     }).isRequired,
@@ -55,28 +66,59 @@ Wrap.propTypes = {
 }
 
 const IssueDetail = ({ issueId }) => {
-  const { appState: { github } } = useAragonApi()
+  const { appState: { github, issues  } } = useAragonApi()
   const client = useMemo(() => initApolloClient(github.token), [])
   const { layoutName } = useLayout()
   const shapeIssue = useShapedIssue()
-  const { loading, error, data } = useQuery(GET_ISSUE, {
-    client,
-    onError: console.error,
-    variables: { id: issueId },
-  })
 
+  const storedIssue = useMemo(() => {
+    return issues.find(i => issueId === i.data.issueId )
+  }, [ issues, issueId ])
+
+  let unshapedIssue, repo, queryDetails
   const repos = useDecoratedRepos()
-  const repo = useMemo(() => {
-    if (!data || !data.node) return null
-    return repos.find(repo => repo.data._repo === data.node.repository.id)
-  }, [ data, repos ])
+  // test to see if the issue ID is composed like "repoHexID_issueNumber"
+  const decoupled = /0x[a-f0-9]{64}_[0-9]{1,}/.test(issueId)
 
-  if (loading) return <Wrap>Loading...</Wrap>
-  if (error) return <Wrap>{JSON.stringify(error)}</Wrap>
+  if (decoupled) {
+    unshapedIssue = storedIssue && storedIssue.data
+    repo = useMemo(() => {
+      //if ()
+      if (!storedIssue) return null
+      return repos.find(repo => repo.id === unshapedIssue.repository.hexId || repo.data._repo === toHex(unshapedIssue.repoId))
+    }, [ storedIssue, repos ])
 
-  const issue = shapeIssue(data.node)
+    if (decoupled && !storedIssue) return (
+      <EmptyWrapper>
+        <LoadingAnimation />
+      </EmptyWrapper>
+    )
+  } else {
+    queryDetails = useQuery(GET_ISSUE, {
+      client,
+      onError: console.error,
+      variables: { id: issueId },
+    })
+
+    const  { loading, error, data } = queryDetails
+
+    repo = useMemo(() => {
+      if (!data || !data.node) return null
+      return repos.find(repo => repo.data._repo === data.node.repository.id)
+    }, [ data, repos ])
+
+    if (loading) return <Wrap>Loading...</Wrap>
+    if (error) return <Wrap>{JSON.stringify(error)}</Wrap>
+    
+    unshapedIssue = data.node
+
+    
+  }
+  
   const columnView = layoutName === 'small' || layoutName === 'medium'
 
+  const issue = shapeIssue(unshapedIssue)
+  
   return (
     <Wrap repo={repo}>
       {columnView ? (

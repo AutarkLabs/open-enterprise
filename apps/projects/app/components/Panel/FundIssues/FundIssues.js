@@ -47,7 +47,10 @@ const errorMessages = {
 
 const bountiesFor = ({ bountySettings, issues, tokens }) => issues.reduce(
   (bounties, issue) => {
+    const data = issue.repository.decoupled ? issue : {}
+
     bounties[issue.id] = {
+      ...data,
       fundingHistory: issue.fundingHistory || [],
       issueId: issue.id,
       repo: issue.repo,
@@ -384,7 +387,7 @@ FundForm.propTypes = {
 
 const FundIssues = ({ issues, mode }) => {
   const githubCurrentUser = useGithubAuth()
-  const { api, appState } = useAragonApi()
+  const { api, appState, connectedAccount } = useAragonApi()
   const { bountySettings } = appState
   const { closePanel } = usePanelManagement()
   const [ submitting, setSubmitting ] = useState(false)
@@ -435,7 +438,6 @@ const FundIssues = ({ issues, mode }) => {
 
   const submitBounties = useCallback(async e => {
     e.preventDefault()
-
     setSubmitting(true)
 
     const repoIds = []
@@ -455,12 +457,16 @@ const FundIssues = ({ issues, mode }) => {
       )
       deadlines.push(bounty.deadline.getTime())
       ipfsData.push({
+        ...bounty,
         issueId: bounty.issueId,
         exp: bounty.exp,
         fundingHistory: [
           ...bounty.fundingHistory,
           {
-            user: githubCurrentUser,
+            user: {
+              ...githubCurrentUser,
+              addr: connectedAccount,
+            },
             date: new Date().toISOString(),
             description,
           },

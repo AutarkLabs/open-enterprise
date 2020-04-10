@@ -5,11 +5,11 @@ import { Button, Text, useTheme } from '@aragon/ui'
 
 import FilterTile from './FilterTile'
 import { prepareFilters } from '../Shared/FilterBar'
-import { issueShape } from '../../utils/shapes.js'
+import { issueShape, repoShape } from '../../utils/shapes.js'
 
-const Filters = ({ filters, issues, bountyIssues, disableFilter, disableAllFilters, style }) => {
+const Filters = ({ filters, issues, bountyIssues, disableFilter, disableAllFilters, repo, style }) => {
   const theme = useTheme()
-
+  const filterInformation = prepareFilters(issues, bountyIssues, repo)
   const generateFilterNamesAndPaths = (filterInformation, type, textFieldToUse) => {
     const appliedFilters = {}
     Object.keys(filterInformation[type]).map(id => {
@@ -32,17 +32,10 @@ const Filters = ({ filters, issues, bountyIssues, disableFilter, disableAllFilte
     to make it easier to deselect filters from this view without multiple state objects
   */
   const calculateFilters = () => {
-    const filterInformation = prepareFilters(issues, bountyIssues)
-
     const labelBasedFilters = generateFilterNamesAndPaths(
       filterInformation,
       'labels',
       'name'
-    )
-    const milestoneBasedFilters = generateFilterNamesAndPaths(
-      filterInformation,
-      'milestones',
-      'title'
     )
     const statusBasedFilters = generateFilterNamesAndPaths(
       filterInformation,
@@ -52,7 +45,6 @@ const Filters = ({ filters, issues, bountyIssues, disableFilter, disableAllFilte
 
     return {
       ...labelBasedFilters,
-      ...milestoneBasedFilters,
       ...statusBasedFilters,
     }
   }
@@ -70,7 +62,7 @@ const Filters = ({ filters, issues, bountyIssues, disableFilter, disableAllFilte
             key={pathToDisableFilter.join('')}
             text={alias}
             disableFilter={() =>
-              disableFilter(pathToDisableFilter)
+              disableFilter(pathToDisableFilter, filterInformation)
             }
           />
         )
@@ -104,9 +96,6 @@ const Wrap = styled.div`
 Filters.propTypes = {
   filters: PropTypes.shape({
     labels: PropTypes.object.isRequired,
-    milestones: PropTypes.object.isRequired,
-    deadlines: PropTypes.object.isRequired,
-    experiences: PropTypes.object.isRequired,
     statuses: PropTypes.object.isRequired,
   }),
   issues: PropTypes.arrayOf(issueShape).isRequired,
@@ -114,14 +103,12 @@ Filters.propTypes = {
   disableFilter: PropTypes.func.isRequired,
   disableAllFilters: PropTypes.func.isRequired,
   style: PropTypes.object,
+  repo: repoShape,
 }
 
 Filters.defaultProps = {
   filters: {
     labels: {},
-    milestones: {},
-    deadlines: {},
-    experiences: {},
     statuses: {},
   },
   issues: [],
