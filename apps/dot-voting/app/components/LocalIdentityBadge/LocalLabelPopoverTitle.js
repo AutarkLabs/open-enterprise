@@ -2,7 +2,13 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { GU, Tag } from '@aragon/ui'
 
-function LocalLabelPopoverTitle({ label }) {
+const getTag = (source) => {
+  if (source === '3box') return '3Box'
+  if (source === 'addressBook') return 'Address Book'
+  return 'Custom Label'
+}
+
+function LocalLabelPopoverTitle({ label, source = null }) {
   return (
     <div
       css={`
@@ -27,13 +33,14 @@ function LocalLabelPopoverTitle({ label }) {
           margin-left: ${2 * GU}px;
         `}
       >
-        Custom label
+        {getTag(source)}
       </Tag>
     </div>
   )
 }
 LocalLabelPopoverTitle.propTypes = {
   label: PropTypes.string.isRequired,
+  source: PropTypes.string,
 }
 
 export default LocalLabelPopoverTitle

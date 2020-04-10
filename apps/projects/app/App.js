@@ -27,7 +27,7 @@ let popupRef = null
 
 const App = () => {
   const { api, appState, guiStyle } = useAragonApi()
-  const { appearance } = guiStyle
+  const { appearance, theme } = guiStyle
   const [ githubLoading, setGithubLoading ] = useState(false)
   const [ panel, setPanel ] = useState(null)
   const [ panelProps, setPanelProps ] = useState(null)
@@ -122,7 +122,7 @@ const App = () => {
   }
 
   return (
-    <Main theme={appearance}>
+    <Main theme={theme || appearance}>
       <ApolloProvider client={client}>
         <PanelContext.Provider value={configurePanel}>
           <IdentityProvider

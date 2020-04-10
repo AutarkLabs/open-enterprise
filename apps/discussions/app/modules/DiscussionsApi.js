@@ -3,7 +3,7 @@ import { ipfs } from '../ipfs'
 
 const eventTypes = new Set(['Post', 'Revise', 'Hide'])
 
-class Discussions {
+class DiscussionsApi {
   constructor(api) {
     this.address = ''
     this.abi = []
@@ -27,7 +27,10 @@ class Discussions {
 
   _fetchDiscussionAppInfo = () =>
     new Promise(resolve => {
+      console.log('Aragon api: ', this.api)
+
       this.api.getApps().subscribe(apps => {
+        console.log('Apps: ', apps)
         const { abi, proxyAddress } = apps.find(
           app => app.name === 'Discussions'
         )
@@ -38,8 +41,11 @@ class Discussions {
   _pastEvents = () =>
     new Promise(resolve =>
       this.contract.pastEvents().subscribe(events => {
-        this.lastEventBlock = events[events.length - 1].blockNumber
-        resolve(events)
+        if (events.length > 0) {
+          this.lastEventBlock = events[events.length - 1].blockNumber
+          return resolve(events)
+        }
+        resolve([])
       })
     )
 
@@ -257,10 +263,14 @@ class Discussions {
   }
 
   listenForUpdates = callback =>
-    this.contract.events(this.lastEventBlock + 1).subscribe(async event => {
-      this.discussions = await this._buildState(this.discussions, [event])
-      callback(this.discussions)
-    })
+    this.contract
+      .events({
+        fromBlock: this.lastEventBlock + 1,
+      })
+      .subscribe(async event => {
+        this.discussions = await this._buildState(this.discussions, [event])
+        callback(this.discussions)
+      })
 
   post = async (text, discussionThreadId, ethereumAddress) => {
     const discussionPost = {
@@ -301,4 +311,4 @@ class Discussions {
     this.contract.hide(postId, discussionThreadId).toPromise()
 }
 
-export default Discussions
+export default DiscussionsApi

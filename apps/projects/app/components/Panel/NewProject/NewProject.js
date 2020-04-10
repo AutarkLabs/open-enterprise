@@ -12,7 +12,6 @@ import noResultsSvg from '../../../assets/noResults.svg'
 import { FormField, FieldTitle } from '../../Form'
 import { STATUS } from '../../../utils/github'
 import { useDecoratedRepos } from '../../../context/DecoratedRepos'
-import { ipfsAdd } from '../../../../../../shared/utils/ipfs'
 
 
 const RepoList = ({
@@ -283,12 +282,12 @@ const NewProject = ({ handleGithubSignIn }) => {
     return repoIndex > parseInt(repo.index) ?  repoIndex : parseInt(repo.index)
   }, 0)
 
-  const createProject = () => {
+  const createProject = async () => {
     closePanel()
     const content = { title, description }
-    ipfsAdd(content).then( cId => {
-      api.setRepo(toHex(sha3(title + repoIndex)), true, cId).toPromise()
-    })
+    const val = new Blob([Buffer.from(JSON.stringify(content))])
+    const ipfsHash = await api.datastore('add', val).toPromise()
+    api.setRepo(toHex(sha3(title + repoIndex)), true, ipfsHash).toPromise()
   }
 
   return (

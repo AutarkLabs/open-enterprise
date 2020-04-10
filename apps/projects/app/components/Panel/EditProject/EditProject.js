@@ -4,7 +4,6 @@ import { Button, GU, TextInput } from '@aragon/ui'
 import { useAragonApi } from '../../../api-react'
 import { toHex } from 'web3-utils'
 import { FormField } from '../../Form'
-import { ipfsAdd } from '../../../utils/ipfs-helpers'
 import usePanelManagement from '../usePanelManagement'
 
 
@@ -15,10 +14,9 @@ const EditProject = ({ repoId, label, description: descriptionOld }) => {
   const { closePanel } = usePanelManagement()
   const updateProject = async () => {
     closePanel()
-    const hash = await ipfsAdd(
-      { title, description }
-    )
-    api.setRepo(toHex(repoId), true, hash).toPromise()
+    const val = new Blob([Buffer.from(JSON.stringify({ title, description }))])
+    const ipfsHash = await api.datastore('add', val).toPromise()
+    api.setRepo(toHex(repoId), true, ipfsHash).toPromise()
   }
 
   return (

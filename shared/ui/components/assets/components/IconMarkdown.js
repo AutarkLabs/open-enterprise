@@ -1,7 +1,8 @@
 import React from 'react'
 
-const IconMarkdown  = () => (
+const IconMarkdown  = ({ className }) => (
   <svg
+    className={className}
     viewBox="0 0 16 16"
     width="16"
     height="16"

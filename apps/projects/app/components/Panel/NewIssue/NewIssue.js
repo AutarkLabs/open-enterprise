@@ -10,7 +10,6 @@ import { LoadingAnimation } from '../../Shared'
 import { usePanelManagement } from '../../Panel'
 import { useDecoratedRepos } from '../../../context/DecoratedRepos'
 import AuthorizeGitHub from './AuthorizeGitHub'
-import { ipfsAdd } from '../../../utils/ipfs-helpers'
 
 // TODO: labels
 // TODO: import validator from '../data/validation'
@@ -132,8 +131,9 @@ class NewIssue extends React.PureComponent {
         createdAt: new Date()
       }
       newIssueData.issueId = newIssueData.id
-      const hashedIssueData = await ipfsAdd(newIssueData)
-      api.setIssue(repoHexIds[selectedProject - 1], newIssueData.number, hashedIssueData).toPromise()
+      const val = new Blob([Buffer.from(JSON.stringify(newIssueData))])
+      const ipfsHash = await api.datastore('add', val).toPromise()
+      api.setIssue(repoHexIds[selectedProject - 1], newIssueData.number, ipfsHash).toPromise()
     }
 
     // TODO: refetch Issues list after mutation

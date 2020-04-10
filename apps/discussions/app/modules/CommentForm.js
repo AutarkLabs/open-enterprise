@@ -1,10 +1,8 @@
 import React, { createRef, useEffect, useState } from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
-import { Button, Field, TextInput, Text, theme } from '@aragon/ui'
+import { Button, Field, TextInput, Text, useTheme } from '@aragon/ui'
 import { IconMarkdown } from '../../../../shared/ui'
-
-const input = createRef()
 
 const Buttons = styled.div`
   display: grid;
@@ -23,7 +21,6 @@ const Input = styled(TextInput.Multiline).attrs({
 `
 
 const Hint = styled(Text.Block).attrs({
-  color: theme.textTertiary,
   size: 'xsmall',
 })`
   display: flex;
@@ -31,12 +28,8 @@ const Hint = styled(Text.Block).attrs({
 `
 
 const CommentForm = ({ defaultValue, onCancel, onSave }) => {
+  const theme = useTheme()
   const [text, setText] = useState(defaultValue || '')
-
-  useEffect(() => {
-    setText(defaultValue)
-    if (defaultValue && input.current) input.current.focus()
-  }, [defaultValue])
 
   const [cancelInProgress, setCancelInProgress] = useState(false)
   const startCancel = () => setCancelInProgress(true)
@@ -61,13 +54,12 @@ const CommentForm = ({ defaultValue, onCancel, onSave }) => {
     <form onSubmit={submit}>
       <Field label="Your Comment">
         <Input
-          ref={input}
           autoFocus={!!defaultValue}
           onChange={e => setText(e.target.value)}
           name="text"
           value={text}
         />
-        <Hint>
+        <Hint color={theme.contentSecondary.toString()}>
           <Text monospace aria-hidden>
             **bold** &nbsp;&nbsp; _italics_ &nbsp;&nbsp; ### heading
             &nbsp;&nbsp; &gt; quote
@@ -76,19 +68,12 @@ const CommentForm = ({ defaultValue, onCancel, onSave }) => {
             target="_blank"
             href="https://guides.github.com/features/mastering-markdown/"
           >
-            <IconMarkdown />
+            <IconMarkdown css={`fill: ${theme.contentSecondary}`}/>
           </a>
         </Hint>
       </Field>
       <Buttons cancelling={cancelInProgress}>
         <Button
-          aria-live="polite"
-          css={`
-            ${cancelInProgress
-              ? ''
-              : `border: 1px solid ${theme.contentBorder};`}
-            font-weight: bold;
-          `}
           disabled={!text && !onCancel}
           mode={cancelInProgress ? 'strong' : undefined}
           emphasis={cancelInProgress ? 'negative' : undefined}

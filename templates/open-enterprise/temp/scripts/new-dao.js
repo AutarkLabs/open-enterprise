@@ -23,10 +23,10 @@ module.exports = async function newDao({
   const { getTemplateAddress } = require('../lib/ens')(web3, artifacts)
   const OpenEnterpriseTemplate = artifacts.require('OpenEnterpriseTemplate')
   const Kernel = artifacts.require('Kernel')
-  
+
   try {
     const template = OpenEnterpriseTemplate.at(await getTemplateAddress())
-  
+
     const baseDAO = await template.newTokensAndInstance(
       id,
       token1.name,
@@ -38,9 +38,9 @@ module.exports = async function newDao({
       useAgentAsVault,
       { from: members[0] }
     )
-    
+
     const dao = Kernel.at(getEventArgument(baseDAO, 'DeployDao', 'dao'))
-    
+
 
     const baseDaoWithTokenMgrs = await template.newTokenManagers(
       members,

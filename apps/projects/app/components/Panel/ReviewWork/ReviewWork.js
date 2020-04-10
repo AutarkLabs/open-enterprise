@@ -15,7 +15,6 @@ import { FormField, FieldTitle } from '../../Form'
 import useGithubAuth from '../../../hooks/useGithubAuth'
 import { useAragonApi } from '../../../api-react'
 import { usePanelManagement } from '../../Panel'
-import { ipfsAdd } from '../../../utils/ipfs-helpers'
 import { toHex } from 'web3-utils'
 import { issueShape } from '../../../utils/shapes.js'
 import {
@@ -36,9 +35,10 @@ import useReviewFilters from '../../../hooks/useReviewFilters'
 const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
   const githubCurrentUser = useGithubAuth()
   const {
-    api: { reviewSubmission },
+    api,
     connectedAccount,
   } = useAragonApi()
+  const reviewSubmission = api.reviewSubmission
   const { closePanel } = usePanelManagement()
   const theme = useTheme()
   const [ feedback, setFeedback ] = useState('')
@@ -83,7 +83,8 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
 
     // new IPFS data is old data plus state returned from the panel
     const ipfsData = issue.workSubmissions[issue.workSubmissions.length - 1]
-    const requestIPFSHash = await ipfsAdd({ ...ipfsData, review: data })
+    const val = new Blob([Buffer.from(JSON.stringify({ ...ipfsData, review: data }))])
+    const requestIPFSHash = await api.datastore('add', val).toPromise()
 
     const total = new BN(issue.data.balance, 10)
     const fulfillers = issue.data.work.fulfillers

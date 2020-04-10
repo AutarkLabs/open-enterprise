@@ -8,7 +8,6 @@ import { DateInput } from '../../../../../../shared/ui'
 import { useAragonApi } from '../../../api-react'
 import useGithubAuth from '../../../hooks/useGithubAuth'
 import { usePanelManagement } from '..'
-import { ipfsAdd } from '../../../utils/ipfs-helpers'
 import { toHex } from 'web3-utils'
 import { issueShape } from '../../../utils/shapes.js'
 import { IssueTitle, PanelContent } from '../PanelComponents'
@@ -51,8 +50,10 @@ const RequestAssignment = ({ issue }) => {
       },
       applicationDate: today.toISOString(),
     }
-    const hash = await ipfsAdd(data)
-    api.requestAssignment(issue.repoHexId || toHex(issue.repoId), issue.number, hash).toPromise()
+
+    const val = new Blob([Buffer.from(JSON.stringify(data))])
+    const hash = await api.datastore('add', val).toPromise()
+    api.requestAssignment(toHex(issue.repoId), issue.number, hash).toPromise()
   }
 
   const canSubmit = () => !(ack1 && ack2 && workplan)

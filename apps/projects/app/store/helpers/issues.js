@@ -1,7 +1,7 @@
 import { hexToAscii, toHex } from 'web3-utils'
 import { app } from '../app'
-import { ipfsGet } from '../../utils/ipfs-helpers'
 import standardBounties from '../../abi/StandardBounties.json'
+
 
 export const loadIssueData = async ({ repoId, issueNumber }) => {
   const {
@@ -63,13 +63,20 @@ export const loadIssueData = async ({ repoId, issueNumber }) => {
 }
 
 export const loadIpfsData = async ({ ipfsHash }) => {
+  console.log('ipfs hash: ', ipfsHash)
+  const res = await app.datastore('cat', ipfsHash).toPromise()
+  console.log('response: ', res)
   const {
     issueId,
     exp,
     fundingHistory,
     hours,
     repo,
-  } = await ipfsGet(ipfsHash)
+    size,
+    slots,
+    slotsIndex,
+  } = res.data
+
   return {
     issueId,
     exp,
@@ -84,7 +91,8 @@ export const loadDecoupledIssueData =
     const {
       data: ipfsHash
     } = await app.call('getIssue', repoId, issueNumber).toPromise()
-    return ipfsGet(ipfsHash)
+    const res = await app.datastore('cat', ipfsHash).toPromise()
+    return res.data
   }
 
 const existPendingApplications = issue => {
@@ -150,7 +158,8 @@ export const determineWorkStatus = issue => {
 const getRequest = (repoId, issueNumber, applicantId) => {
   return new Promise(resolve => {
     app.call('getApplicant', repoId, issueNumber, applicantId).subscribe(async (response) => {
-      const bountyData = await ipfsGet(response.application)
+      const res = await app.datastore('cat', response.application).toPromise()
+      const bountyData = res.data
       resolve({
         contributorAddr: response.applicant,
         requestIPFSHash: response.application,
@@ -173,6 +182,7 @@ const loadRequestsData = ({ repoId, issueNumber }) => {
 }
 
 export const buildSubmission = async ({ fulfillmentId, fulfillers, ipfsHash, submitter }) => {
+  const res = await app.datastore('cat', ipfsHash).toPromise()
   const {
     ack1,
     ack2,
@@ -181,7 +191,7 @@ export const buildSubmission = async ({ fulfillmentId, fulfillers, ipfsHash, sub
     proof,
     submissionDate,
     user,
-  } = await ipfsGet(ipfsHash)
+  } = res.data
 
   return {
     ack1,

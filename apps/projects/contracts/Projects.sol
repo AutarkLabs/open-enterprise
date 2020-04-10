@@ -8,6 +8,7 @@ import "@aragon/os/contracts/apps/AragonApp.sol";
 import "@aragon/apps-vault/contracts/Vault.sol";
 import "@aragon/os/contracts/common/EtherTokenConstant.sol";
 import "@aragon/os/contracts/lib/math/SafeMath.sol";
+import "./DataStore.sol";
 
 /**
   * @title Bounties Interface
@@ -93,7 +94,7 @@ interface ERC20Token {
   * @dev Defines a registry for project tasks in addition to
   * applying bounties in bulk and accepting fulfillment via this contract
   */
-contract Projects is AragonApp, DepositableStorage {
+contract Projects is AragonApp, DepositableStorage, DataStore {
 
     using SafeMath for uint256;
 
@@ -206,6 +207,8 @@ contract Projects is AragonApp, DepositableStorage {
     event SubmissionRejected(uint256 submissionNumber, bytes32 repoId, uint256 issueNumber);
     // Fired when a bounty is opened up to work submissions from anyone
     event AwaitingSubmissions(bytes32 repoId, uint256 issueNumber);
+    // Fired when we want to pin a hash to org data store
+    event PinHash(string cid);
 
 
     /**
@@ -428,6 +431,7 @@ contract Projects is AragonApp, DepositableStorage {
             _application
         );
         emit AssignmentRequested(_repoId, _issueNumber);
+        emit PinHash(_application);
     }
 
     /**
@@ -458,12 +462,12 @@ contract Projects is AragonApp, DepositableStorage {
             issue.assignmentRequests[_requestor].status = SubmissionStatus.Rejected;
             emit AssignmentRejected(_requestor, _repoId, _issueNumber);
         }
+        emit PinHash(_updatedApplication);
         bountiesRegistry.performAction(
             address(this),
             issue.standardBountyId,
             _updatedApplication
         );
-
     }
 
     /**
@@ -515,7 +519,7 @@ contract Projects is AragonApp, DepositableStorage {
         } else {
             emit SubmissionRejected(_submissionNumber, _repoId, _issueNumber);
         }
-
+        emit PinHash(_updatedSubmissionHash);
         bountiesRegistry.performAction(
             address(this),
             issue.standardBountyId,
@@ -550,6 +554,7 @@ contract Projects is AragonApp, DepositableStorage {
             0,
             _data
         );
+        emit PinHash(_data);
         bountiesRegistry.changeDeadline(
             address(this),
             issue.standardBountyId,
@@ -923,6 +928,7 @@ contract Projects is AragonApp, DepositableStorage {
                 _bountySize
             );
         }
+        emit PinHash(_ipfsHash);
     }
 
     /**
@@ -984,6 +990,8 @@ contract Projects is AragonApp, DepositableStorage {
             _standardBountyId,
             _ipfsHash
         );
+
+        emit PinHash(_ipfsHash);
     }
 
     /**

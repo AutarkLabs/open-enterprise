@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, Fragment } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { format, formatDistance } from 'date-fns'
-import { Card, IdentityBadge, theme } from '@aragon/ui'
+import { GU, useTheme } from '@aragon/ui'
+import LocalIdentityBadge from './LocalIdentityBadge/LocalIdentityBadge'
 import { IconEdit, IconDelete, Markdown } from '../../../../shared/ui'
 import CommentForm from './CommentForm'
 
@@ -10,13 +11,14 @@ const Header = styled.header`
   display: flex;
   justify-content: space-between;
   margin-bottom: 10px;
+  width: 100%;
 `
 
 const TimeAgo = styled.time.attrs(props => ({
   dateTime: format(props.date, "y-MM-dd'T'hh:mm:ss"),
   children: formatDistance(props.date, new Date(), { addSuffix: true }),
 }))`
-  color: ${theme.textTertiary};
+  color: ${({theme}) => theme.contentSecondary};
 `
 
 TimeAgo.propTypes = {
@@ -24,33 +26,28 @@ TimeAgo.propTypes = {
 }
 
 const Top = ({ author, createdAt }) => {
+  const theme = useTheme()
   const created = new Date(Number(createdAt) * 1000)
   return (
     <Header>
-      <IdentityBadge entity={author} />
-      <TimeAgo date={created} />
+      <LocalIdentityBadge entity={author}/>
+      <TimeAgo date={created} theme={theme}/>
     </Header>
   )
 }
 
-const CommentCard = styled(Card).attrs({
-  width: '100%',
-  height: 'auto',
-})`
-  margin-top: 15px;
-  margin-bottom: 15px;
-  padding: 15px 20px 10px;
+const CommentDiv = styled.div`
+  padding: ${2 * GU}px;
   position: relative;
 `
 
 const Footer = styled.footer`
-  background: white;
   opacity: 0;
   position: absolute;
   right: 20px;
   bottom: 10px;
   :focus-within,
-  ${CommentCard}:hover & {
+  ${CommentDiv}:hover & {
     opacity: 1;
   }
 `
@@ -68,9 +65,9 @@ const Button = styled.button`
 const Edit = styled(Button)`
   :hover,
   :focus {
-    color: ${theme.accent};
+    color: ${({theme}) => theme.accent};
     path {
-      fill: ${theme.accent};
+      fill: ${({theme}) => theme.accent};
     }
   }
 `
@@ -79,29 +76,34 @@ const Delete = styled(Button)`
   :active,
   :hover,
   :focus {
-    color: ${theme.negative};
+    color: ${({theme}) => theme.negative};
     path {
-      fill: ${theme.negative};
+      fill: ${({theme}) => theme.negative};
     }
   }
-  // hack to make the svg flush with the right edge of CommentCard
+  // hack to make the svg flush with the right edge of CommentDiv
   ${Edit} + & {
     margin-right: -5px;
   }
 `
 
 const Bottom = ({ onDelete, onEdit }) => {
+  const theme = useTheme()
   const [deleting, setDeleting] = useState(false)
 
   return (
     <Footer>
       {!deleting && (
-        <Edit onClick={onEdit}>
+        <Edit
+          theme={theme}
+          onClick={onEdit}
+        >
           <IconEdit height={22} />
         </Edit>
       )}
       <Delete
         aria-live="polite"
+        theme={theme}
         onBlur={() => setDeleting(false)}
         onClick={deleting ? onDelete : () => setDeleting(true)}
       >
@@ -125,7 +127,7 @@ const Comment = ({
   }
 
   return (
-    <CommentCard>
+    <CommentDiv>
       {editing ? (
         <CommentForm
           defaultValue={text}
@@ -133,15 +135,15 @@ const Comment = ({
           onSave={update}
         />
       ) : (
-        <React.Fragment>
+        <Fragment>
           <Top author={author} createdAt={createdAt} />
           <Markdown content={text} />
           {author === currentUser && (
             <Bottom onDelete={onDelete} onEdit={() => setEditing(true)} />
           )}
-        </React.Fragment>
+        </Fragment>
       )}
-    </CommentCard>
+    </CommentDiv>
   )
 }
 

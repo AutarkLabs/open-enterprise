@@ -7,6 +7,7 @@ import { useAppLogic } from './app-logic'
 import { NewVote } from './components/Panels'
 import Decisions from './Decisions'
 import emptyStatePng from './assets/voting-empty-state.png'
+import Discussions from '../../discussions/app/modules/Discussions'
 
 const ASSETS_URL = './aragon-ui'
 
@@ -81,7 +82,7 @@ const App = () => {
   useVoteCloseWatcher()
 
   const { api, guiStyle } = useAragonApi()
-  const { appearance } = guiStyle
+  const { appearance, theme } = guiStyle
   const [ panelOpen, setPanelOpen ] = useState(false)
   const newVote = () => setPanelOpen(true)
   const closePanel = () => setPanelOpen(false)
@@ -96,34 +97,36 @@ const App = () => {
       .toPromise()
   }, [api])
 
-  const { isSyncing, votes, voteTime, pctBase } = useAppLogic()
+  const { isSyncing, votes } = useAppLogic()
 
   return (
-    <Main  assetsUrl={ASSETS_URL} theme={appearance}>
-      {!votes.length ? (
-        <Empty isSyncing={isSyncing} onClick={newVote}/>
-      ) : (
-        <IdentityProvider
-          onResolve={handleResolveLocalIdentity}
-          onShowLocalIdentityModal={handleShowLocalIdentityModal}>
-          <Header
-            primary="Dot Voting"
-            secondary={
-              <Button
-                mode="strong"
-                icon={<IconPlus />}
-                onClick={newVote}
-                label="New dot vote"
-              />
-            }
-          />
-          <Decisions />
-          <SyncIndicator visible={isSyncing} />
-        </IdentityProvider>
-      )}
-      <SidePanel title='New dot vote' opened={panelOpen} onClose={closePanel}>
-        <NewVote onClose={closePanel} />
-      </SidePanel>
+    <Main  assetsUrl={ASSETS_URL} theme={theme || appearance}>
+      <Discussions aragonApi={api}>
+        {!votes.length ? (
+          <Empty isSyncing={isSyncing} onClick={newVote}/>
+        ) : (
+          <IdentityProvider
+            onResolve={handleResolveLocalIdentity}
+            onShowLocalIdentityModal={handleShowLocalIdentityModal}>
+            <Header
+              primary="Dot Voting"
+              secondary={
+                <Button
+                  mode="strong"
+                  icon={<IconPlus />}
+                  onClick={newVote}
+                  label="New dot vote"
+                />
+              }
+            />
+            <Decisions />
+            <SyncIndicator visible={isSyncing} />
+          </IdentityProvider>
+        )}
+        <SidePanel title='New dot vote' opened={panelOpen} onClose={closePanel}>
+          <NewVote onClose={closePanel} />
+        </SidePanel>
+      </Discussions>
     </Main>
   )
 }

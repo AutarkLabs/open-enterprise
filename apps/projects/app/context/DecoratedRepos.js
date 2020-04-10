@@ -1,7 +1,6 @@
 import React from 'react'
 import { useAragonApi } from '../api-react'
 import { GraphQLClient } from 'graphql-request'
-import { ipfsGet } from '../utils/ipfs-helpers'
 
 const repoQuery = repoId => `{
   node(id: "${repoId}") {
@@ -44,7 +43,7 @@ export function useDecoratedRepos() {
 }
 
 export function DecoratedReposProvider(props) {
-  const { appState: { github, repos } } = useAragonApi()
+  const { appState: { github, repos }, api } = useAragonApi()
   const [ decoratedRepos, setDecoratedRepos ] = React.useState([])
 
   // The structure below should be common for all sources of issues.
@@ -67,7 +66,7 @@ export function DecoratedReposProvider(props) {
           .filter(repo => repo.data.decoupled)
           .map(async repo => {
             try {
-              const node = await ipfsGet(repo.data.repoData)
+              const { data: node } = await api.datastore('cat', repo.data.repoData).toPromise()
               return ({
                 id: repo.id,
                 decoupled: repo.data.decoupled,

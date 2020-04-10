@@ -1,6 +1,7 @@
 import {
   AragonApi,
   usePath,
+  useInstalledApps,
   useAragonApi as useProductionApi,
   useNetwork as useProductionNetwork,
 } from '@aragon/api-react'
@@ -24,5 +25,5 @@ export default ({ initialState = {}, functions = (() => {}) }) => {
     }
   }
 
-  return { AragonApi, useAragonApi, useNetwork, usePath }
+  return { AragonApi, useAragonApi, useInstalledApps, useNetwork, usePath }
 }
