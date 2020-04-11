@@ -19,7 +19,7 @@ const LocalIdentityBadge = ({ entity, networkType, ...props }) => {
         label: (
           <Link
             href={kernel && networkType !== 'private'
-              ? `https://beta.autark.xyz/#/${kernel}/profile/${entity}`
+              ? `https://preview.autark.xyz/#/${kernel}/profile/${entity}`
               : `https://www.3box.io/${entity}`
             }
             css={`
