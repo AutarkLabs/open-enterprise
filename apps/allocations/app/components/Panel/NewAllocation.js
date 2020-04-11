@@ -15,6 +15,7 @@ import web3Utils from 'web3-utils'
 import styled from 'styled-components'
 import { BigNumber } from 'bignumber.js'
 
+import usePeriod from '../../hooks/usePeriod'
 import { addressesEqual } from '../../../../../shared/lib/web3-utils'
 import { RecipientsInput } from '../../../../../shared/ui'
 import { MIN_AMOUNT } from '../../utils/constants'
@@ -95,7 +96,8 @@ DescriptionField.propTypes = {
 
 function AmountField({ budget, onChange, value, token }) {
   const theme = useTheme()
-  const { balances, period } = useAragonApi().appState
+  const { balances } = useAragonApi().appState
+  const period = usePeriod()
   const periodEndDate = formatDate({ date: period.endDate, short: true })
 
   const remainingBudget = BigNumber(budget.remaining)
