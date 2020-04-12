@@ -15,12 +15,18 @@ import {
   Text,
   useTheme,
 } from '@aragon/ui'
+import { useAppState } from '@aragon/api-react'
 
 const Budget = ({ budget }) => {
   const theme = useTheme()
+  const { period: onchainPeriod } = useAppState()
   const { active, amount, remaining, token } = budget
+  let calculatedRemaining = remaining
+  if (onchainPeriod.endDate < new Date() ) {
+    calculatedRemaining = amount
+  }
 
-  const tokensSpent = BigNumber(amount).minus(remaining)
+  const tokensSpent = BigNumber(amount).minus(calculatedRemaining)
 
   return (
     <Wrapper budget={budget} theme={theme}>

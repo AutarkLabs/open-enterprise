@@ -24,17 +24,24 @@ const processTime = ms => {
   return [ String(days), `day${days === 1 ? '' : 's'}` ]
 }
 
-const getBudgetTotals = (budgets, rates) => {
+const getBudgetTotals = (budgets, rates, currentPeriodEndDate) => {
   if(!budgets.length || !rates){
     return { amount: new BigNumber(0), remaining: new BigNumber(0) }
   }
 
   const convertedBudgets = budgets.map(budget => {
     const rate = rates[budget.token.symbol]
-    return {
-      amount: rate ? (new BigNumber(budget.amount)).div(rate).div(10**budget.token.decimals) : new BigNumber(0),
-      remaining: rate ? (new BigNumber(budget.remaining)).div(rate).div(10**budget.token.decimals) : new BigNumber(0)
-    }
+    // hack to get this updating on app upgrade
+    return currentPeriodEndDate < new Date() ?
+      {
+        amount: rate ? (new BigNumber(budget.amount)).div(rate).div(10**budget.token.decimals) : new BigNumber(0),
+        remaining: rate ? (new BigNumber(budget.amount)).div(rate).div(10**budget.token.decimals) : new BigNumber(0)
+      }
+      :
+      {
+        amount: rate ? (new BigNumber(budget.amount)).div(rate).div(10**budget.token.decimals) : new BigNumber(0),
+        remaining: rate ? (new BigNumber(budget.remaining)).div(rate).div(10**budget.token.decimals) : new BigNumber(0)
+      }
   })
 
   return convertedBudgets.reduce((total, budget) => {
@@ -46,11 +53,11 @@ const getBudgetTotals = (budgets, rates) => {
 }
 
 const PeriodDetails = () => {
-  const { appState : { budgets = [] } } = useAragonApi()
+  const { appState : { budgets = [], period: { endDate: onchainEndDate } } } = useAragonApi()
   const { startDate, endDate, duration } = usePeriod()
   const [ rates, setRates ] = useState(null)
   const [ ratesFetchedAt, setRatesFetchedAt ] = useState(new Date())
-  const { amount, remaining } = getBudgetTotals(budgets, rates)
+  const { amount, remaining } = getBudgetTotals(budgets, rates, onchainEndDate)
   const durationArray = processTime(duration)
   const remainingArray = processTime(endDate - new Date())
 

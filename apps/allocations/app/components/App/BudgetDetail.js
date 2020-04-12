@@ -74,6 +74,11 @@ export default function BudgetDetail({ budget }) {
   const { newAllocation } = usePanel()
   const period = usePeriod()
   const theme = useTheme()
+  const { period: onchainPeriod } = appState
+
+  if (onchainPeriod.endDate < new Date()) {
+    budget.remaining = budget.amount
+  }
 
   const allocations = (appState.allocations || [])
     .filter(a => a.accountId === budget.id)
