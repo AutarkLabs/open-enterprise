@@ -9,6 +9,7 @@ import { Form } from '../../Form'
 import { LoadingAnimation } from '../../Shared'
 import { usePanelManagement } from '../../Panel'
 import { useDecoratedRepos } from '../../../context/DecoratedRepos'
+import usePathHelpers from '../../../../../../shared/utils/usePathHelpers'
 import AuthorizeGitHub from './AuthorizeGitHub'
 
 // TODO: labels
@@ -48,6 +49,7 @@ class NewIssue extends React.PureComponent {
         })
       ),
     ]).isRequired, // array of managed repos
+    selectedIndex: PropTypes.number.isRequired,
     scope: PropTypes.bool.isRequired
   }
 
@@ -62,6 +64,11 @@ class NewIssue extends React.PureComponent {
   // static validate = validator.compile({
 
   // })
+
+  constructor(props) {
+    super(props)
+    this.state.selectedProject = props.selectedIndex
+  }
 
   componentDidUpdate(prevProps, prevState) {
     if (this.state !== prevState) {
@@ -170,7 +177,7 @@ class NewIssue extends React.PureComponent {
               <TextInput.Multiline
                 rows={3}
                 style={{
-                  resize: 'none',
+                  resize: 'vertical',
                   height: 'auto',
                   paddingTop: '5px',
                   paddingBottom: '5px',
@@ -180,7 +187,7 @@ class NewIssue extends React.PureComponent {
               />
             </Field>
           </Form>
-        ) : ( 
+        ) : (
           /* repo is connected to github */
           <Mutation
             mutation={NEW_ISSUE}
@@ -241,6 +248,8 @@ const NewIssueWrap = () => {
   const { closePanel } = usePanelManagement()
   const repos = useDecoratedRepos()
   const { appState: { issues, github }, api, connectedAccount } = useAragonApi()
+  const { parsePath } = usePathHelpers()
+  const { repoId } = parsePath('^/projects/:repoId')
 
   const graphqlMutation = useMutation(NEW_ISSUE, {
     onError: console.error,
@@ -256,6 +265,12 @@ const NewIssueWrap = () => {
       decoupled: repo.decoupled
     }))
     : 'No repos'
+
+  const selectedIndex =
+    typeof repoNames === 'string'
+      ? 0
+      : repoNames.findIndex(r => r.hexId === repoId) + 1 // Placeholder text = 0
+
   const reposIds = (repos || []).map(repo => repo.data._repo)
   const repoHexIds = (repos || []).map(repo => repo.id)
 
@@ -269,6 +284,7 @@ const NewIssueWrap = () => {
       reposManaged={repoNames}
       reposIds={reposIds}
       repoHexIds={repoHexIds}
+      selectedIndex={selectedIndex}
       scope = {!github.scope}
     />
   )

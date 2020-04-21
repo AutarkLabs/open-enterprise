@@ -65,7 +65,7 @@ const Project = ({
   }
 
   return (
-    <StyledCard onClick={clickContext} screenSize={width}>
+    <StyledCard onClick={clickContext} screenSize={width} theme={theme}>
 
       <div css="display: flex; width: 100%">
 
@@ -151,7 +151,11 @@ const StyledCard = styled(Card)`
   transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
   :hover {
     cursor: pointer;
-    box-shadow: 0 9px 10px 0 rgba(101, 148, 170, 0.1);
+    box-shadow: 0 9px 10px 0
+      ${({ theme }) =>
+    theme._appearance === 'light'
+      ? 'rgba(101, 148, 170, 0.1)'
+      : 'rgba(0, 0, 0, 0.1)'};
   }
 `
 

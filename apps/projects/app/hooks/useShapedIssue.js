@@ -26,7 +26,7 @@ export default () => {
         .div(BigNumber(10 ** tokens[data.token].decimals))
         .dp(3)
         .toString()
-      
+
       const fulfilled = BigNumber(bounties[issue.number].data.fulfilled)
         .div(BigNumber(10 ** tokens[data.token].decimals))
         .dp(3)
@@ -39,6 +39,7 @@ export default () => {
         repo: issue.repository.name,
         symbol: tokens[data.token].symbol,
         expLevel: bountySettings.expLvls[data.exp].name,
+        hours: Number(issue.hours),
         balance: balance,
         fulfilled,
         data,

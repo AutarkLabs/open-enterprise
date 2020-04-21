@@ -29,9 +29,9 @@ function LocalLabelPopoverTitle({ label, source = null }) {
       </span>
       <Tag
         mode="identifier"
-        css={`
-          margin-left: ${2 * GU}px;
-        `}
+        style={{
+          marginLeft: `${2 * GU}px`
+        }}
       >
         {getTag(source)}
       </Tag>

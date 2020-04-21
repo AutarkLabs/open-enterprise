@@ -1,30 +1,32 @@
 import React from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
+import { useNetwork } from '../../../api-react'
 import {
   Box,
   Text,
   useTheme,
   GU,
   Link,
-  IdentityBadge
 } from '@aragon/ui'
 import { formatDistance } from 'date-fns'
 import { usePanelManagement } from '../../Panel'
 import { Avatar } from '../../Panel/PanelComponents'
 import { issueShape, userGitHubShape, userDecoupledShape } from '../../../utils/shapes.js'
+import { LocalIdentityBadge } from '../../../../../../shared/identity'
 
 const calculateAgo = pastDate => formatDistance(pastDate, Date.now(), { addSuffix: true })
 
 const IssueEvent = ({ user, decoupled, ...props }) => {
   const theme = useTheme()
+  const network = useNetwork()
 
   return (
     <IssueEventMain>
       <div css="display: flex">
         {!decoupled && <Avatar user={user} />}
         <IssueEventDetails>
-          {decoupled && <IdentityBadge entity={user.addr || user.login} />}
+          {decoupled && <LocalIdentityBadge networkType={network.type} entity={user.addr || user.login} />}
           <Text.Block size="small">
             {props.eventDescription}
           </Text.Block>
@@ -129,13 +131,13 @@ const activities = (
         events[data.review.reviewDate] = {
           date: data.review.reviewDate,
           user: { ...data.user, addr: data.submitter },
-          eventDescription: ( 
+          eventDescription: (
             decoupled ? (
               data.review.accepted ?
                 'had work accepted'
                 :
                 'had work rejected'
-            ) : ( 
+            ) : (
               data.user.login + (data.review.accepted ?
                 '\'s work was accepted'
                 :

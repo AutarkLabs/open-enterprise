@@ -11,22 +11,31 @@ export const IssueTitleLink = ({ issue }) => {
 
   return (
     <IssueLinkRow>
-      <div css={`margin-top: ${.5 * GU}px`}>
-        <IconGitHub
-          color={`${theme.surfaceContentSecondary}`}
-          width="16px"
-          height="16px"
-        />
-      </div>
-      <Link
-        href={issue.url}
-        target="_blank"
-        style={{ textDecoration: 'none' }}
-      >
-        <Text css="margin-left: 6px" color={`${theme.link}`}>
+      {issue.repository.decoupled ? (
+        <Text color={`${theme.surfaceContentSecondary.toString()}`}>
           {issue.repo} #{issue.number}
         </Text>
-      </Link>
+      ) : (
+        <>
+          <div css={`margin-top: ${.5 * GU}px`}>
+            <IconGitHub
+              color={`${theme.surfaceContentSecondary}`}
+              width="16px"
+              height="16px"
+            />
+          </div>
+          <Link
+            href={issue.url}
+            target="_blank"
+            style={{ textDecoration: 'none' }}
+          >
+            <Text css="margin-left: 6px" color={`${theme.link}`}>
+              {issue.repo} #{issue.number}
+            </Text>
+          </Link>
+        </>
+      )}
+
     </IssueLinkRow>
   )
 }
