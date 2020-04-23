@@ -92,7 +92,7 @@ The Projects app requires the following initialization parameters:
 
 #### Sample install command
 ```
-dao install <dao-address> projects.aragonpm.eth --app-init-args 0x38f1886081759f7d352c28984908d04e8d2205a6 [Vault]
+dao install <dao-address> projects.aragonpm.eth --app-init-args 0x51598aE36102010fECA5322098b22Dd5B773428B [Vault]
 ```
 
 ## Install the Rewards app
