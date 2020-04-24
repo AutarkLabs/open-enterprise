@@ -60,7 +60,7 @@ In the early mainnet phases, you may want to consider installing a second (or th
 
 
 
-## Install Address Book
+# Install Address Book
 #### address-book.aragonpm.eth
 
 The Address Book is for maintaining a list of Ethereum addresses mapped to human-readable names, on-chain. The Address Book will enable a more user-friendly way to access and review common addresses a DAO uses throughout Aragon.
@@ -90,7 +90,7 @@ You need to setup at least one of the permissions using the CLI for the app to s
 dao acl create $dao $address-book ADD_ENTRY_ROLE $voting $voting
 ```
 
-## Install Dot Voting App
+# Install Dot Voting App
 #### dot-voting.aragonpm.eth
 
 The Dot Voting app is used by both the Allocations app and Projects app. Dot Voting allows token holders to prioritize between multiple options by distributing votes across these options.
@@ -127,7 +127,7 @@ dao acl create $dao $dot-voting ROLE_CREATE_VOTES $tokens $voting
 ```
 
 
-## Install the Projects app
+# Install the Projects app
 #### projects.aragonpm.eth
 
 Proects allows an organization to manage a bounties workflow using Github and the Standard Bounties contract. Issue Curation proposals can also be created via the Projects app, which are forwarded to the Dot Voting app to collectively determine project priorities.
@@ -167,7 +167,7 @@ For the Projects app, we feel it is more optimal to first create a "project mana
 dao acl create $dao $projects FUND_ISSUES_ROLE $tokens $voting
 ```
 
-## Install the Rewards app
+# Install the Rewards app
 #### rewards.aragonpm.eth
 
 With Rewards, you can distribute payments to token holders based on the number of tokens one has earned in a specific cycle of time (one-time reward) or based on the total tokens one holds (dividend).
@@ -195,7 +195,7 @@ You need to setup the rewards permission using the CLI for the app to show up in
 dao acl create $dao $rewards ADD_REWARD_ROLE $voting $voting
 ```
 
-## Install the Allocations app
+# Install the Allocations app
 #### allocations.aragonpm.eth
 
 Allocations is used to manage budget-controlled, multi-party financial allocations. Proposals are forwarded to the Dot Voting app for an organization to collectively determine the distribution of funds. The percentage of the allocation amount distributed to each party is determined based on the results of the Dot Vote.
