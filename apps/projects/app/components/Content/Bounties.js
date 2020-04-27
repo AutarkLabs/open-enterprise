@@ -48,15 +48,20 @@ const IssueTile = ({ issue, selectIssue }) => {
         margin-top: ${GU}px;
         justify-content: flex-start;
         align-items: flex-start;
+        border: 1px solid ${theme.border}
       `}
     >
       <div css={`
         width: 100%;
-        padding: ${GU}px;
+        padding: ${1.5 * GU}px;
         border-bottom: 1px solid ${theme.border};
       `}>
         <h3 css={`${textStyle('body3')}`}>{issue.title}</h3>
-        <span css={`${textStyle('body4')} color: ${theme.link}; margin-right: ${2 * GU}px;`}>{issue.repository.name} #{issue.number}</span>
+        <span css={`
+          ${textStyle('body4')};
+          color: ${theme.surfaceContentSecondary};
+          margin-right: ${2 * GU}px;
+        `}>{issue.repository.name} #{issue.number}</span>
         {issue.balance && issue.symbol && (
           <Tag>{issue.balance} {issue.symbol}</Tag>
         )}
