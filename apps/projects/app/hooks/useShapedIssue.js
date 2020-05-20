@@ -7,7 +7,7 @@ export default () => {
   const { bountySettings = {} } = appState
 
   const bounties = useMemo(() => (appState.issues || []).reduce(
-    (obj, i) => { obj[i.issueNumber] = i; return obj },
+    (obj, i) => { obj[i.issueId] = i; return obj },
     {}
   ), [appState.issues])
 
@@ -17,29 +17,29 @@ export default () => {
   ), [appState.tokens])
 
   const shapeIssue = useCallback(issue => {
-    const bounty = bounties[issue.number]
+    const bounty = bounties[issue.id]
     const repoIdFromBounty = bounty && bounty.data.repoId
     if ((bounty && tokens[bounty.data.token]) && repoIdFromBounty === issue.repository.id) {
-      const data = bounties[issue.number].data
-      const balance = BigNumber(bounties[issue.number].data.balance)
-        .plus(bounties[issue.number].data.fulfilled || 0)
+      const data = bounties[issue.id].data
+      const balance = BigNumber(bounties[issue.id].data.balance)
+        .plus(bounties[issue.id].data.fulfilled || 0)
         .div(BigNumber(10 ** tokens[data.token].decimals))
         .dp(3)
         .toString()
       
-      const fulfilled = BigNumber(bounties[issue.number].data.fulfilled)
+      const fulfilled = BigNumber(bounties[issue.id].data.fulfilled)
         .div(BigNumber(10 ** tokens[data.token].decimals))
         .dp(3)
         .toString()
 
       return {
         ...issue,
-        ...bounties[issue.number].data,
+        ...bounties[issue.id].data,
         repoId: issue.repository.decoupled ? issue.repository.hexId : issue.repository.id,
         repo: issue.repository.name,
         symbol: tokens[data.token].symbol,
         expLevel: bountySettings.expLvls[data.exp].name,
-        balance: balance,
+        balance,
         fulfilled,
         data,
       }
