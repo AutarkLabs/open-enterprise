@@ -1,4 +1,5 @@
 export const initialState = {
+  threads: [],
   discussions: {},
-  syncing: true,
+  isSyncing: true,
 }

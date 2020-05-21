@@ -19,10 +19,16 @@ contract DiscussionApp is IForwarder, AragonApp {
     );
     event Hide(address indexed author, uint256 discussionThreadId, uint256 postId, uint256 hiddenAt);
     event CreateDiscussionThread(uint256 actionId, bytes _evmScript);
+    event UpdateThread(string thread, string metadata);
+    event DeleteThread(string thread);
 
-    bytes32 public constant EMPTY_ROLE = keccak256("EMPTY_ROLE");
+    bytes32 public constant REGISTER_ROLE = keccak256("REGISTER_ROLE");
+    bytes32 public constant MODERATOR_ROLE = keccak256("MODERATOR_ROLE");
 
     string private constant ERROR_CAN_NOT_FORWARD = "DISCUSSIONS_CAN_NOT_FORWARD";
+    string private constant ERROR_ALREADY_EXISTS = "You cannot create an existing thread.";
+    string private constant ERROR_EDIT_NOT_AUTHOR = "You cannot edit a thread you did not author.";
+    string private constant ERROR_DELETE_NOT_AUTHOR = "You cannot delete a thread you did not author.";
 
     struct DiscussionPost {
         address author;
@@ -37,6 +43,8 @@ contract DiscussionApp is IForwarder, AragonApp {
     uint256 discussionThreadId;
 
     mapping(uint256 => DiscussionPost[]) public discussionThreadPosts;
+
+    mapping(string => address) private threadAuthors;
 
     function initialize() external onlyInit {
         discussionThreadId = 0;
@@ -94,6 +102,38 @@ contract DiscussionApp is IForwarder, AragonApp {
             post.createdAt,
             now // solium-disable-line security/no-block-members
         );
+    }
+
+    /**
+     * @notice Create new thread at `thread`
+     * @param thread The address of the 3Box thread
+     * @param metadata The IPFS hash of the metadata for the thread
+    */
+    function registerThread(string thread, string metadata)
+        auth(REGISTER_ROLE) external {
+        require(threadAuthors[thread] == 0, ERROR_ALREADY_EXISTS);
+        threadAuthors[thread] = msg.sender;
+        emit UpdateThread(thread, metadata);
+    }
+
+    /**
+     * @notice Edit thread at `thread`
+     * @param thread The address of the 3Box thread
+     * @param newMetadata The IPFS hash of the new metadata for the thread
+     */
+    function editThread(string thread, string newMetadata)
+        auth(REGISTER_ROLE) external {
+        require(threadAuthors[thread] == msg.sender, ERROR_EDIT_NOT_AUTHOR);
+        emit UpdateThread(thread, newMetadata);
+    }
+
+    /**
+     * @notice Delete thread at `thread`
+     * @param thread The address of the 3Box thread
+     */
+    function deleteThread(string thread) auth(REGISTER_ROLE) external {
+        require(threadAuthors[thread] == msg.sender, ERROR_DELETE_NOT_AUTHOR);
+        emit DeleteThread(thread);
     }
 
     // Forwarding fns

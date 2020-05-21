@@ -160,7 +160,7 @@ contract DevTemplate is BaseOEApps {
     {
         if (_useDiscussions) {
             DiscussionApp discussions = _installDiscussionsApp(_dao);
-            _createDiscussionsPermissions(_acl, discussions, ANY_ENTITY, _voting);
+            _createDiscussionsPermissions(_acl, discussions, _tokenManager, _voting);
         }
 
         MiniMeToken token = _popTokenCache(msg.sender);

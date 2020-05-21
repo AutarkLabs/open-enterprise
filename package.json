@@ -74,7 +74,7 @@
     "start:dev-template": "cd templates/dev && npm run publish:aragen && npm run start:template:aragen",
     "start:address": "cd apps/address-book && npm start",
     "start:allocations": "cd apps/allocations && npm start",
-    "start:dev": "DEV=true apps/shared/test-helpers/ganache-cli.sh",
+    "start:dev": "NODE_ENV=development DEV=true apps/shared/test-helpers/ganache-cli.sh",
     "start:no:client": "NO_CLIENT=true apps/shared/test-helpers/ganache-cli.sh",
     "start:dot": "cd apps/dot-voting && npm start",
     "start:projects": "cd apps/projects && npm start",

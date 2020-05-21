@@ -46,7 +46,7 @@
     "clean:start": "aragon clean && rm -rf ~/.aragon && npm run start:http:template",
     "start": "npm run start:ipfs",
     "start:ipfs": "aragon run",
-    "start:http": "aragon run --http localhost:8001 --http-served-from ./dist",
+    "start:http": "NODE_ENV=development aragon run --http localhost:8001 --http-served-from ./dist",
     "start:ipfs:template": "npm run start:ipfs -- --template Template --template-init @ARAGON_ENS",
     "start:http:template": "rm -rf build && npm run start:http -- --template Template --template-init @ARAGON_ENS",
     "start:app": "cd app && npm start && cd ..",
