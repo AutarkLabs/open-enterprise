@@ -83,14 +83,22 @@ export const loadIpfsData = async ({ ipfsHash }) => {
 
 export const loadDecoupledIssueData = async ({ repoId, issueNumber }) => {
   const {
+    standardBountyId,
+    balance,
+    assignee,
+    fulfilled,
     data: ipfsHash
   } = await app.call('getIssue', repoId, issueNumber).toPromise()
   let ipfsData = await ipfsGet(ipfsHash)
   return {
     ...ipfsData,
+    standardBountyId,
+    balance,
+    assignee,
+    fulfilled,
     repoId: hexToAscii(repoId),
     repoHexId: repoId,
-    token: ipfsData.token.addr
+    token: ipfsData.token ? ipfsData.token.addr : undefined
   }
 }
 
