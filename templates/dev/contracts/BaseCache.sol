@@ -23,7 +23,7 @@ contract BaseCache is BaseTemplate {
             ENS(_deployedSetupContracts[1]),
             MiniMeTokenFactory(_deployedSetupContracts[2]),
             IFIFSResolvingRegistrar(_deployedSetupContracts[3])
-    ) {}
+    ) public {}
 
     function _cacheBase(
         ACL _acl,
