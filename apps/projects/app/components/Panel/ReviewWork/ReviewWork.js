@@ -82,7 +82,7 @@ const ReviewWork = ({ issue, submissionIndex, readOnly }) => {
     const data = buildReturnData(accepted)
 
     // new IPFS data is old data plus state returned from the panel
-    const ipfsData = issue.workSubmissions[issue.workSubmissions.length - 1]
+    const ipfsData = issue.workSubmissions[work.fulfillmentId]
     const val = new Blob([Buffer.from(JSON.stringify({ ...ipfsData, review: data }))])
     const requestIPFSHash = await api.datastore('add', val).toPromise()
 

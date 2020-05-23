@@ -8,7 +8,8 @@ export const loadIssueData = async ({ repoId, issueNumber }) => {
     standardBountyId,
     balance,
     assignee,
-    fulfilled
+    fulfilled,
+    data: ipfsHash
   } = await app.call('getIssue', repoId, issueNumber).toPromise()
   const hasBounty = !!balance
   const bountiesRegistry = await app.call('bountiesRegistry').toPromise()
@@ -54,6 +55,7 @@ export const loadIssueData = async ({ repoId, issueNumber }) => {
     hasBounty,
     standardBountyId,
     openSubmission: /^0xf{40}$/i.test(assignee),
+    ipfsHash,
 
     // from StandardBounties.sol
     deadline: new Date(Number(deadline)).toISOString(),
@@ -84,14 +86,26 @@ export const loadIpfsData = async ({ ipfsHash }) => {
   }
 }
 
-export const loadDecoupledIssueData = 
-  async ({ repoId, issueNumber }) => {
-    const {
-      data: ipfsHash
-    } = await app.call('getIssue', repoId, issueNumber).toPromise()
-    const res = await app.datastore('cat', ipfsHash).toPromise()
-    return res.data
+export const loadDecoupledIssueData = async ({ repoId, issueNumber }) => {
+  const {
+    standardBountyId,
+    balance,
+    assignee,
+    fulfilled,
+    data: ipfsHash
+  } = await app.call('getIssue', repoId, issueNumber).toPromise()
+  const { data: ipfsData = {} } = await app.datastore('cat', ipfsHash).toPromise()
+  return {
+    ...ipfsData,
+    standardBountyId,
+    balance,
+    assignee,
+    fulfilled,
+    repoId: hexToAscii(repoId),
+    repoHexId: repoId,
+    token: ipfsData.token ? ipfsData.token.addr : undefined
   }
+}
 
 const existPendingApplications = issue => {
   if (!('requestsData' in issue) || issue.requestsData.length === 0) return false

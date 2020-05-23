@@ -27,9 +27,9 @@ const IssueEvent = ({ user, decoupled, ...props }) => {
         {!decoupled && <Avatar user={user} />}
         <IssueEventDetails>
           {decoupled && <LocalIdentityBadge networkType={network.type} entity={user.addr || user.login} />}
-          <Text.Block size="small">
+          <Text size="small">
             {props.eventDescription}
-          </Text.Block>
+          </Text>
           <Text.Block size="xsmall" color={`${theme.surfaceContentSecondary}`}>
             {calculateAgo(props.date)}
           </Text.Block>
@@ -60,17 +60,21 @@ IssueEvent.propTypes = {
 
 const applicationLink = (user, onReviewApplication, issue, requestIndex) => (
   <React.Fragment>
-    {user} submitted <Link onClick={() =>
+    {user} submitted <WrappedLink href="#" onClick={e => {
+      e.preventDefault()
       onReviewApplication({ issue, requestIndex, readOnly: true })
-    }>an application for review</Link>
+    }
+    }>an application for review</WrappedLink>
   </React.Fragment>
 )
 
 const workLink = (user, onReviewWork, issue, submissionIndex) => (
   <React.Fragment>
-    {user} submitted <Link onClick={() =>
+    {user} submitted <WrappedLink href="#" onClick={e => {
+      e.preventDefault()
       onReviewWork({ issue, submissionIndex, readOnly: true })
-    }>work for review</Link>
+    }
+    }>work for review</WrappedLink>
   </React.Fragment>
 )
 
@@ -222,6 +226,11 @@ const IssueEventDetails = styled.div`
   > :not(:last-child) {
     margin-bottom: ${GU}px;
   }
+`
+const WrappedLink = styled(Link)`
+  display: inline;
+  text-decoration: none;
+  white-space: normal;
 `
 
 // eslint-disable-next-line import/no-unused-modules

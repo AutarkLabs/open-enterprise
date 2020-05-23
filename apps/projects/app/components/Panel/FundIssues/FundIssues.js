@@ -427,7 +427,7 @@ const FundIssues = ({ issues, mode }) => {
       }
     }
 
-    if (update.hours !== undefined || update.exp) {
+    if (bountySettings.fundingModel !== 'Fixed' && (update.hours !== undefined || update.exp)) {
       const { exp, hours } = newBounties[issueId]
       const { baseRate, expLvls } = bountySettings
       newBounties[issueId].payout = hours * baseRate * expLvls[exp].mul

@@ -109,7 +109,16 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract, se
   case ASSIGNMENT_REQUESTED: {
     if(!returnValues) return state
     const { repoId, issueNumber } = returnValues
-    let issueData = await loadIssueData({ repoId, issueNumber })
+    const repoIndex = state.repos.findIndex(repo => repo.id === repoId)
+    let issueData
+    if (!state.repos[repoIndex].data.decoupled) {
+      issueData = await loadIssueData({ repoId, issueNumber })
+      console.log('raw data: ', issueData)
+      const ipfsData = await loadIpfsData(issueData)
+      issueData = { ...issueData, ...ipfsData }
+    } else {
+      issueData = await loadDecoupledIssueData({ repoId, issueNumber })
+    }
     issueData = await updateIssueDetail(issueData)
     issueData = determineWorkStatus(issueData)
     return syncIssues(state, returnValues, issueData)
@@ -117,7 +126,16 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract, se
   case ASSIGNMENT_APPROVED: {
     if(!returnValues) return state
     const { repoId, issueNumber } = returnValues
-    let issueData = await loadIssueData({ repoId, issueNumber })
+    const repoIndex = state.repos.findIndex(repo => repo.id === repoId)
+    let issueData
+    if (!state.repos[repoIndex].data.decoupled) {
+      issueData = await loadIssueData({ repoId, issueNumber })
+      console.log('raw data: ', issueData)
+      const ipfsData = await loadIpfsData(issueData)
+      issueData = { ...issueData, ...ipfsData }
+    } else {
+      issueData = await loadDecoupledIssueData({ repoId, issueNumber })
+    }
     issueData = await updateIssueDetail(issueData)
     issueData = determineWorkStatus(issueData)
     return syncIssues(state, returnValues, issueData)
@@ -125,7 +143,16 @@ export const handleEvent = async (state, action, vaultAddress, vaultContract, se
   case ASSIGNMENT_REJECTED: {
     if(!returnValues) return state
     const { repoId, issueNumber } = returnValues
-    let issueData = await loadIssueData({ repoId, issueNumber })
+    const repoIndex = state.repos.findIndex(repo => repo.id === repoId)
+    let issueData
+    if (!state.repos[repoIndex].data.decoupled) {
+      issueData = await loadIssueData({ repoId, issueNumber })
+      console.log('raw data: ', issueData)
+      const ipfsData = await loadIpfsData(issueData)
+      issueData = { ...issueData, ...ipfsData }
+    } else {
+      issueData = await loadDecoupledIssueData({ repoId, issueNumber })
+    }
     issueData = await updateIssueDetail(issueData)
     issueData = determineWorkStatus(issueData)
     return syncIssues(state, returnValues, issueData)
