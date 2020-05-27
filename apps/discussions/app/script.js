@@ -32,16 +32,11 @@ api.store(
         newState = { ...initialState, isSyncing: false }
         return newState
       case 'UpdateThread':
-        return {
-          ...state,
-          threads: await updateThread(state, event.returnValues),
-        }
+        newState = await updateThread(state, event.returnValues)
+        return newState
       case 'DeleteThread':
-        const threads = await deleteThread(state, event.returnValues)
-        return {
-          ...state,
-          threads,
-        }
+        newState = await deleteThread(state, event.returnValues)
+        return newState
       case 'Post':
         newState = await handlePost(state, event)
         return newState

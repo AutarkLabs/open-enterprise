@@ -127,8 +127,9 @@ contract BaseOEApps is BaseCache, TokenCache {
         return DiscussionApp(_installNonDefaultApp(_dao, DISCUSSIONS_APP_ID, initializeData));
     }
 
-    function _createDiscussionsPermissions(ACL _acl, DiscussionApp _discussions, address _grantee, address _manager) internal {
-        _acl.createPermission(_grantee, _discussions, _discussions.REGISTER_ROLE(), _manager);
+    function _createDiscussionsPermissions(ACL _acl, DiscussionApp _discussions, address _moderator, address _register, address _manager) internal {
+        _acl.createPermission(_moderator, _discussions, _discussions.MODERATOR_ROLE(), _manager);
+        _acl.createPermission(_register, _discussions, _discussions.REGISTER_ROLE(), _manager);
     }
 
     /* PROJECTS */
