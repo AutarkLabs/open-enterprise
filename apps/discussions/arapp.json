@@ -1,8 +1,13 @@
 {
   "roles": [
     {
-      "name": "Is doing nothing, just needed to technically be an AragonApp",
-      "id": "EMPTY_ROLE",
+      "name": "Register role",
+      "id": "REGISTER_ROLE",
+      "params": []
+    },
+    {
+      "name": "Moderator role",
+      "id": "MODERATOR_ROLE",
       "params": []
     }
   ],

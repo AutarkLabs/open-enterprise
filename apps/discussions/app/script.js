@@ -2,7 +2,14 @@ import '@babel/polyfill'
 import { of } from 'rxjs'
 import AragonApi from '@aragon/api'
 
-import { handleHide, handlePost, handleRevise, initialState } from './state'
+import {
+  updateThread,
+  deleteThread,
+  handleHide,
+  handlePost,
+  handleRevise,
+  initialState
+} from './state'
 
 const INITIALIZATION_TRIGGER = Symbol('INITIALIZATION_TRIGGER')
 
@@ -13,16 +20,22 @@ api.store(
     let newState
     switch (event.event) {
       case INITIALIZATION_TRIGGER:
-        newState = { ...initialState, syncing: false }
+        newState = { ...initialState, isSyncing: false }
         return newState
       case 'SYNC_STATUS_SYNCING':
-        newState = { ...initialState, syncing: true }
+        newState = { ...initialState, isSyncing: true }
         return newState
       case 'SYNC_STATUS_SYNCED':
-        newState = { ...initialState, syncing: false }
+        newState = { ...initialState, isSyncing: false }
         return newState
       case 'ACCOUNTS_TRIGGER':
-        newState = { ...initialState, syncing: false }
+        newState = { ...initialState, isSyncing: false }
+        return newState
+      case 'UpdateThread':
+        newState = await updateThread(state, event.returnValues)
+        return newState
+      case 'DeleteThread':
+        newState = await deleteThread(state, event.returnValues)
         return newState
       case 'Post':
         newState = await handlePost(state, event)
