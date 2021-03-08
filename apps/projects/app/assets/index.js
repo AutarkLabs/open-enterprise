@@ -8,5 +8,18 @@ import IconCollapse from './IconCollapse'
 import IconDropArrow from './IconDropArrow'
 import IconDoubleCheck from './IconDoubleCheck'
 import IconUserCheck from './IconUserCheck'
+import IconUserError from './IconUserError'
 
-export { IconMore, IconSort, IconGrid, IconCoins, IconFilter, IconOpen, IconCollapse, IconDropArrow, IconDoubleCheck, IconUserCheck }
+export {
+  IconDoubleCheck,
+  IconDropArrow,
+  IconCoins,
+  IconCollapse,
+  IconFilter,
+  IconGrid,
+  IconMore,
+  IconOpen,
+  IconSort,
+  IconUserCheck,
+  IconUserError,
+}
