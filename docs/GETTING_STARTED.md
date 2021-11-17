@@ -130,7 +130,7 @@ dao acl create $dao $dot-voting ROLE_CREATE_VOTES $tokens $voting
 # Install the Projects app
 #### projects.aragonpm.eth
 
-Proects allows an organization to manage a bounties workflow using Github and the Standard Bounties contract. Issue Curation proposals can also be created via the Projects app, which are forwarded to the Dot Voting app to collectively determine project priorities.
+Projects allows an organization to manage a bounties workflow using Github and the Standard Bounties contract. Issue Curation proposals can also be created via the Projects app, which are forwarded to the Dot Voting app to collectively determine project priorities.
 
 The Projects app requires the following initialization parameters:
 * `registry`: The Standard Bounties registry address. Use `0x38f1886081759f7d352c28984908d04e8d2205a6` for the Rinkeby registry and `0x51598aE36102010fECA5322098b22Dd5B773428B` for the Mainnet registry.
