@@ -135,7 +135,7 @@ contract AddressBook is AragonApp {
      * @param _addr The Ethereum address of the entry to get
      * @return contentId pointing to the IPFS structured content object for the entry
      */
-    function getEntry(address _addr) external view isInitialized returns (string contentId) {
+    function getEntry(address _addr) external view isInitialized entryExists(_addr) returns (string contentId) {
         contentId = entries[_addr].data;
     }
 
